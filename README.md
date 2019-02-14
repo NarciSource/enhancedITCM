@@ -8,7 +8,7 @@ enhancedITCM은 [ITCM](http://itcm.co.kr) 사이트를 개선하는 스크립트
 
 
 
-[![GitHub version](https://img.shields.io/github/release/NarciSource/studyForGit.svg?style=flat)](https://github.com/NarciSource/enhancedITCM/releases/) [![Github all releases](https://img.shields.io/github/last-commit/NarciSource/studyForGit.svg?style=flat)](https://github.com/NarciSource/enhancedITCM/releases/) [![GitHub license](https://img.shields.io/github/license/Naereen/StrapDown.js.svg)](/LICENSE)
+[![GitHub version](https://img.shields.io/github/release/NarciSource/enhancedITCM.svg?style=flat)](https://github.com/NarciSource/enhancedITCM/releases/) [![Github all releases](https://img.shields.io/github/last-commit/NarciSource/enhancedITCM.svg?style=flat)](https://github.com/NarciSource/enhancedITCM/releases/) [![GitHub license](https://img.shields.io/github/license/Naereen/StrapDown.js.svg)](/LICENSE)
 
 ## 기능
 * 무한 스크롤
