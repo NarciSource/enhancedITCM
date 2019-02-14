@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         enhancedITCM
 // @namespace    etcm
-// @version      0.1.1
+// @version      0.1.1a
 // @description  EnhancedITCM is a user script that enhances the http://itcm.co.kr/
 // @author       narci <jwch11@gmail.com>
 // @match        *://itcm.co.kr/*
@@ -16,6 +16,8 @@
 // @downloadURL  https://raw.githubusercontent.com/NarciSource/enhancedITCM/master/enhancedITCM.user.js
 // @grant        GM.getResourceUrl
 // @grant        GM.xmlHttpRequest
+// @grant        GM_getResourceURL
+// @grant        GM_xmlhttpRequest
 // @connect      store.steampowered.com
 // @connect      steamcommunity.com
 // @connect      crowbar.steamstat.us
@@ -46,6 +48,18 @@ console.log(`
                       @  +                                                                                                     
                                                                                                                                
 `);
+
+this.$ = window.jQuery.noConflict(true);
+/* Add compatibility before greasemonkey version 4 */
+if (typeof GM === "undefined") {
+    GM = this.GM = this.GM || {
+        getResourceUrl : url=> {
+            const res = GM_getResourceURL(url).replace("data:text/plain; charset=utf-8","data:text/css; base64");
+            return Promise.resolve(res);
+        },
+        xmlHttpRequest : GM_xmlhttpRequest
+    };
+}
 
 /* load style */
 async function addStyle(resource_url) {
@@ -462,7 +476,7 @@ function giveIdBlackArticle($articles) {
         $('.inner_content').children('div').eq(0).find('img').attr('src').includes("/store/")
     ) {
         const $cTab_store = $('.inner_content').children('div').eq(0),
-              $etcm_cTab_store = 
+              $etcm_cTab_store =
                 $('<ul>', {
                     appendTo: $cTab_store,
                     class: 'etcm-cTab--store'
@@ -479,7 +493,7 @@ function giveIdBlackArticle($articles) {
                     )
             });
         });
-    
+
         //add guitar
         $('<li>', {
             appendTo: $etcm_cTab_store,
@@ -577,7 +591,6 @@ function giveIdBlackArticle($articles) {
                 $content.append( $loaded_articles );
                 $(document).find('.bd_pg').remove();
                 $(document).find('.bd_lst_wrp').append( $loaded_html.find('.bd_pg') );
-                
 
                 loading_bar.hide();
                 refreshContent();
