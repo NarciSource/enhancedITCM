@@ -23,6 +23,15 @@
 }
 
 
+.etcm-loading-bar {
+    position: absolute;
+    left: 50%;
+
+    width: 100px;
+
+    transform: translateX(-50%);
+}
+
 .etcm-wishApp {
     background: #ffdb52;
 }

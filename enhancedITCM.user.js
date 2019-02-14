@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         enhancedITCM
 // @namespace    etcm
-// @version      0.1
+// @version      0.1.1
 // @description  EnhancedITCM is a user script that enhances the http://itcm.co.kr/
 // @author       narci <jwch11@gmail.com>
 // @match        *://itcm.co.kr/*
@@ -488,7 +488,8 @@ function giveIdBlackArticle($articles) {
                     href: "http://itcm.co.kr/?_filter=search&act=&vid=&mid=game_news&search_keyword=기타&search_target=extra_vars2&_sort_index=timer_filter",
                     html: $.merge(
                         $('<img>', {
-                            src: "https://openclipart.org/image/800px/svg_to_png/249613/Guitarra.png"
+                            src: "https://openclipart.org/image/800px/svg_to_png/249613/Guitarra.png",
+                            css: {width: '29px', height: '29px'}
                         }),
                         $('<span>', {
                             text: "기타"
@@ -550,22 +551,26 @@ function giveIdBlackArticle($articles) {
 
 /* infinite scroll */
 (function infiniteScroll() {
-    let loading = true;
+    let loading_bar = $('<img>', {
+            class: 'etcm-loading-bar',
+            src: "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwcHgiICBoZWlnaHQ9IjIwMHB4IiAgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiB2aWV3Qm94PSIwIDAgMTAwIDEwMCIgcHJlc2VydmVBc3BlY3RSYXRpbz0ieE1pZFlNaWQiIGNsYXNzPSJsZHMtYnJpY2tzIiBzdHlsZT0iYmFja2dyb3VuZDogcmdiYSgwLCAwLCAwLCAwKSBub25lIHJlcGVhdCBzY3JvbGwgMCUgMCU7Ij48cmVjdCBuZy1hdHRyLWZpbGw9Int7Y29uZmlnLmMxfX0iIG5nLWF0dHIteD0ie3tjb25maWcueH19IiBuZy1hdHRyLXk9Int7Y29uZmlnLnh9fSIgbmctYXR0ci13aWR0aD0ie3tjb25maWcud319IiBuZy1hdHRyLWhlaWdodD0ie3tjb25maWcud319IiBuZy1hdHRyLXJ4PSJ7e2NvbmZpZy5yYWRpdXN9fSIgbmctYXR0ci1yeT0ie3tjb25maWcucmFkaXVzfX0iIGZpbGw9IiNiYjNkM2MiIHg9IjE1IiB5PSIxNSIgd2lkdGg9IjMwIiBoZWlnaHQ9IjMwIiByeD0iMyIgcnk9IjMiPjxhbmltYXRlIGF0dHJpYnV0ZU5hbWU9IngiIGNhbGNNb2RlPSJsaW5lYXIiIHZhbHVlcz0iMTU7NTU7NTU7NTU7NTU7MTU7MTU7MTU7MTUiIGtleVRpbWVzPSIwOzAuMDgzOzAuMjU7MC4zMzM7MC41OzAuNTgzOzAuNzU7MC44MzM7MSIgZHVyPSIyIiBiZWdpbj0iLTEuODMzMzMzMzMzMzMzMzMzM3MiIHJlcGVhdENvdW50PSJpbmRlZmluaXRlIj48L2FuaW1hdGU+PGFuaW1hdGUgYXR0cmlidXRlTmFtZT0ieSIgY2FsY01vZGU9ImxpbmVhciIgdmFsdWVzPSIxNTs1NTs1NTs1NTs1NTsxNTsxNTsxNTsxNSIga2V5VGltZXM9IjA7MC4wODM7MC4yNTswLjMzMzswLjU7MC41ODM7MC43NTswLjgzMzsxIiBkdXI9IjIiIGJlZ2luPSItMS4zMzMzMzMzMzMzMzMzMzMzcyIgcmVwZWF0Q291bnQ9ImluZGVmaW5pdGUiPjwvYW5pbWF0ZT48L3JlY3Q+PHJlY3QgbmctYXR0ci1maWxsPSJ7e2NvbmZpZy5jMn19IiBuZy1hdHRyLXg9Int7Y29uZmlnLnh9fSIgbmctYXR0ci15PSJ7e2NvbmZpZy54fX0iIG5nLWF0dHItd2lkdGg9Int7Y29uZmlnLnd9fSIgbmctYXR0ci1oZWlnaHQ9Int7Y29uZmlnLnd9fSIgbmctYXR0ci1yeD0ie3tjb25maWcucmFkaXVzfX0iIG5nLWF0dHItcnk9Int7Y29uZmlnLnJhZGl1c319IiBmaWxsPSIjNDg2OThkIiB4PSIxNSIgeT0iMTUiIHdpZHRoPSIzMCIgaGVpZ2h0PSIzMCIgcng9IjMiIHJ5PSIzIj48YW5pbWF0ZSBhdHRyaWJ1dGVOYW1lPSJ4IiBjYWxjTW9kZT0ibGluZWFyIiB2YWx1ZXM9IjE1OzU1OzU1OzU1OzU1OzE1OzE1OzE1OzE1IiBrZXlUaW1lcz0iMDswLjA4MzswLjI1OzAuMzMzOzAuNTswLjU4MzswLjc1OzAuODMzOzEiIGR1cj0iMiIgYmVnaW49Ii0xLjE2NjY2NjY2NjY2NjY2NjdzIiByZXBlYXRDb3VudD0iaW5kZWZpbml0ZSI+PC9hbmltYXRlPjxhbmltYXRlIGF0dHJpYnV0ZU5hbWU9InkiIGNhbGNNb2RlPSJsaW5lYXIiIHZhbHVlcz0iMTU7NTU7NTU7NTU7NTU7MTU7MTU7MTU7MTUiIGtleVRpbWVzPSIwOzAuMDgzOzAuMjU7MC4zMzM7MC41OzAuNTgzOzAuNzU7MC44MzM7MSIgZHVyPSIyIiBiZWdpbj0iLTAuNjY2NjY2NjY2NjY2NjY2NnMiIHJlcGVhdENvdW50PSJpbmRlZmluaXRlIj48L2FuaW1hdGU+PC9yZWN0PjxyZWN0IG5nLWF0dHItZmlsbD0ie3tjb25maWcuYzN9fSIgbmctYXR0ci14PSJ7e2NvbmZpZy54fX0iIG5nLWF0dHIteT0ie3tjb25maWcueH19IiBuZy1hdHRyLXdpZHRoPSJ7e2NvbmZpZy53fX0iIG5nLWF0dHItaGVpZ2h0PSJ7e2NvbmZpZy53fX0iIG5nLWF0dHItcng9Int7Y29uZmlnLnJhZGl1c319IiBuZy1hdHRyLXJ5PSJ7e2NvbmZpZy5yYWRpdXN9fSIgZmlsbD0iI2ZkYzc2YyIgeD0iMTUiIHk9IjE1IiB3aWR0aD0iMzAiIGhlaWdodD0iMzAiIHJ4PSIzIiByeT0iMyI+PGFuaW1hdGUgYXR0cmlidXRlTmFtZT0ieCIgY2FsY01vZGU9ImxpbmVhciIgdmFsdWVzPSIxNTs1NTs1NTs1NTs1NTsxNTsxNTsxNTsxNSIga2V5VGltZXM9IjA7MC4wODM7MC4yNTswLjMzMzswLjU7MC41ODM7MC43NTswLjgzMzsxIiBkdXI9IjIiIGJlZ2luPSItMC41cyIgcmVwZWF0Q291bnQ9ImluZGVmaW5pdGUiPjwvYW5pbWF0ZT48YW5pbWF0ZSBhdHRyaWJ1dGVOYW1lPSJ5IiBjYWxjTW9kZT0ibGluZWFyIiB2YWx1ZXM9IjE1OzU1OzU1OzU1OzU1OzE1OzE1OzE1OzE1IiBrZXlUaW1lcz0iMDswLjA4MzswLjI1OzAuMzMzOzAuNTswLjU4MzswLjc1OzAuODMzOzEiIGR1cj0iMiIgYmVnaW49IjBzIiByZXBlYXRDb3VudD0iaW5kZWZpbml0ZSI+PC9hbmltYXRlPjwvcmVjdD48L3N2Zz4=",
+        }).hide().appendTo('.btm_mn');
+
     $(window).scroll(function() {
-        if (loading && $(window).scrollTop() > $(document).height() - $(window).height() - 50) {
-            loading = false;
+        if (loading_bar.is(':hidden') && $(window).scrollTop() > $(document).height() - $(window).height() - 50) {
+            loading_bar.show();
 
             $.ajax({
-                url: window.location.origin + $('.bd_pg').find('.direction').last().attr('href')
+                url: $('.bd_pg').find('.direction').last().attr('href')
 
-            }).done(html=> {
+            }).then(html=> {
                 let $loaded_html = $(html),
                     $loaded_content = $loaded_html.find('.bd_lst.bd_tb').children('tbody'),
                     $loaded_articles = $loaded_content.children('tr').not('.notice');
 
                 $loaded_html.find('.app_image').find('img').each(function() {
                     $(this).attr('src', $(this).data('original') );
-                })
+                });
 
                 giveIdBlackArticle( $loaded_articles );
 
@@ -574,8 +579,10 @@ function giveIdBlackArticle($articles) {
                 $(document).find('.bd_lst_wrp').append( $loaded_html.find('.bd_pg') );
                 
 
-                loading = true;
+                loading_bar.hide();
                 refreshContent();
+            }).fail(err=> {
+                console.log(err);
             });
         }
     });
