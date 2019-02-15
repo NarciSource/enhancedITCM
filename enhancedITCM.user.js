@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         enhancedITCM
 // @namespace    etcm
-// @version      0.1.2
+// @version      0.1.2-1
 // @description  EnhancedITCM is a user script that enhances the http://itcm.co.kr/
 // @author       narci <jwch11@gmail.com>
 // @match        *://itcm.co.kr/*
@@ -150,6 +150,7 @@ let ProxySet = function(target, arr) {
 
 
 const dynamicstore_url = "https://store.steampowered.com/dynamicstore/userdata/",
+      steam_signin_url = "https://store.steampowered.com/login/",
       profile_url = "https://steamcommunity.com/my/ajaxaliases",
       steamstat_url = "https://crowbar.steamstat.us/Barney";
 
@@ -159,8 +160,8 @@ let $content = $('.bd_lst.bd_tb').children('tbody'),
     $articles = $content.children('tr').not('.notice'),
     blacklist = new ProxySet("blacklist", [/*empty*/]),
     blacklist_member = new ProxySet("blacklist_mber", [/*empty*/]),
-    selectTabs;
-
+    selectTabs,
+    profileinfo;
 
 
 
@@ -180,9 +181,10 @@ let $content = $('.bd_lst.bd_tb').children('tbody'),
                 class: 'etcm-sign',
                 css: {color: 'red'},
                 text: "sign in",
-                href: "https://steamcommunity.com/login/home/?goto="
+                href: steam_signin_url
             })
         );
+        localStorage.removeItem('profileinfo');
     }
     else {
         $('.logo').append(
@@ -192,9 +194,12 @@ let $content = $('.bd_lst.bd_tb').children('tbody'),
                     $('<i>', { class: 'fa fa-refresh'}),
                     $('<span>', { text: ` working : ${signin_name}`})
                 ),
-                href: "https://store.steampowered.com/#clear_cache"
+                click: loadProfileInfo
             })
         );
+
+        profileinfo = localStorage["profileinfo"]?
+                    JSON.parse(localStorage["profileinfo"]) : loadProfileInfo();
     }
 })();
 
@@ -326,19 +331,20 @@ let $content = $('.bd_lst.bd_tb').children('tbody'),
 
 
 /* Collect information about a user who is currently connected to Steam Web Page. */
-(async function loadProfileInfo() {
-    var profileinfo = localStorage["profileinfo"]?
-                        JSON.parse(localStorage["profileinfo"])
-                      : await GM.ajax({
+async function loadProfileInfo() {
+    let profileinfo = await GM.ajax({
                             dataType: "json",
                             url: dynamicstore_url,
                         });
+    if (profileinfo === undefined || profileinfo.rgOwnedApps.length === 0) {
+        console.error("Steam account is strange...");
+    }
     localStorage["profileinfo"] = JSON.stringify( profileinfo );
 
     enhanceGametagbox( profileinfo );
     enhanceProfile( profileinfo );
     enhanceAppInfoDetails( profileinfo );
-})();
+};
 
 function enhanceProfile(profileinfo) {
     $('.wrap_profile').addClass('etcm-profile');
@@ -501,7 +507,8 @@ function giveIdBlackMemeber($articles) {
               $etcm_cTab_store =
                 $('<ul>', {
                     appendTo: $cTab_store,
-                    class: 'etcm-cTab--store'
+                    class: 'etcm-cTab--store',
+                    css: {display: 'flex'}
                 });
 
         $cTab_store.find('a').each(function() {
