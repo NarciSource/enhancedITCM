@@ -126,15 +126,29 @@
     font-size: 20px !important;
 
     position: absolute;
-    left: 0;
 
     display: none;
 
     cursor: pointer;
 }
-.etcm-article:hover .fa-eye-slash {
+.etcm-article .etcm-blackeye--article {
+    left: 0;
+}
+.etcm-article .etcm-blackeye--member {
+    right: 150px;
+}
+.etcm-article:hover .etcm-blackeye--article {
     display: block;
 }
+.etcm-article > .author:hover ~ .etcm-blackeye--member,
+.etcm-blackeye--member:hover {
+    display: block;
+}
+.etcm-article > .author:hover ~ .etcm-blackeye--article,
+.etcm-blackeye--member:hover ~ .etcm-blackeye--article {
+    display: none;
+}
+
 
 
 .etcm-steam-server-monitor {

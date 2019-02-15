@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         enhancedITCM
 // @namespace    etcm
-// @version      0.1.1a
+// @version      0.1.2
 // @description  EnhancedITCM is a user script that enhances the http://itcm.co.kr/
 // @author       narci <jwch11@gmail.com>
 // @match        *://itcm.co.kr/*
@@ -158,6 +158,7 @@ const dynamicstore_url = "https://store.steampowered.com/dynamicstore/userdata/"
 let $content = $('.bd_lst.bd_tb').children('tbody'),
     $articles = $content.children('tr').not('.notice'),
     blacklist = new ProxySet("blacklist", [/*empty*/]),
+    blacklist_member = new ProxySet("blacklist_mber", [/*empty*/]),
     selectTabs;
 
 
@@ -441,7 +442,7 @@ function giveIdBlackArticle($articles) {
         .each((_, article)=> {
             $(article).append(
                 $('<td>', {
-                    class: 'fa fa-eye-slash',
+                    class: 'fa fa-eye-slash etcm-blackeye--article',
                     click: function() {
                         const href= $(this).siblings('.title').children('.hx').attr('href'),
                                 document_num = /(\d+)$/.exec(href)[1];
@@ -457,6 +458,27 @@ function giveIdBlackArticle($articles) {
             );
         });
 };
+
+function giveIdBlackMemeber($articles) {
+    $articles
+        .each((_, article)=> {
+            $(article).append(
+                $('<td>', {
+                    class: 'fa fa-eye-slash etcm-blackeye--member',
+                    click: function() {
+                        const member_id = $(this).siblings('.author').find('a').attr('class');
+
+                        if (blacklist_member.has(member_id)) {
+                            blacklist_member.delete(member_id);
+                        } else {
+                            blacklist_member.add(member_id);
+                        }
+                        refreshContent();
+                    }
+                })
+            );
+        });    
+}
 
 
 
@@ -586,6 +608,7 @@ function giveIdBlackArticle($articles) {
                     $(this).attr('src', $(this).data('original') );
                 });
 
+                giveIdBlackMemeber( $articles );
                 giveIdBlackArticle( $loaded_articles );
 
                 $content.append( $loaded_articles );
@@ -603,6 +626,7 @@ function giveIdBlackArticle($articles) {
 
 
 
+giveIdBlackMemeber($articles);
 giveIdBlackArticle($articles);
 refreshContent();
 
@@ -616,6 +640,7 @@ function refreshContent() {
             let category = $(article).children('td.cate').children('span').text(),
                 href = $(article).children('td.title').children('.hx').attr('href'),
                 document_num = /(\d+)$/.exec(href)[1],
+                writer_id = $(article).children('td.author').find('a').attr('class'),
                 store;
 
             if (window.location.href.includes("game_news")) {
@@ -630,7 +655,7 @@ function refreshContent() {
 
 
             /* If this article is a blacklist then shadow. */
-            if (blacklist.has(document_num)) {
+            if (blacklist.has(document_num) || blacklist_member.has(writer_id)) {
                 $(article).addClass('etcm-article--shadow');
             }
             else {
@@ -650,7 +675,11 @@ function refreshContent() {
                     )
                     &&
                     (
-                        !document_num || selectTabs.has("black") || !blacklist.has(document_num)
+                        !document_num || selectTabs.has("black") 
+                        || 
+                        !(
+                            blacklist.has(document_num) || blacklist_member.has(writer_id)
+                        )
                     )
                 )
             ) {
