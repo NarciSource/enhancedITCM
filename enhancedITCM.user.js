@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         enhancedITCM
 // @namespace    etcm
-// @version      0.1.2-1
+// @version      0.1.2-2
 // @description  EnhancedITCM is a user script that enhances the http://itcm.co.kr/
 // @author       narci <jwch11@gmail.com>
 // @match        *://itcm.co.kr/*
@@ -160,8 +160,7 @@ let $content = $('.bd_lst.bd_tb').children('tbody'),
     $articles = $content.children('tr').not('.notice'),
     blacklist = new ProxySet("blacklist", [/*empty*/]),
     blacklist_member = new ProxySet("blacklist_mber", [/*empty*/]),
-    selectTabs,
-    profileinfo;
+    selectTabs;
 
 
 
@@ -194,14 +193,119 @@ let $content = $('.bd_lst.bd_tb').children('tbody'),
                     $('<i>', { class: 'fa fa-refresh'}),
                     $('<span>', { text: ` working : ${signin_name}`})
                 ),
-                click: loadProfileInfo
+                click: async ()=> accountLinkedProc(await loadProfileInfo())
             })
         );
 
-        profileinfo = localStorage["profileinfo"]?
-                    JSON.parse(localStorage["profileinfo"]) : loadProfileInfo();
+        accountLinkedProc( localStorage["profileinfo"]?
+            JSON.parse(localStorage["profileinfo"])
+            : loadProfileInfo() 
+        );
     }
 })();
+
+/* Procedures that require profileinfo. */
+function accountLinkedProc(profileinfo) {
+    enhanceGametagbox( profileinfo );
+    enhanceProfile( profileinfo );
+    enhanceAppInfoDetails( profileinfo );
+}
+
+function enhanceProfile(profileinfo) {
+    $('.wrap_profile').addClass('etcm-profile');
+
+    //$('.wrap_profile').append($('<div>', {
+    //    text: `게임 수집 : ${profileinfo.rgOwnedApps.length}`
+    //}))
+}
+
+function enhanceAppInfoDetails(profileinfo) {
+    $('.app_info_details').each( function() {
+        let pathname = $(this).children('.wrap_info').find('.app_name').get(0).pathname,
+            [_, div, id] = /\/(\w+)\/(\d+)/.exec(pathname);
+        id = Number(id);
+
+        if (profileinfo.rgOwnedApps.includes(id)) {
+            $(this).children('.h2_widget_sub').each(function() {
+                $(this).text( $(this).text() + " (보유중)" );
+            });
+        }
+    });
+}
+
+function enhanceGametagbox(profileinfo) {
+    $('.steam_read_selected').each(function() {
+        if ($(this).find('.mi_app_live').length === 0) {
+            const makeLine = (text) =>
+                $('<tr>', {
+                    class: 'mi_app_live',
+                    html: $('<td>',{
+                        attr: {colspan: '4'},
+                        html: $('<span>',{
+                            class: 'line',
+                            html: $('<span>',{
+                                class:'line_txt',
+                                html: $('<i>',{
+                                    class: 'fa fa-chevron-down',
+                                    attr: {'aria-hidden':'true'},
+                                    text
+                                })
+                            })
+                        })
+                    })
+                });
+
+            $(this).find('tbody')
+                .append( makeLine(" 미보유 게임"))
+                .append( makeLine(" 보유 게임"));
+        }
+
+        $(this).find('.no_mi_app, .mi_app')
+            .each((_,app)=> {
+                let [match, div, id] = /steampowered\.com\/(\w+)\/(\d+)/.exec(
+                    $(app).find('.item_content .name').attr('href')
+                );
+                id = Number(id);
+
+                if ((div === "app" && !profileinfo.rgOwnedApps.includes(id))
+                 || (div === "package" && !profileinfo.rgOwnedPackages.includes(id))) {
+                    $(app).removeClass('mi_app')
+                            .addClass('no_mi_app')
+                            .siblings('.mi_app_live').eq(0).after($(app));
+                }
+                if ((div === "app" && profileinfo.rgOwnedApps.includes(id))
+                 || (div === "package" && !profileinfo.rgOwnedPackages.includes(id))) {
+                    $(app).removeClass('no_mi_app')
+                            .addClass('mi_app')
+                            .siblings('.mi_app_live').eq(1).after($(app));
+                }
+
+                if (profileinfo.rgWishlist.includes(id)) {
+                    $(app).addClass('etcm-wishApp');
+                }
+
+                if (Object.keys(profileinfo.rgIgnoredApps).includes(String(id))) {
+                    $(app).addClass('etcm-ignoreApp');
+                }
+            });
+
+        const $that = $(this);
+        $(this).find('.mi_app_live')
+            .css({cursor: 'pointer'})
+            .on({
+                click: function() {
+                    if ($(this).text().trim() === "미보유 게임") {
+                        $that.find('.no_mi_app').toggle();
+                    }
+                    if ($(this).text().trim() === "보유 게임") {
+                        $that.find('.mi_app').toggle();
+                    }
+                }
+            })
+    });
+}
+
+
 
 
 /* steam server status monitor */
@@ -340,105 +444,8 @@ async function loadProfileInfo() {
         console.error("Steam account is strange...");
     }
     localStorage["profileinfo"] = JSON.stringify( profileinfo );
-
-    enhanceGametagbox( profileinfo );
-    enhanceProfile( profileinfo );
-    enhanceAppInfoDetails( profileinfo );
+    return profileinfo;
 };
-
-function enhanceProfile(profileinfo) {
-    $('.wrap_profile').addClass('etcm-profile');
-
-    //$('.wrap_profile').append($('<div>', {
-    //    text: `게임 수집 : ${profileinfo.rgOwnedApps.length}`
-    //}))
-}
-
-function enhanceAppInfoDetails(profileinfo) {
-    $('.app_info_details').each( function() {
-        let pathname = $(this).children('.wrap_info').find('.app_name').get(0).pathname,
-            [_, div, id] = /\/(\w+)\/(\d+)/.exec(pathname);
-        id = Number(id);
-
-        if (profileinfo.rgOwnedApps.includes(id)) {
-            $(this).children('.h2_widget_sub').each(function() {
-                $(this).text( $(this).text() + " (보유중)" );
-            });
-        }
-    });
-}
-
-function enhanceGametagbox(profileinfo) {
-    $('.steam_read_selected').each(function() {
-        if ($(this).find('.mi_app_live').length === 0) {
-            const makeLine = (text) =>
-                $('<tr>', {
-                    class: 'mi_app_live',
-                    html: $('<td>',{
-                        attr: {colspan: '4'},
-                        html: $('<span>',{
-                            class: 'line',
-                            html: $('<span>',{
-                                class:'line_txt',
-                                html: $('<i>',{
-                                    class: 'fa fa-chevron-down',
-                                    attr: {'aria-hidden':'true'},
-                                    text
-                                })
-                            })
-                        })
-                    })
-                });
-
-            $(this).find('tbody')
-                .append( makeLine(" 미보유 게임"))
-                .append( makeLine(" 보유 게임"));
-        }
-
-        $(this).find('.no_mi_app, .mi_app')
-            .each((_,app)=> {
-                let [match, div, id] = /steampowered\.com\/(\w+)\/(\d+)/.exec(
-                    $(app).find('.item_content .name').attr('href')
-                );
-                id = Number(id);
-
-                if ((div === "app" && !profileinfo.rgOwnedApps.includes(id))
-                 || (div === "package" && !profileinfo.rgOwnedPackages.includes(id))) {
-                    $(app).removeClass('mi_app')
-                            .addClass('no_mi_app')
-                            .siblings('.mi_app_live').eq(0).after($(app));
-                }
-                if ((div === "app" && profileinfo.rgOwnedApps.includes(id))
-                 || (div === "package" && !profileinfo.rgOwnedPackages.includes(id))) {
-                    $(app).removeClass('no_mi_app')
-                            .addClass('mi_app')
-                            .siblings('.mi_app_live').eq(1).after($(app));
-                }
-
-                if (profileinfo.rgWishlist.includes(id)) {
-                    $(app).addClass('etcm-wishApp');
-                }
-
-                if (Object.keys(profileinfo.rgIgnoredApps).includes(String(id))) {
-                    $(app).addClass('etcm-ignoreApp');
-                }
-            });
-
-        const $that = $(this);
-        $(this).find('.mi_app_live')
-            .css({cursor: 'pointer'})
-            .on({
-                click: function() {
-                    if ($(this).text().trim() === "미보유 게임") {
-                        $that.find('.no_mi_app').toggle();
-                    }
-                    if ($(this).text().trim() === "보유 게임") {
-                        $that.find('.mi_app').toggle();
-                    }
-                }
-            })
-    });
-}
 
 
 
