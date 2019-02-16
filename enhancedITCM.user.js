@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         enhancedITCM
 // @namespace    etcm
-// @version      0.1.3
+// @version      0.1.3-1
 // @description  EnhancedITCM is a user script that enhances the http://itcm.co.kr/
 // @author       narci <jwch11@gmail.com>
 // @match        *://itcm.co.kr/*
@@ -635,6 +635,10 @@ ETCM.prototype.refreshContent = function() {
                 $(article).hide();
             }
         });
+
+
+    /* modify ui */
+    modifeUI();
 };
 
 
@@ -799,6 +803,15 @@ etcm.run();
 
 
 /* modify ui */
+function modifeUI() {
+    $('.xe_point_level_icon').remove();
+    $('.etcm-article').children('.author').css({'text-align':'left', 'max-width':'75px', 'text-overflow':'clip'})
+        .find('img').each((_,el)=> {
+            $(el).css({'border-radius':'50px','width':'23px','height':'23px'})
+                .parent().contents().last().get(0).textContent = " "+$(el).attr('title');
+        });
+}
+
 $('.viewer_with').closest('.bd_hd').prepend(
     $('<a>', {
         css: {
