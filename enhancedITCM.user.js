@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         enhancedITCM
 // @namespace    etcm
-// @version      0.1.4
+// @version      0.1.4-1
 // @description  EnhancedITCM is a user script that enhances the http://itcm.co.kr/
 // @author       narci <jwch11@gmail.com>
 // @match        *://itcm.co.kr/*
@@ -608,7 +608,7 @@ ETCM.prototype.addScrapbook = async function() {
         scrapbook.in( list );
     }
     function refresh() {
-        $scrapbook.children('li').remove();
+        $scrapbook.find('li').remove();
         scrapbook.forEach(article=> {
             $('<li>', {
                 class: 'etcm-side__book__list__article',
@@ -649,7 +649,7 @@ ETCM.prototype.addWishbook = async function() {
         wishbook.in( list );
     }
     function refresh() {
-        $wishbook.children('li').remove();
+        $wishbook.find('li').remove();
         wishbook.forEach(article=> {
             $('<li>', {
                 class: 'etcm-side__book__list__article',
