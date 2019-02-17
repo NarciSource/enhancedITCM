@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         enhancedITCM
 // @namespace    etcm
-// @version      0.1.3-1
+// @version      0.1.4
 // @description  EnhancedITCM is a user script that enhances the http://itcm.co.kr/
 // @author       narci <jwch11@gmail.com>
 // @match        *://itcm.co.kr/*
@@ -128,47 +128,45 @@ addStyle("etcm-tgg-style");
 
 
 
-let ProxySet = function(target, arr) {
-    /*private*/
-    let set,
-        save_into_storage = ()=> {
-            localStorage[target] = JSON.stringify( Array.from(set) );
-        };
+class ProxySet extends Set {
+    constructor(storage_name, arr) {
+        arr = localStorage[storage_name]? JSON.parse(localStorage[storage_name]) : arr;
 
-    /*public*/
-    this.target = target;
-    this.has = arg=> set.has(arg);
-    this.in = arg=> {
-        if (Array.isArray(arg)) {
-            arg.forEach(each=> set.add(each));
-        } else {
-            set.add(arg);
-        }
-        save_into_storage();
-    };
-    this.out = arg=> {
-        if (Array.isArray(arg)) {
-            arg.forEach(each=> set.delete(each));
-        } else {
-            set.delete(arg);
-        }
-        save_into_storage();
-    };
-    this.io = (bool, arg)=> bool? this.in(arg) : this.out(arg);
-    this.switch = arg=> this.has(arg)? this.out(arg) : this.in(arg);
-    this.clear = ()=> {
-        set.clear();
-        save_into_storage();
-    };
-    this.filter = func=> Array.from(set).filter(func);
+        super(arr);
+        this.storage_name = storage_name;
 
-    /*init*/
-    if (localStorage[target]) {
-        arr = JSON.parse(localStorage[target]);
+        this._saveIntoStorage();
     }
-    set = new Set(arr);
-    save_into_storage();
-};
+    _saveIntoStorage() {
+        localStorage[ this.storage_name ] = JSON.stringify( Array.from(this) );
+    }
+
+    in(arg) {
+        if (Array.isArray(arg)) {
+            arg.forEach(each=> this.add(each));
+        } else {
+            this.add(arg);
+        }
+        this._saveIntoStorage();
+    }
+    out(arg) {
+        if (Array.isArray(arg)) {
+            arg.forEach(each=> this.delete(each));
+        } else {
+            this.delete(arg);
+        }
+        this._saveIntoStorage();
+    }
+    io(bool, arg) {
+        bool? this.in(arg) : this.out(arg);
+    }
+    switch(arg) {
+        this.has(arg)? this.out(arg) : this.in(arg);
+    }
+    filter(func) {
+        return Array.from(this).filter(func);
+    }
+}
 
 
 
@@ -191,6 +189,8 @@ function ETCM() {
         "addShortcutSide",
         "addArticleBlacklist",
         //"addMemberBlacklist",
+        "addScrapbook",
+        "addWishbook",
         "upgradeProfile",
         "upgradeAppInfoDetails",
         "upgradeGameTagbox",
@@ -576,6 +576,90 @@ ETCM.prototype.addMemberBlacklist = function($articles) {
 };
 
 
+/* side menu */
+ETCM.prototype.addScrapbook = async function() {
+    let $scrapbook = $('<div>', { class: 'etcm-side__book' })
+            .append($('<h2>', {text: "Scrapbook"}))
+            .append($('<i>', {class: 'fa fa-refresh'}))
+            .append($('<ul>', {class: 'etcm-side__book__list'}))
+            .appendTo($('.right_banner')),
+        scrapbook = new ProxySet("scrapbook", []);
+
+    if (scrapbook.size === 0) {
+        await loadScrapbook();
+    }
+    refresh();
+
+    $scrapbook.children('.fa-refresh')
+        .click(async()=> { await loadScrapbook(); refresh(); })
+
+
+    async function loadScrapbook() {
+        let html = await GM.ajax("http://itcm.co.kr/index.php?act=dispMemberScrappedDocument"),
+            list = $(html).find('.table-striped').find('td.title').children('a')
+                        .map((_, article)=> {
+                            return {
+                                text: article.innerText,
+                                href: article.pathname
+                            };
+                        }).toArray();
+
+        scrapbook.clear();
+        scrapbook.in( list );
+    }
+    function refresh() {
+        $scrapbook.children('li').remove();
+        scrapbook.forEach(article=> {
+            $('<li>', {
+                class: 'etcm-side__book__list__article',
+                html: $('<a>', article)
+            }).appendTo($scrapbook.children('ul'));
+        });
+    }
+};
+
+ETCM.prototype.addWishbook = async function() {
+    let $wishbook = $('<div>', { class: 'etcm-side__book' })
+            .append($('<h2>', {text: "wishbook"}))
+            .append($('<i>', {class: 'fa fa-refresh'}))
+            .append($('<ul>', {class: 'etcm-side__book__list'}))
+            .appendTo($('.right_banner')),
+        wishbook = new ProxySet("wishbook", []);
+
+    if (wishbook.size === 0) {
+        await loadwishbook();
+    }
+    refresh();
+
+    $wishbook.children('.fa-refresh')
+        .click(async()=> { await loadwishbook(); refresh(); })
+
+    async function loadwishbook() {
+        let html = await GM.ajax("http://itcm.co.kr/index.php?mid=game_news&_sort_index=check_wlist"),
+            list = $(html).find('.bd_lst.bd_tb').children('tbody').children('tr').not('.notice').find('td.title').children('a:even')
+                        .map((_, article)=> {
+                            const href = article.search;
+                            return {
+                                text: article.innerText.trim(),
+                                href: /document_srl=(\d+)/.exec(href)[1]
+                            };
+                        }).toArray();
+
+        wishbook.clear();
+        wishbook.in( list );
+    }
+    function refresh() {
+        $wishbook.children('li').remove();
+        wishbook.forEach(article=> {
+            $('<li>', {
+                class: 'etcm-side__book__list__article',
+                html: $('<a>', article)
+            }).appendTo($wishbook.children('ul'));
+        });
+    }
+};
+
+
 
 /* refresh content */
 ETCM.prototype.refreshContent = function() {
@@ -812,22 +896,33 @@ function modifeUI() {
         });
 }
 
-$('.viewer_with').closest('.bd_hd').prepend(
-    $('<a>', {
-        css: {
-            float: 'right'
-        },
-        href: "/index.php?mid=game_news&_sort_index=timer_filter&act=dispBoardWrite",
-        html: $.merge(
-            $('<b>', {
-                class: 'ico_16px write'
-            }),
-            $('<span>', {
-                text: "쓰기"
+if (window.location.href.includes("game_news")) {
+    $('.viewer_with').closest('.bd_hd')
+        .css({display:'flex', 'align-items':'center', 'justify-content':'space-between'})
+        .prepend(
+            $('<a>', {
+                css: {'margin-left':'auto'},
+                href: "/index.php?mid=game_news&_sort_index=timer_filter&act=dispBoardWrite",
+                html: $.merge(
+                    $('<b>', {
+                        class: 'ico_16px write'
+                    }),
+                    $('<span>', {
+                        text: "쓰기"
+                    })
+                )
             })
         )
-    })
-)
+        .prepend(
+            $('.bd_srch_btm').clone()
+                    .addClass('on')
+                .children('.itx_wrp')
+                    .css({margin:'0 5px', 'border-radius':'50px'})
+                .parent('.bd_srch_btm')
+        );
+}
+
+
 $('.cTab').css({'margin-bottom': 0});
 
 $('<li>', {

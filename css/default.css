@@ -129,12 +129,14 @@
     list-style: none;
 
     align-items: center;
+    justify-content: center;
 }
 .etcm-tab--store {
     flex-direction: column;
 
     width: 45px;
     padding: 3px;
+    margin: auto;
 
     border-radius: 5px;
 }
@@ -248,4 +250,33 @@
     position: absolute;
     top: 0;
     right: 0;
+}
+
+
+
+.etcm-side__book {
+    position: relative;
+
+    height: 300px;
+    margin-bottom: 30px;
+
+    border-bottom: 1px solid #ddd;
+}
+.etcm-side__book .fa-refresh {
+    position: absolute;
+    top: 0;
+    right: 0;
+
+    transform: translateY(50%);
+}
+.etcm-side__book__list {
+    overflow-y: auto;
+
+    height: 85%;
+    padding: 0;
+
+    list-style: none;
+}
+.etcm-side__book__list__article {
+    margin-bottom: 15px;
 }

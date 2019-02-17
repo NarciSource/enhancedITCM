@@ -105,6 +105,8 @@
 .etcm-settings__showcase {
     display: flex;
     flex-direction: column;
+
+    width: 100%;
 }
 .etcm-settings__showcase ul {
     padding: 0;
