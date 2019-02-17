@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         enhancedITCM
 // @namespace    etcm
-// @version      0.1.4-1
+// @version      0.1.4-2
 // @description  EnhancedITCM is a user script that enhances the http://itcm.co.kr/
 // @author       narci <jwch11@gmail.com>
 // @match        *://itcm.co.kr/*
@@ -579,19 +579,31 @@ ETCM.prototype.addMemberBlacklist = function($articles) {
 /* side menu */
 ETCM.prototype.addScrapbook = async function() {
     let $scrapbook = $('<div>', { class: 'etcm-side__book' })
-            .append($('<h2>', {text: "Scrapbook"}))
+            .append($('<h2>', {text: "스크랩"}))
+            .append($('<i>', {class: 'fa fa-compress'}))
             .append($('<i>', {class: 'fa fa-refresh'}))
-            .append($('<ul>', {class: 'etcm-side__book__list'}))
-            .appendTo($('.right_banner')),
+            .append($('<ul>', {class: 'etcm-side__book__list'})),
         scrapbook = new ProxySet("scrapbook", []);
+    $('.sub_wrap_widget').children().eq(0).after($scrapbook);
+
 
     if (scrapbook.size === 0) {
         await loadScrapbook();
     }
     refresh();
 
+
     $scrapbook.children('.fa-refresh')
-        .click(async()=> { await loadScrapbook(); refresh(); })
+        .click(async()=> { await loadScrapbook(); refresh(); });
+    $scrapbook.children('.fa-compress')
+        .click(function() { $(this).siblings('.etcm-side__book__list').toggleClass('etcm-side__book__list--collapse') });
+
+    if (scrapbook.size < 12) {
+        $scrapbook.children('.fa-compress').hide();
+    } else {
+        $scrapbook.children('.fa-compress').show();
+    }
+
 
 
     async function loadScrapbook() {
@@ -609,10 +621,16 @@ ETCM.prototype.addScrapbook = async function() {
     }
     function refresh() {
         $scrapbook.find('li').remove();
-        scrapbook.forEach(article=> {
+        scrapbook.forEach(({text, href})=> {
             $('<li>', {
                 class: 'etcm-side__book__list__article',
-                html: $('<a>', article)
+                html: $('<a>', {
+                    href,
+                    html: $.merge(
+                        $('<img>', {src: "/widgets/treasurej_popular/skins/DW_Portal/img/docu.gif"}),
+                        $('<span>', {text})
+                    )
+                })
             }).appendTo($scrapbook.children('ul'));
         });
     }
@@ -620,19 +638,33 @@ ETCM.prototype.addScrapbook = async function() {
 
 ETCM.prototype.addWishbook = async function() {
     let $wishbook = $('<div>', { class: 'etcm-side__book' })
-            .append($('<h2>', {text: "wishbook"}))
+            .append($('<h2>', {text: "찜목록"}))
+            .append($('<i>', {class: 'fa fa-compress'}))
             .append($('<i>', {class: 'fa fa-refresh'}))
-            .append($('<ul>', {class: 'etcm-side__book__list'}))
-            .appendTo($('.right_banner')),
+            .append($('<ul>', {class: 'etcm-side__book__list'})),
         wishbook = new ProxySet("wishbook", []);
+    $('.sub_wrap_widget').children().eq(0).after($wishbook);
+
 
     if (wishbook.size === 0) {
         await loadwishbook();
     }
     refresh();
 
+
     $wishbook.children('.fa-refresh')
-        .click(async()=> { await loadwishbook(); refresh(); })
+        .click(async()=> { await loadwishbook(); refresh(); });
+    $wishbook.children('.fa-compress')
+        .click(function() { $(this).siblings('.etcm-side__book__list').toggleClass('etcm-side__book__list--collapse') });
+
+
+    if (wishbook.size < 12) {
+        $wishbook.children('.fa-compress').hide();
+    } else {
+        $wishbook.children('.fa-compress').show();
+    }
+
+
 
     async function loadwishbook() {
         let html = await GM.ajax("http://itcm.co.kr/index.php?mid=game_news&_sort_index=check_wlist"),
@@ -650,10 +682,16 @@ ETCM.prototype.addWishbook = async function() {
     }
     function refresh() {
         $wishbook.find('li').remove();
-        wishbook.forEach(article=> {
+        wishbook.forEach(({text, href})=> {
             $('<li>', {
                 class: 'etcm-side__book__list__article',
-                html: $('<a>', article)
+                html: $('<a>', {
+                    href,
+                    html: $.merge(
+                        $('<img>', {src: "/widgets/treasurej_popular/skins/DW_Portal/img/docu.gif"}),
+                        $('<span>', {text})
+                    )
+                })
             }).appendTo($wishbook.children('ul'));
         });
     }

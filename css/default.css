@@ -257,27 +257,48 @@
 .etcm-side__book {
     position: relative;
 
-    height: 300px;
-    margin-bottom: 30px;
-
     border-bottom: 1px solid #ddd;
 }
-.etcm-side__book .fa-refresh {
+.etcm-side__book .fa {
     position: absolute;
     top: 0;
-    right: 0;
 
     cursor: pointer;
-    transform: translateY(50%);
+    transform: translateY(100%)
+}
+.etcm-side__book .fa-compress {
+    right: 30px;
+}
+.etcm-side__book .fa-refresh {
+    right: 10px;
 }
 .etcm-side__book__list {
     overflow-y: auto;
 
-    height: 85%;
-    padding: 0;
+    margin: 0;
+    padding: 5px;
 
     list-style: none;
+
+    background: white;
+}
+.etcm-side__book__list--collapse {
+    overflow-y: auto;
+
+    max-height: 300px;
 }
 .etcm-side__book__list__article {
-    margin-bottom: 15px;
+    padding: 5px;
+}
+.etcm-side__book__list__article a {
+    display: block;
+    overflow: hidden;
+
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+.etcm-side__book__list__article img {
+    width: 14px;
+    height: 14px;
+    padding-right: 4px;
 }
