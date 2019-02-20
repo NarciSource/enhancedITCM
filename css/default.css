@@ -177,6 +177,12 @@
 .etcm-article > .author:hover .fa-eye-slash {
     display: block;
 }
+.etcm-article > .vote {
+    cursor: pointer;
+}
+.etcm-article > .vote:hover {
+    color: hotpink;
+}
 .etcm-article > .steam_list_check {
     width: auto;
 }

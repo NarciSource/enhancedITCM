@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         enhancedITCM
 // @namespace    etcm
-// @version      0.1.5-2
+// @version      0.1.5-3
 // @description  EnhancedITCM is a user script that enhances the http://itcm.co.kr/
 // @author       narci <jwch11@gmail.com>
 // @match        *://itcm.co.kr/*
@@ -208,6 +208,7 @@ function ETCM() {
         "modifyProfileToCircle",
         "modifyHideBadge",
         "modifyDateGroup",
+        "modifyShortlyVote",
         "modifyWishCheck",
 
         "refreshContent",
@@ -223,6 +224,7 @@ function ETCM() {
         "modifyProfileToCircle",
         "modifyHideBadge",
         "modifyDateGroup",
+        "modifyShortlyVote",
         "modifyWishCheck"
     ];
 
@@ -763,7 +765,7 @@ ETCM.prototype.refreshContent = function() {
     this.$articles
         .each((_,article)=> {
             /* parse this article */
-            let category = $(article).children('td.cate').children('span').text(),
+            let category = $(article).children('td.cate').text().trim(),
                 document_srl = $(article).data('document_srl'),
                 writer_id = $(article).children('td.author').find('a').attr('class'),
                 store;
@@ -773,7 +775,7 @@ ETCM.prototype.refreshContent = function() {
                     if ($(this).children('img').length) {
                         store= $(this).children('img').attr('title').toLowerCase();
                     } else {
-                        store = $(this).text().toLowerCase().trim();
+                        store = $(this).text().toLowerCase().trim().replace("-","");
                     }
                 });
             }
@@ -967,6 +969,38 @@ ETCM.prototype.modifyDateGroup = function($articles) {
 
     $('th.regdate, .notice td.time').remove();
     $articles.children('.time').remove();
+};
+
+
+ETCM.prototype.modifyShortlyVote = function($articles) {
+    const etcm = this;
+    $articles = $articles || this.$articles;
+
+    const entry = etcm.$contents.find('th').length,
+          index = etcm.$contents.find('th').index( etcm.$contents.find('.voted_count') );
+
+    $articles.children(`:nth-child(${entry}n+${index+1})`)
+        .addClass('vote')
+        .each((_, el)=> {
+
+            $(el).html($('<i>', { text: $(el).text() }))
+                 .hover(function() {
+                    $(this).children().toggleClass('fa fa-heart') })
+                 .click(function() {
+                    doCallModuleActionDocumentVote('document', 'procDocumentVoteUp', $(el).parent().data('document_srl'));
+
+                    function doCallModuleActionDocumentVote(module, action, target_srl, vars1) {
+                        const params = {'target_srl':target_srl,'cur_mid':current_mid, 'vars1':vars1};
+                        unsafeWindow.jQuery.exec_json(module+'.'+action, params, completeDocumentVote);
+                    }
+                    function completeDocumentVote(ret_obj) {
+                        const voted_count = ret_obj.voted_count;
+                        if(!isNaN(parseInt(voted_count))) {
+                            $(el).children().text(voted_count);
+                        }
+                    }
+                });
+        });
 };
 
 
