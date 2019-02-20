@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         enhancedITCM
 // @namespace    etcm
-// @version      0.1.4-2
+// @version      0.1.5
 // @description  EnhancedITCM is a user script that enhances the http://itcm.co.kr/
 // @author       narci <jwch11@gmail.com>
 // @match        *://itcm.co.kr/*
@@ -33,7 +33,7 @@
 // @license      MIT
 // ==/UserScript==
 
-console.log(`
+console.info(`
 
                        $$                                                                                                      
                     $$$$$$$$                                                                                                   
@@ -58,9 +58,10 @@ console.log(`
                                                                                                                                
 `);
 
+;(function ($, window, document, undefined) {
 
 this.$ = window.jQuery.noConflict(true);
-/* Add compatibility before greasemonkey version 4 */
+
 if (typeof GM === "undefined") {
     GM = this.GM = this.GM || {
         getResourceUrl : url=> {
@@ -80,7 +81,7 @@ GM.ajax = function(url, options) {
     if ( typeof url === "object" ) {
         options = url;
     }
-    console.log(options.type || "GET", options.url);
+    console.info(options.type || "GET", options.url);
 
     let dfd = $.Deferred();
 
@@ -129,13 +130,14 @@ addStyle("etcm-tgg-style");
 
 
 class ProxySet extends Set {
-    constructor(storage_name, arr) {
-        arr = localStorage[storage_name]? JSON.parse(localStorage[storage_name]) : arr;
+    constructor(storage_name, arr, force) {
+        arr = force? arr : localStorage[storage_name]? JSON.parse(localStorage[storage_name]) : arr;
 
         super(arr);
         this.storage_name = storage_name;
 
         this._saveIntoStorage();
+        return this;
     }
     _saveIntoStorage() {
         localStorage[ this.storage_name ] = JSON.stringify( Array.from(this) );
@@ -148,6 +150,7 @@ class ProxySet extends Set {
             this.add(arg);
         }
         this._saveIntoStorage();
+        return this;
     }
     out(arg) {
         if (Array.isArray(arg)) {
@@ -156,12 +159,15 @@ class ProxySet extends Set {
             this.delete(arg);
         }
         this._saveIntoStorage();
+        return this;
     }
     io(bool, arg) {
         bool? this.in(arg) : this.out(arg);
+        return this;
     }
     switch(arg) {
         this.has(arg)? this.out(arg) : this.in(arg);
+        return this;
     }
     filter(func) {
         return Array.from(this).filter(func);
@@ -181,32 +187,56 @@ const dynamicstore_url = "https://store.steampowered.com/dynamicstore/userdata/"
 
 
 function ETCM() {
-    this.settings = new ProxySet("settings", [
+    this.default_settings = [
+        "_initializeArticle",
+
         "enhanceLogo",
         "enhanceInfiniteScroll",
+
         "addFilter",
         "addSteamServerStatusMonitor",
         "addShortcutSide",
         "addArticleBlacklist",
         //"addMemberBlacklist",
         "addScrapbook",
-        "addWishbook",
+        //"addWishbook",
+
         "upgradeProfile",
         "upgradeAppInfoDetails",
         "upgradeGameTagbox",
-        "refreshContent",
-        "loading--magnify"
-    ]);
 
+        "modifyProfileToCircle",
+        "modifyHideBadge",
+
+        "refreshContent",
+
+        "loading--magnify"
+    ];
+    this.recursive_settings = [
+        "_initializeArticle",
+
+        "addMemberBlacklist",
+        "addArticleBlacklist",
+
+        "modifyProfileToCircle",
+        "modifyHideBadge",
+    ];
+
+
+    if (localStorage["etcm-version"] !== GM.info.script.version) { //update
+        localStorage["etcm-version"] = GM.info.script.version;
+        this.settings = new ProxySet("settings", this.default_settings, true);
+    } else {
+        this.settings = new ProxySet("settings", this.default_settings, false);
+    }
     this.blacklist = new ProxySet("blacklist", [/*empty*/]);
     this.blacklist_member = new ProxySet("blacklist_mber", [/*empty*/]);
     this.selectTabs;
 
     this.upgrade = new this.Upgrade(this, {/*empty*/});
 
-    this.$content = $('.bd_lst.bd_tb').children('tbody');
-    this.$articles = this.$content.children('tr').not('.notice');
-
+    this.$contents = $('table.bd_lst.bd_tb');
+    this.$articles = this.$contents.children('tbody').children('tr');
 
 
     this.run = ()=> {
@@ -217,6 +247,8 @@ function ETCM() {
             .forEach(func=> func.apply(this));
     };
 };
+
+
 
 /* Collect information about a user who is currently connected to Steam Web Page. */
 ETCM.prototype._loadProfileInfo = async function() {
@@ -230,6 +262,20 @@ ETCM.prototype._loadProfileInfo = async function() {
     GM.setValue("profileinfo", JSON.stringify( profileinfo ));
     return profileinfo;
 };
+
+
+ETCM.prototype._initializeArticle = function($articles) {
+    $articles = $articles || this.$articles;
+
+    $articles.addClass('etcm-article')
+        .each(function() {
+            var href = $(this).hasClass('notice')? 
+                            $(this).children('.title').children('a').get(0).href
+                            : $(this).children('.title').children('.hx').data('viewer'),
+                document_srl = /(?:\/g_board\/|document_srl=)(\d+)/.exec(href)[1];
+            $(this).data({document_srl});
+        });
+}
 
 
 
@@ -271,102 +317,6 @@ ETCM.prototype.enhanceLogo = async function() {
 };
 
 
-ETCM.prototype.addFilter = function() {
-    const etcm = this;
-
-    (function makeBlackTab() {
-        $('.cTab').append($('<li>', {
-            class: 'etcm-tab__hide',
-            html : $('<a>', {
-                class: 'fa fa-eye-slash',
-                html: $('<span>', { text: "black" }).hide()
-            })
-        }))
-    })();
-
-    if (window.location.href.includes("game_news") &&
-        $('.inner_content').children('div').eq(0).find('img').attr('src').includes("/store/")
-    ) {
-        let $cTab_store = $('.inner_content').children('div').eq(0),
-            $etcm_cTab_store =
-                $('<ul>', {
-                    appendTo: $cTab_store,
-                    class: 'etcm-cTab--store',
-                    css: {display: 'flex'}
-                });
-
-        //add guitar
-        $cTab_store.children('span').append(
-            $('<a>', {
-                href: "/?mid=game_news&search_keyword=기타&search_target=extra_vars2&_sort_index=timer_filter",
-                html: $('<img>', {
-                        src: "https://openclipart.org/image/800px/svg_to_png/249613/Guitarra.png",
-                        css: {width: '29px', height: '29px'}
-                    })
-            })
-        );
-
-        $cTab_store.find('a').each(function() {
-            $('<li>', {
-                appendTo: $etcm_cTab_store,
-                class: 'etcm-tab--store',
-                html: $(this).append(
-                        $('<span>', {
-                            text: /[&|?]search_keyword=([^&]+)/.exec(decodeURI(this.search))[1].toLowerCase()
-                        }).hide()
-                    )
-            });
-        });
-    }
-
-    let $tabs = $(/*empty*/);
-    if (window.location.href.includes("game_news")) {
-        $tabs = $('.cTab').children('li').slice(0,4).add('.etcm-tab__hide').add('.etcm-tab--store');
-        etcm.selectTabs = new ProxySet("game_news_tab", $tabs.children('a').map((_,el)=>$(el).text().trim()) );
-    }
-    if (window.location.href.includes("g_board")) {
-        $tabs = $('.cTab').children('li');
-        etcm.selectTabs = new ProxySet("g_board_tab", $tabs.children('a').map((_,el)=>$(el).text().trim()) );
-    }
-
-    $tabs.each((_, li)=>{
-        let $tab = $(li).addClass('etcm-tab');
-
-        $('<input>', {
-            appendTo: $tab,
-            type: 'checkbox',
-            checked: function() {
-                return etcm.selectTabs.has($(this).prev().text().trim());
-            },
-            change: function() {
-                const tab_current_text = $(this).prev().text().trim(),
-                      tab_home_text = $tabs.filter('.home').children('a').text();
-
-                if ($(this).is(':checked')) {
-                    if (tab_current_text === tab_home_text) {
-                        $tabs.children('input').prop('checked',true);
-                        etcm.selectTabs.in( Array.from($tabs.children('a').map((_,el)=>$(el).text().trim())) );
-                    }
-
-                    etcm.selectTabs.in( tab_current_text );
-                } else {
-                    if (tab_current_text === tab_home_text) {
-                        $tabs.children('input').prop('checked',false);
-                        etcm.selectTabs.clear();
-                    }
-
-                    $tabs.filter('.home').children('input').prop('checked',false);
-                    etcm.selectTabs.out( tab_home_text );
-
-                    etcm.selectTabs.out( tab_current_text );
-                }
-                etcm.refreshContent();
-            }
-        });
-    });
-};
-
-
 /* infinite scroll */
 ETCM.prototype.enhanceInfiniteScroll = function() {
     const etcm = this,
@@ -385,16 +335,22 @@ ETCM.prototype.enhanceInfiniteScroll = function() {
             }).then(html=> {
                 let $loaded_html = $(html),
                     $loaded_content = $loaded_html.find('.bd_lst.bd_tb').children('tbody'),
-                    $loaded_articles = $loaded_content.children('tr').not('.notice');
+                    $loaded_articles = $loaded_content.children('tr').not('.notice').addClass('etcm-article');
 
                 $loaded_html.find('.app_image').find('img').each(function() {
                     $(this).attr('src', $(this).data('original') );
                 });
 
-                etcm.addMemberBlacklist( $loaded_articles );
-                etcm.addArticleBlacklist( $loaded_articles );
 
-                etcm.$content.append( $loaded_articles );
+
+                etcm.$contents.children('tbody').append( $loaded_articles );
+
+                etcm.recursive_settings
+                    .filter(func_name => etcm.settings.has(func_name))
+                    .forEach(func_name => etcm[func_name]( $loaded_articles ));
+
+
+
                 $(document).find('.bd_pg').remove();
                 $(document).find('.bd_lst_wrp').append( $loaded_html.find('.bd_pg') );
 
@@ -406,6 +362,7 @@ ETCM.prototype.enhanceInfiniteScroll = function() {
         }
     });
 };
+
 
 
 /* steam server status monitor */
@@ -533,21 +490,113 @@ ETCM.prototype.addShortcutSide = function() {
 };
 
 
+ETCM.prototype.addFilter = function() {
+    const etcm = this;
+
+    (function makeBlackTab() {
+        $('.cTab').append($('<li>', {
+            class: 'etcm-tab__hide',
+            html : $('<a>', {
+                class: 'fa fa-eye-slash',
+                html: $('<span>', { text: "black" }).hide()
+            })
+        }))
+    })();
+
+    if (window.location.href.includes("game_news") &&
+        $('.inner_content').children('div').eq(0).find('img').attr('src').includes("/store/")
+    ) {
+        let $cTab_store = $('.inner_content').children('div').eq(0),
+            $etcm_cTab_store =
+                $('<ul>', {
+                    appendTo: $cTab_store,
+                    class: 'etcm-cTab--store',
+                    css: {display: 'flex'}
+                });
+
+        //add guitar
+        $cTab_store.children('span').append(
+            $('<a>', {
+                href: "/?mid=game_news&search_keyword=기타&search_target=extra_vars2&_sort_index=timer_filter",
+                html: $('<img>', {
+                        src: "https://openclipart.org/image/800px/svg_to_png/249613/Guitarra.png",
+                        css: {width: '29px', height: '29px'}
+                    })
+            })
+        );
+
+        $cTab_store.find('a').each(function() {
+            $('<li>', {
+                appendTo: $etcm_cTab_store,
+                class: 'etcm-tab--store',
+                html: $(this).append(
+                        $('<span>', {
+                            text: /[&|?]search_keyword=([^&]+)/.exec(decodeURI(this.search))[1].toLowerCase()
+                        }).hide()
+                    )
+            });
+        });
+    }
+
+    let $tabs = $(/*empty*/);
+    if (window.location.href.includes("game_news")) {
+        $tabs = $('.cTab').children('li').slice(0,4).add('.etcm-tab__hide').add('.etcm-tab--store');
+        etcm.selectTabs = new ProxySet("game_news_tab", $tabs.children('a').map((_,el)=>$(el).text().trim()) );
+    }
+    if (window.location.href.includes("g_board")) {
+        $tabs = $('.cTab').children('li');
+        etcm.selectTabs = new ProxySet("g_board_tab", $tabs.children('a').map((_,el)=>$(el).text().trim()) );
+    }
+
+    $tabs.each((_, li)=>{
+        let $tab = $(li).addClass('etcm-tab');
+
+        $('<input>', {
+            appendTo: $tab,
+            type: 'checkbox',
+            checked: function() {
+                return etcm.selectTabs.has($(this).prev().text().trim());
+            },
+            change: function() {
+                const tab_current_text = $(this).prev().text().trim(),
+                      tab_home_text = $tabs.filter('.home').children('a').text();
+
+                if ($(this).is(':checked')) {
+                    if (tab_current_text === tab_home_text) {
+                        $tabs.children('input').prop('checked',true);
+                        etcm.selectTabs.in( Array.from($tabs.children('a').map((_,el)=>$(el).text().trim())) );
+                    }
+
+                    etcm.selectTabs.in( tab_current_text );
+                } else {
+                    if (tab_current_text === tab_home_text) {
+                        $tabs.children('input').prop('checked',false);
+                        etcm.selectTabs.clear();
+                    }
+
+                    $tabs.filter('.home').children('input').prop('checked',false);
+                    etcm.selectTabs.out( tab_home_text );
+
+                    etcm.selectTabs.out( tab_current_text );
+                }
+                etcm.refreshContent();
+            }
+        });
+    });
+};
+
 /* Show blacklist icon and manage list */
 ETCM.prototype.addArticleBlacklist = function($articles) {
     const etcm = this;
-    $articles = $articles || this.$articles;
+    $articles = $articles || etcm.$articles;
 
-    $articles.addClass('etcm-article')
+    $articles
         .each((_, article)=> {
-            $(article).append(
-                $('<td>', {
-                    class: 'fa fa-eye-slash etcm-blackeye--article',
+            $(article).children('.title').append(
+                $('<span>', {
+                    class: 'fa fa-eye-slash',
                     click: function() {
-                        const href= $(this).siblings('.title').children('.hx').data('viewer'),
-                              document_srl = /document_srl=(\d+)/.exec(href)[1];
-
-                        etcm.blacklist.switch(document_srl);
+                        etcm.blacklist.switch( $(article).data('document_srl'));
                         etcm.refreshContent();
                     }
                 })
@@ -557,15 +606,15 @@ ETCM.prototype.addArticleBlacklist = function($articles) {
 
 ETCM.prototype.addMemberBlacklist = function($articles) {
     const etcm = this;
-    $articles = $articles || this.$articles;
+    $articles = $articles || etcm.$articles;
 
     $articles
         .each((_, article)=> {
-            $(article).append(
-                $('<td>', {
-                    class: 'fa fa-eye-slash etcm-blackeye--member',
+            $(article).children('.author').append(
+                $('<span>', {
+                    class: 'fa fa-eye-slash',
                     click: function() {
-                        const member_id = $(this).siblings('.author').find('a').attr('class');
+                        const member_id = $(this).prev().children('a').attr('class');
 
                         etcm.blacklist_member.switch(member_id);
                         etcm.refreshContent();
@@ -593,6 +642,8 @@ ETCM.prototype.addScrapbook = async function() {
     refresh();
 
 
+    $scrapbook.children('h2')
+        .click(()=> window.location.replace("http://itcm.co.kr/index.php?act=dispMemberScrappedDocument"));
     $scrapbook.children('.fa-refresh')
         .click(async()=> { await loadScrapbook(); refresh(); });
     $scrapbook.children('.fa-compress')
@@ -652,6 +703,8 @@ ETCM.prototype.addWishbook = async function() {
     refresh();
 
 
+    $wishbook.children('h2')
+        .click(()=> window.location.replace("http://itcm.co.kr/index.php?mid=game_news&_sort_index=check_wlist"));
     $wishbook.children('.fa-refresh')
         .click(async()=> { await loadwishbook(); refresh(); });
     $wishbook.children('.fa-compress')
@@ -703,12 +756,11 @@ ETCM.prototype.addWishbook = async function() {
 ETCM.prototype.refreshContent = function() {
     const etcm = this;
 
-    this.$content.children('tr').not('.notice')
+    this.$articles
         .each((_,article)=> {
             /* parse this article */
             let category = $(article).children('td.cate').children('span').text(),
-                href = $(article).children('td.title').children('.hx').data("viewer"),
-                document_srl = /document_srl=(\d+)/.exec(href)[1],
+                document_srl = $(article).data('document_srl'),
                 writer_id = $(article).children('td.author').find('a').attr('class'),
                 store;
 
@@ -757,10 +809,6 @@ ETCM.prototype.refreshContent = function() {
                 $(article).hide();
             }
         });
-
-
-    /* modify ui */
-    modifeUI();
 };
 
 
@@ -784,8 +832,6 @@ ETCM.prototype.Upgrade = function(target, profileinfo) {
 };
 
 ETCM.prototype.Upgrade.prototype.upgradeProfile = function(profileinfo) {
-    $('.wrap_profile').addClass('etcm-profile');
-
     //$('.wrap_profile').append($('<div>', {
     //    text: `게임 수집 : ${profileinfo.rgOwnedApps.length}`
     //}))
@@ -880,41 +926,77 @@ ETCM.prototype.Upgrade.prototype.upgradeGameTagbox = function(profileinfo) {
 
 
 
+/* modify ui */
+ETCM.prototype.modifyProfileToCircle = function($articles) {
+    $articles = $articles || this.$articles;
+
+    $articles.children('.author').css({'text-align':'left', 'max-width':'75px', 'text-overflow':'clip'})
+        .find('img').filter(':odd').each((_,el)=> {
+            $(el).css({'border-radius':'50px','width':'23px','height':'23px'})
+                .parent().contents().last().get(0).textContent = " "+$(el).attr('title');
+        });
+};
+
+ETCM.prototype.modifyHideBadge = function($articles) {
+    $articles = $articles || this.$articles;
+    $articles.find('.xe_point_level_icon').remove();
+};
+
+
+
+/* Setting */
 ETCM.prototype.openSettings = async function() {
     const etcm = this;
 
-    $('.inner_content').children().not('script').hide();
-    $('.inner_content').append(
-        await $.get( await GM.getResourceUrl("etcm-set-layout"))
-    );
-    $('.etcm-settings__header__version').text("Ver. "+ GM.info.script.version);
-    $('.etcm-settings__header__save').click(()=> location.reload());
+    function initialize(settings) {
+        $settings.find('.toggleSwitch__input')
+            .each(function() {
+                $(this).prop('checked', settings.has( $(this).data('command') ));
+            });
+
+        $settings.find('.etcm-settings__showcase').find('li')
+            .filter(function() {
+                return settings.has( $(this).data('loading'))
+            })
+            .each(function() {
+                $(this).addClass('selected')
+                    .siblings('.selected')
+                        .removeClass('selected');
+            });
+    }
+
+    function event(settings) {
+        $settings.find('.toggleSwitch__input')
+            .change(function() {
+                settings.io(this.checked, $(this).data('command'));
+            });
 
 
-    $('.etcm-settings__operations').find('.toggleSwitch-input')
-        .each(function() {
-            $(this).prop('checked', etcm.settings.has( $(this).data('command') ));
-        })
-        .change(function() {
-            etcm.settings.io(this.checked, $(this).data('command'));
-        });
+        $settings.find('.etcm-settings__showcase').find('li')
+            .click(function() {
+                $(this) .addClass('selected')
+                    .siblings('.selected')
+                        .removeClass('selected');
 
+                settings.in( $(this).data('loading') )
+                        .out( $(this).siblings().map((_,li)=> $(li).data('loading')).toArray() );
+            });
+    }
 
-    $('.etcm-settings__showcase').find('li')
-        .click(function() {
-            $(this).addClass('etcm-settings__showcase--selected');
-            $(this).siblings().removeClass('etcm-settings__showcase--selected');
+    var $settings = $( await $.get( await GM.getResourceUrl("etcm-set-layout")) );
 
-            etcm.settings.in( $(this).data('loading') );
-            etcm.settings.out( $(this).siblings().map((_,li)=> $(li).data('loading')).toArray() );
-        })
-        .filter(function() {
-            return etcm.settings.has( $(this).data('loading'))
-        })
-        .each(function() {
-            $(this).addClass('etcm-settings__showcase--selected')
-        });
-}
+    $('.inner_content').children().not('script').hide().parent().append( $settings );
+
+    $settings.find('.etcm-settings__header__version').text("Ver. "+ GM.info.script.version);
+    $settings.find('.etcm-settings__header__save').click(()=> location.reload());
+    $settings.find('.etcm-settings__header__reset').click(()=> { 
+        etcm.settings = new ProxySet("settings", etcm.default_settings, true);
+        initialize(etcm.settings);
+    });
+
+    initialize(etcm.settings);
+    event(etcm.settings);
+};
 
 
 let etcm = new ETCM();
@@ -924,16 +1006,8 @@ etcm.run();
 
 
 
-/* modify ui */
-function modifeUI() {
-    $('.xe_point_level_icon').remove();
-    $('.etcm-article').children('.author').css({'text-align':'left', 'max-width':'75px', 'text-overflow':'clip'})
-        .find('img').each((_,el)=> {
-            $(el).css({'border-radius':'50px','width':'23px','height':'23px'})
-                .parent().contents().last().get(0).textContent = " "+$(el).attr('title');
-        });
-}
 
+/* modify ui */
 if (window.location.href.includes("game_news")) {
     $('.viewer_with').closest('.bd_hd')
         .css({display:'flex', 'align-items':'center', 'justify-content':'space-between'})
@@ -954,9 +1028,8 @@ if (window.location.href.includes("game_news")) {
         .prepend(
             $('.bd_srch_btm').clone()
                     .addClass('on')
-                .children('.itx_wrp')
-                    .css({margin:'0 5px', 'border-radius':'50px'})
-                .parent('.bd_srch_btm')
+                .children('.itx_wrp').css({width: '200px'})
+                .parent()
         );
 }
 
@@ -966,9 +1039,15 @@ $('.cTab').css({'margin-bottom': 0});
 $('<li>', {
     html: $('<a>', {
         class: 'login_A',
-        //href: window.location.pathname+"#etcm_settings",
         text: 'EnhancedITCM설정',
         click: etcm.openSettings.bind(etcm),
         css: {cursor: "pointer"}
     })
 }).appendTo($('.wrap_login').children('div'));
+
+
+$('.wrap_profile').addClass('etcm-profile');
+$('#scrollUp').addClass('etcm-scrollUp');
+
+
+})( jQuery, window, document);

@@ -3,79 +3,59 @@
     <div class="etcm-settings__header">
         <div class="etcm-settings__header__line"></div>
         <h1>Enhanced ITCM Setting</h1>
-        <p>
-            <button class="etcm-settings__header__save">Reflect</button>
-        </p>
-        <div class="etcm-settings__header__version">Version. 0.1.1</div>
+        <button class="etcm-settings__header__save">Reflect</button>
+        <div class="etcm-settings__header__version">Ver. 0.1.xxx</div>
+        <i class="etcm-settings__header__reset fa fa-refresh"> Default</i>
     </div>
 
 
     <div class="etcm-settings__body">
         <div class="etcm-settings__operations">
-            <ul class="etcm-settings-space--half">
-                <li>
-                    <h4>Steam server notice</h4>
-                    <div class="toggleSwitch">
-                        <input type="checkbox" id="etcm-settings--steam-server-notice" class="toggleSwitch-input" checked="" data-command="addSteamServerStatusMonitor">
-                        <label for="etcm-settings--steam-server-notice" class="toggleSwitch-label" data-off="off" data-on="on"></label>
-                    </div>
-                </li>
-                <li>
-                    <h4>Infinite scroll</h4>
-                    <div class="toggleSwitch">
-                        <input type="checkbox" id="etcm-settings--infinite-scroll" class="toggleSwitch-input" checked="" data-command="enhanceInfiniteScroll">
-                        <label for="etcm-settings--infinite-scroll" class="toggleSwitch-label" data-off="off" data-on="on"></label>
-                    </div>
-                </li>
-                <li>
-                    <h4>Scrapbook</h4>
-                    <div class="toggleSwitch">
-                        <input type="checkbox" id="etcm-settings--scrapbook" class="toggleSwitch-input" checked="" data-command="addScrapbook">
-                        <label for="etcm-settings--scrapbook" class="toggleSwitch-label" data-off="off" data-on="on"></label>
-                    </div>
-                </li>
-                <li>
-                    <h4>Wishbook</h4>
-                    <div class="toggleSwitch">
-                        <input type="checkbox" id="etcm-settings--wishbook" class="toggleSwitch-input" checked="" data-command="addWishbook">
-                        <label for="etcm-settings--wishbook" class="toggleSwitch-label" data-off="off" data-on="on"></label>
-                    </div>
-                </li>
-            </ul>
-            <ul class="etcm-settings-space--half">
-                <li>
-                    <h4>Filter</h4>
-                    <div class="toggleSwitch">
-                        <input type="checkbox" id="etcm-settings--filter" class="toggleSwitch-input" checked="" data-command="addFilter">
-                        <label for="etcm-settings--filter" class="toggleSwitch-label" data-off="off" data-on="on"></label>
-                    </div>
-                </li>
-                <li>
-                    <h4>Article blacklist</h4>
-                    <div class="toggleSwitch">
-                        <input type="checkbox" id="etcm-settings--article-blacklist" class="toggleSwitch-input" checked="" data-command="addArticleBlacklist">
-                        <label for="etcm-settings--article-blacklist" class="toggleSwitch-label" data-off="off" data-on="on"></label>
-                    </div>
-                </li>
-                <li>
-                    <h4>Member blacklist</h4>
-                    <div class="toggleSwitch">
-                        <input type="checkbox" id="etcm-settings--member-blacklist" class="toggleSwitch-input" checked="" data-command="addMemberBlacklist">
-                        <label for="etcm-settings--member-blacklist" class="toggleSwitch-label" data-off="off" data-on="on"></label>
-                    </div>
-                </li>
-                <li>
-                    <h4>Enhanced game tag box</h4>
-                    <div class="toggleSwitch">
-                        <input type="checkbox" id="etcm-settings--game-tag-box" class="toggleSwitch-input" checked="" data-command="upgradeGameTagbox">
-                        <label for="etcm-settings--game-tag-box" class="toggleSwitch-label" data-off="off" data-on="on"></label>
-                    </div>
-                </li>
-            </ul>
+            <h3>Operations</h3>
+            <div class="toggleSwitch">
+                <p>Steam server notice</p>
+                <input type="checkbox" id="etcm-settings--steam-server-notice" class="toggleSwitch__input" checked="" data-command="addSteamServerStatusMonitor">
+                <label for="etcm-settings--steam-server-notice" class="toggleSwitch__label" data-off="off" data-on="on"></label>
+            </div>
+            <div class="toggleSwitch">
+                <p>Infinite scroll</p>
+                <input type="checkbox" id="etcm-settings--infinite-scroll" class="toggleSwitch__input" checked="" data-command="enhanceInfiniteScroll">
+                <label for="etcm-settings--infinite-scroll" class="toggleSwitch__label" data-off="off" data-on="on"></label>
+            </div>
+            <div class="toggleSwitch">
+                <p>Scrapbook</p>
+                <input type="checkbox" id="etcm-settings--scrapbook" class="toggleSwitch__input" checked="" data-command="addScrapbook">
+                <label for="etcm-settings--scrapbook" class="toggleSwitch__label" data-off="off" data-on="on"></label>
+            </div>
+            <div class="toggleSwitch">
+                <p>Wishbook</p>
+                <input type="checkbox" id="etcm-settings--wishbook" class="toggleSwitch__input" checked="" data-command="addWishbook">
+                <label for="etcm-settings--wishbook" class="toggleSwitch__label" data-off="off" data-on="on"></label>
+            </div>
+            <div class="toggleSwitch">
+                <p>Filter</p>
+                <input type="checkbox" id="etcm-settings--filter" class="toggleSwitch__input" checked="" data-command="addFilter">
+                <label for="etcm-settings--filter" class="toggleSwitch__label" data-off="off" data-on="on"></label>
+            </div>
+            <div class="toggleSwitch">
+                <p>Article blacklist</p>
+                <input type="checkbox" id="etcm-settings--article-blacklist" class="toggleSwitch__input" checked="" data-command="addArticleBlacklist">
+                <label for="etcm-settings--article-blacklist" class="toggleSwitch__label" data-off="off" data-on="on"></label>
+            </div>
+            <div class="toggleSwitch">
+                <p>Member blacklist</p>
+                <input type="checkbox" id="etcm-settings--member-blacklist" class="toggleSwitch__input" checked="" data-command="addMemberBlacklist">
+                <label for="etcm-settings--member-blacklist" class="toggleSwitch__label" data-off="off" data-on="on"></label>
+            </div>
+            <div class="toggleSwitch">
+                <p>Enhanced game tag box</p>
+                <input type="checkbox" id="etcm-settings--game-tag-box" class="toggleSwitch__input" checked="" data-command="upgradeGameTagbox">
+                <label for="etcm-settings--game-tag-box" class="toggleSwitch__label" data-off="off" data-on="on"></label>
+            </div>
         </div>
 
         <div class="etcm-settings__showcase">
-            <h3>Select loading bar</h3>
+            <h3>Loading bar</h3>
             <ul>
                 <li class="etcm-loading--puzzle" data-loading="loading--puzzle"></li>
                 <li class="etcm-loading--wave" data-loading="loading--wave"></li>
@@ -84,6 +64,20 @@
                 <li class="etcm-loading--magnify" data-loading="loading--magnify"></li>
                 <li class="etcm-loading--text" data-loading="loading--text"></li>
             </ul>
+        </div>
+
+        <div class="etcm-settings__ui">
+            <h3>UI options</h3>
+            <div class="toggleSwitch">
+                <p>Convert profile image to circle</p>
+                <input type="checkbox" id="etcm-settings--circle-profile" class="toggleSwitch__input" checked="" data-command="modifyProfileToCircle">
+                <label for="etcm-settings--circle-profile" class="toggleSwitch__label" data-off="off" data-on="on"></label>
+            </div>
+            <div class="toggleSwitch">
+                <p>Hide badge of rank</p>
+                <input type="checkbox" id="etcm-settings--hide-badge" class="toggleSwitch__input" checked="" data-command="modifyHideBadge">
+                <label for="etcm-settings--hide-badge" class="toggleSwitch__label" data-off="off" data-on="on"></label>
+            </div>
         </div>
     </div>
 </div>
