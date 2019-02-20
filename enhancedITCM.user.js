@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         enhancedITCM
 // @namespace    etcm
-// @version      0.1.5
+// @version      0.1.5-1
 // @description  EnhancedITCM is a user script that enhances the http://itcm.co.kr/
 // @author       narci <jwch11@gmail.com>
 // @match        *://itcm.co.kr/*
@@ -207,6 +207,7 @@ function ETCM() {
 
         "modifyProfileToCircle",
         "modifyHideBadge",
+        "modifyWishCheck",
 
         "refreshContent",
 
@@ -220,6 +221,7 @@ function ETCM() {
 
         "modifyProfileToCircle",
         "modifyHideBadge",
+        "modifyWishCheck"
     ];
 
 
@@ -940,6 +942,19 @@ ETCM.prototype.modifyProfileToCircle = function($articles) {
 ETCM.prototype.modifyHideBadge = function($articles) {
     $articles = $articles || this.$articles;
     $articles.find('.xe_point_level_icon').remove();
+};
+
+
+ETCM.prototype.modifyWishCheck = function($articles) {
+    $articles = $articles || etcm.$articles;
+
+    $articles.find('.steam_list_check')
+        .find('label').children().hide()
+        .closest('label').filter(':even').append(
+            $('<i>', { class: 'fa fa-credit-card' })
+        ).next().append(
+            $('<i>', { class: 'fa fa-shopping-cart' })
+        );
 };
 
 

@@ -168,6 +168,22 @@
 .etcm-article > .author:hover .fa-eye-slash {
     display: block;
 }
+.etcm-article > .steam_list_check {
+    width: auto;
+}
+.etcm-article > .steam_list_check .fa {
+    font-size: 15px;
+
+    padding: 0 5px;
+
+    opacity: .4;
+}
+.etcm-article > .steam_list_check .fa:hover,
+.etcm-article.check_p .fa-credit-card,
+.etcm-article.check_w .fa-shopping-cart {
+    opacity: 1 !important;
+    color: cadetblue;
+}
 .etcm-article .fa-eye-slash {
     font-size: 20px !important;
 
