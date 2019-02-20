@@ -160,6 +160,15 @@
 .etcm-article--shadow {
     opacity: .2;
 }
+.etcm-article--empty {
+    height: 30px;
+
+    opacity: .5;
+}
+.etcm-article--empty > td {
+    position: absolute;
+    left: 40%;
+}
 .etcm-article > .title,
 .etcm-article > .author {
     position: relative;

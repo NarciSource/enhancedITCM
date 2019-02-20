@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         enhancedITCM
 // @namespace    etcm
-// @version      0.1.5-1
+// @version      0.1.5-2
 // @description  EnhancedITCM is a user script that enhances the http://itcm.co.kr/
 // @author       narci <jwch11@gmail.com>
 // @match        *://itcm.co.kr/*
@@ -207,6 +207,7 @@ function ETCM() {
 
         "modifyProfileToCircle",
         "modifyHideBadge",
+        "modifyDateGroup",
         "modifyWishCheck",
 
         "refreshContent",
@@ -221,6 +222,7 @@ function ETCM() {
 
         "modifyProfileToCircle",
         "modifyHideBadge",
+        "modifyDateGroup",
         "modifyWishCheck"
     ];
 
@@ -942,6 +944,29 @@ ETCM.prototype.modifyProfileToCircle = function($articles) {
 ETCM.prototype.modifyHideBadge = function($articles) {
     $articles = $articles || this.$articles;
     $articles.find('.xe_point_level_icon').remove();
+};
+
+
+ETCM.prototype.modifyDateGroup = function($articles) {
+    const etcm = this;
+    $articles = $articles || etcm.$articles;
+
+    $articles.not('.notice').each((_, el)=> {
+        const cur_text = $(el).children('.time').text()
+              prev_text = $(el).prev().children('.time').text();
+
+        if (/\d+\.\d+/.test( cur_text ) && cur_text != prev_text ) {
+            $(el).before(
+                $('<tr>', {
+                    class: 'etcm-article--empty',
+                    html: $('<td>', { text: cur_text })
+                })
+            )
+        }
+    });
+
+    $('th.regdate, .notice td.time').remove();
+    $articles.children('.time').remove();
 };
 
 
