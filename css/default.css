@@ -112,6 +112,8 @@
     border: 1px solid #ddd !important;
 
     align-items: center;
+
+    opacity: .3;
 }
 .etcm-tab > input {
     display: none;
@@ -122,8 +124,11 @@
 .etcm-tab:hover > a {
     padding-right: 10px !important;
 }
-.etcm-tab__hide {
+.etcm-tab--hide {
     padding: 0 7px;
+}
+.etcm-tab.check {
+    opacity: 1;
 }
 
 

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         enhancedITCM
 // @namespace    etcm
-// @version      0.1.5-3
+// @version      0.1.5-4
 // @description  EnhancedITCM is a user script that enhances the http://itcm.co.kr/
 // @author       narci <jwch11@gmail.com>
 // @match        *://itcm.co.kr/*
@@ -501,7 +501,7 @@ ETCM.prototype.addFilter = function() {
 
     (function makeBlackTab() {
         $('.cTab').append($('<li>', {
-            class: 'etcm-tab__hide',
+            class: 'etcm-tab--hide',
             html : $('<a>', {
                 class: 'fa fa-eye-slash',
                 html: $('<span>', { text: "black" }).hide()
@@ -546,7 +546,7 @@ ETCM.prototype.addFilter = function() {
 
     let $tabs = $(/*empty*/);
     if (window.location.href.includes("game_news")) {
-        $tabs = $('.cTab').children('li').slice(0,4).add('.etcm-tab__hide').add('.etcm-tab--store');
+        $tabs = $('.cTab').children('li').slice(0,4).add('.etcm-tab--hide').add('.etcm-tab--store');
         etcm.selectTabs = new ProxySet("game_news_tab", $tabs.children('a').map((_,el)=>$(el).text().trim()) );
     }
     if (window.location.href.includes("g_board")) {
@@ -561,7 +561,11 @@ ETCM.prototype.addFilter = function() {
             appendTo: $tab,
             type: 'checkbox',
             checked: function() {
-                return etcm.selectTabs.has($(this).prev().text().trim());
+                const chk = etcm.selectTabs.has($(this).prev().text().trim());
+                if (chk) {
+                    $(this).parent().addClass('check');
+                }
+                return chk;
             },
             change: function() {
                 const tab_current_text = $(this).prev().text().trim(),
@@ -569,18 +573,27 @@ ETCM.prototype.addFilter = function() {
 
                 if ($(this).is(':checked')) {
                     if (tab_current_text === tab_home_text) {
-                        $tabs.children('input').prop('checked',true);
+                        $tabs.children('input').prop('checked', true)
+                            .parent().addClass('check');
+
                         etcm.selectTabs.in( Array.from($tabs.children('a').map((_,el)=>$(el).text().trim())) );
                     }
 
-                    etcm.selectTabs.in( tab_current_text );
+                    $(this).parent().addClass('check');
+
+                    etcm.selectTabs.in( tab_current_text );                    
                 } else {
                     if (tab_current_text === tab_home_text) {
-                        $tabs.children('input').prop('checked',false);
+                        $tabs.children('input').prop('checked', false)
+                            .parent().removeClass('check');
+
                         etcm.selectTabs.clear();
                     }
 
-                    $tabs.filter('.home').children('input').prop('checked',false);
+                    $tabs.filter('.home').children('input').prop('checked', false)
+                        .parent().removeClass('check');
+                    $(this).parent().removeClass('check');
+
                     etcm.selectTabs.out( tab_home_text );
 
                     etcm.selectTabs.out( tab_current_text );
