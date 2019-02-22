@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         enhancedITCM
 // @namespace    etcm
-// @version      0.1.5-4
+// @version      0.1.5-5
 // @description  EnhancedITCM is a user script that enhances the http://itcm.co.kr/
 // @author       narci <jwch11@gmail.com>
 // @match        *://itcm.co.kr/*
@@ -278,7 +278,7 @@ ETCM.prototype._initializeArticle = function($articles) {
             var href = $(this).hasClass('notice')? 
                             $(this).children('.title').children('a').get(0).href
                             : $(this).children('.title').children('.hx').data('viewer'),
-                document_srl = /(?:\/g_board\/|document_srl=)(\d+)/.exec(href)[1];
+                document_srl = /(?:\/g_board\/|\/game_news\/|document_srl=)(\d+)/.exec(href)[1];
             $(this).data({document_srl});
         });
 }
@@ -355,6 +355,7 @@ ETCM.prototype.enhanceInfiniteScroll = function() {
                     .filter(func_name => etcm.settings.has(func_name))
                     .forEach(func_name => etcm[func_name]( $loaded_articles ));
 
+                repeatModifyUI( $loaded_articles );
 
 
                 $(document).find('.bd_pg').remove();
@@ -520,28 +521,57 @@ ETCM.prototype.addFilter = function() {
                     css: {display: 'flex'}
                 });
 
-        //add guitar
-        $cTab_store.children('span').append(
-            $('<a>', {
-                href: "/?mid=game_news&search_keyword=기타&search_target=extra_vars2&_sort_index=timer_filter",
-                html: $('<img>', {
-                        src: "https://openclipart.org/image/800px/svg_to_png/249613/Guitarra.png",
-                        css: {width: '29px', height: '29px'}
-                    })
-            })
-        );
-
         $cTab_store.find('a').each(function() {
+            const store_name = /[&|?]search_keyword=([^&]+)/.exec(decodeURI(this.search))[1];
             $('<li>', {
                 appendTo: $etcm_cTab_store,
                 class: 'etcm-tab--store',
+                title: store_name,
                 html: $(this).append(
                         $('<span>', {
-                            text: /[&|?]search_keyword=([^&]+)/.exec(decodeURI(this.search))[1].toLowerCase()
+                            text: store_name.toLowerCase()
                         }).hide()
                     )
             });
         });
+
+        function addStoreFilter({store_name, img_src, width, height}) {
+            img_src = img_src || `https://placeholdit.imgix.net/~text?txtsize=15&txtclr=000000&bg=ffffff&txt=${store_name}&w=80&h=50&txttrack=0`;
+            width = width || '29px';
+            height = height || '29px';
+
+            $('<li>', {
+                appendTo: $etcm_cTab_store,
+                class: 'etcm-tab--store',
+                title: store_name,
+                html: $('<a>', {
+                    href: `/?mid=game_news&search_keyword=${store_name}&search_target=extra_vars2&_sort_index=timer_filter`,
+                    html: $.merge(
+                        $('<img>', {
+                            src: img_src,
+                            css: {width, height}
+                        }),
+                        $('<span>', {
+                            text: store_name
+                        }).hide()
+                    )
+                })
+            });
+        }
+        function removeStoreFilter(store_name) {
+            $etcm_cTab_store.find('span').filter((_,el)=> el.innerText === store_name)
+                .closest('.etcm-tab--store').remove();
+        }
+
+        addStoreFilter({store_name: "Chronogg", img_src: "https://www.chrono.gg/assets/images/branding/chrono-icon--dark.9b6946b4.png"});
+        addStoreFilter({store_name: "WinGameStore", img_src: "https://www.wingamestore.com/images/s2/logo-icon.png"});
+        addStoreFilter({store_name: "Nuuvem", img_src: "https://assets.nuuvem.com/assets/fe/images/nuuvem_logo-ab61ec645af3a6db7df0140d4792f31a.svg"});
+        addStoreFilter({store_name: "MicrosoftStore", img_src: "https://c.s-microsoft.com/en-us/CMSImages/Microsoft_Corporate_Logo_43_42.jpg?version=77D1E093-019E-5C72-083F-4DF9BF1362F5"});        
+        addStoreFilter({store_name: "DailyIndieGame", width: '50px'});
+        addStoreFilter({store_name: "OtakuBundle", width: '50px'});
+        addStoreFilter({store_name: "GoGoBundle", width: '50px'});
+        addStoreFilter({store_name: "기타", img_src: "https://openclipart.org/image/800px/svg_to_png/249613/Guitarra.png"});
+        removeStoreFilter("gamethor");
     }
 
     let $tabs = $(/*empty*/);
@@ -1095,46 +1125,52 @@ etcm.run();
 
 
 /* modify ui */
-if (window.location.href.includes("game_news")) {
-    $('.viewer_with').closest('.bd_hd')
-        .css({display:'flex', 'align-items':'center', 'justify-content':'space-between'})
-        .prepend(
-            $('<a>', {
-                css: {'margin-left':'auto'},
-                href: "/index.php?mid=game_news&_sort_index=timer_filter&act=dispBoardWrite",
-                html: $.merge(
-                    $('<b>', {
-                        class: 'ico_16px write'
-                    }),
-                    $('<span>', {
-                        text: "쓰기"
-                    })
-                )
-            })
-        )
-        .prepend(
-            $('.bd_srch_btm').clone()
-                    .addClass('on')
-                .children('.itx_wrp').css({width: '200px'})
-                .parent()
-        );
+(function modifyUI() {
+    if (window.location.href.includes("game_news")) {
+        $('.viewer_with').closest('.bd_hd')
+            .css({display:'flex', 'align-items':'center', 'justify-content':'space-between'})
+            .prepend(
+                $('<a>', {
+                    css: {'margin-left':'auto'},
+                    href: "/index.php?mid=game_news&_sort_index=timer_filter&act=dispBoardWrite",
+                    html: $.merge(
+                        $('<b>', {
+                            class: 'ico_16px write'
+                        }),
+                        $('<span>', {
+                            text: "쓰기"
+                        })
+                    )
+                })
+            )
+            .prepend(
+                $('.bd_srch_btm').clone()
+                        .addClass('on')
+                    .children('.itx_wrp').css({width: '200px'})
+                    .parent()
+            );
+    }
+
+    $('.cTab').css({'margin-bottom': 0});
+
+    $('<li>', {
+        html: $('<a>', {
+            class: 'login_A',
+            text: 'EnhancedITCM설정',
+            click: etcm.openSettings.bind(etcm),
+            css: {cursor: "pointer"}
+        })
+    }).appendTo($('.wrap_login').children('div'));
+
+
+    $('.wrap_profile').addClass('etcm-profile');
+    $('#scrollUp').addClass('etcm-scrollUp');
+})();
+
+function repeatModifyUI($articles) {
+    $articles.find('.hx').each((_, el)=> $(el).text($(el).attr('title')));
 }
-
-
-$('.cTab').css({'margin-bottom': 0});
-
-$('<li>', {
-    html: $('<a>', {
-        class: 'login_A',
-        text: 'EnhancedITCM설정',
-        click: etcm.openSettings.bind(etcm),
-        css: {cursor: "pointer"}
-    })
-}).appendTo($('.wrap_login').children('div'));
-
-
-$('.wrap_profile').addClass('etcm-profile');
-$('#scrollUp').addClass('etcm-scrollUp');
+repeatModifyUI( etcm.$articles );
 
 
 })( jQuery, window, document);

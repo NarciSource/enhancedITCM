@@ -121,9 +121,6 @@
 .etcm-tab:hover > input {
     display: block;
 }
-.etcm-tab:hover > a {
-    padding-right: 10px !important;
-}
 .etcm-tab--hide {
     padding: 0 7px;
 }
@@ -136,23 +133,24 @@
 .etcm-cTab--store {
     display: flex;
 
-    height: 50px;
-    padding: 0;
+    height: 100px;
+    padding: 0 15px;
 
     list-style: none;
 
+    flex-wrap: wrap;
     align-items: center;
-    justify-content: center;
 }
 .etcm-tab--store {
     flex-direction: column;
 
     width: 45px;
-    margin: auto;
+    margin: 1px;
     padding: 3px;
 
     border-radius: 5px;
 }
+
 .etcm-tab--store img {
     width: 29px;
     height: 29px;
