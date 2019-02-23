@@ -442,7 +442,7 @@ ETCM.prototype.addHumbleMontlyTimer = function() {
                   : moment().add(1,'month').set(firstSaturday),
           autoSubscribeDate = releaseDate.clone().subtract(7,'days');
 
-    if (this.settings.humble_mothly_show_period !== -1
+    if (this.settings.humble_mothly_show_period != -1
         && this.settings.humble_mothly_show_period < releaseDate.diff(moment(), 'days')) {
         return;
     }
