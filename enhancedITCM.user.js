@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         enhancedITCM
 // @namespace    etcm
-// @version      0.1.6-1
+// @version      0.1.6-2
 // @description  EnhancedITCM is a user script that enhances the http://itcm.co.kr/
 // @author       narci <jwch11@gmail.com>
 // @match        *://itcm.co.kr/*
@@ -12,7 +12,7 @@
 // @require      https://raw.githubusercontent.com/NarciSource/steamCb.js/master/src/tablesorter.js
 // @require      https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.24.0/moment.min.js
 // @require      https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.24.0/locale/ko.js
-// @require      https://cdnjs.cloudflare.com/ajax/libs/timecircles/1.5.3/TimeCircles.min.js
+// @require      https://raw.githubusercontent.com/NarciSource/enhancedITCM/master/vendor/TimeCircles.js
 // @resource     etcm-logo https://raw.githubusercontent.com/NarciSource/enhancedITCM/master/img/logo.png
 // @resource     etcm-dft-style https://raw.githubusercontent.com/NarciSource/enhancedITCM/master/css/default.css
 // @resource     etcm-set-style https://raw.githubusercontent.com/NarciSource/enhancedITCM/master/css/settings.css
@@ -463,6 +463,8 @@ ETCM.prototype.addHumbleMontlyTimer = function() {
             total_duration: "Auto",
             bg_width: 3.2,
             fg_width: 0.02,
+            number_size: 0.2,
+            text_size: 0.13,
             circle_bg_color: '#FFF',
             time: {
                 Days: {
