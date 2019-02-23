@@ -282,6 +282,7 @@
 }
 
 .etcm-steam-server-monitor__time {
+    font-size: 10px;
     font-style: italic;
 
     position: absolute;
@@ -289,6 +290,32 @@
     right: 0;
 }
 
+
+.etcm-timer__title {
+    display: flex;
+    flex-direction: row;
+
+    justify-content: space-between;
+}
+.etcm-timer__title p:first-child {
+    padding: 0 10px;
+
+    text-shadow: 0 1px 1px rgba(0,0,0,.1);
+}
+.etcm-timer.release-monthly p:first-child {
+    font-size: 15px;
+}
+.etcm-timer.auto-subscribe p:first-child {
+    font-size: 12px;
+}
+.etcm-timer__title p:last-child {
+    font-size: 10px;
+    font-style: italic;
+
+    color: #666;
+
+    align-self: center;
+}
 
 
 .etcm-side__book {

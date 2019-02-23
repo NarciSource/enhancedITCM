@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         enhancedITCM
 // @namespace    etcm
-// @version      0.1.5-6
+// @version      0.1.6
 // @description  EnhancedITCM is a user script that enhances the http://itcm.co.kr/
 // @author       narci <jwch11@gmail.com>
 // @match        *://itcm.co.kr/*
@@ -10,10 +10,14 @@
 // @require      https://raw.githubusercontent.com/NarciSource/steamCb.js/master/src/exchange.js
 // @require      https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.31.1/js/jquery.tablesorter.min.js
 // @require      https://raw.githubusercontent.com/NarciSource/steamCb.js/master/src/tablesorter.js
+// @require      https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.24.0/moment.min.js
+// @require      https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.24.0/locale/ko.js
+// @require      https://cdnjs.cloudflare.com/ajax/libs/timecircles/1.5.3/TimeCircles.min.js
 // @resource     etcm-logo https://raw.githubusercontent.com/NarciSource/enhancedITCM/master/img/logo.png
 // @resource     etcm-dft-style https://raw.githubusercontent.com/NarciSource/enhancedITCM/master/css/default.css
 // @resource     etcm-set-style https://raw.githubusercontent.com/NarciSource/enhancedITCM/master/css/settings.css
 // @resource     etcm-tgg-style https://raw.githubusercontent.com/NarciSource/enhancedITCM/master/css/toggleSwitch.css
+// @resource     etcm-tc-style https://cdnjs.cloudflare.com/ajax/libs/timecircles/1.5.3/TimeCircles.min.css
 // @resource     etcm-set-layout https://raw.githubusercontent.com/NarciSource/enhancedITCM/master/html/settings.html
 // @updateURL    https://raw.githubusercontent.com/NarciSource/enhancedITCM/master/enhancedITCM.meta.js
 // @downloadURL  https://raw.githubusercontent.com/NarciSource/enhancedITCM/master/enhancedITCM.user.js
@@ -126,6 +130,7 @@ async function addStyle(resource_url) {
 addStyle("etcm-dft-style");
 addStyle("etcm-set-style");
 addStyle("etcm-tgg-style");
+addStyle("etcm-tc-style");
 
 
 
@@ -195,6 +200,7 @@ function ETCM() {
 
         "addFilter",
         "addSteamServerStatusMonitor",
+        "addHumbleMontlyTimer",
         "addShortcutSide",
         "addArticleBlacklist",
         //"addMemberBlacklist",
@@ -228,6 +234,7 @@ function ETCM() {
         "modifyWishCheck"
     ];
 
+    moment.locale('ko');
 
     if (localStorage["etcm-version"] !== GM.info.script.version) { //update
         localStorage["etcm-version"] = GM.info.script.version;
@@ -372,41 +379,99 @@ ETCM.prototype.enhanceInfiniteScroll = function() {
 
 
 
+ETCM.prototype.addHumbleMontlyTimer = function() {
+    function addTimer({title, class_name, date}) {
+        return $('<div>', {
+            class: 'etcm-timer '+class_name,
+            html: $.merge(
+                $('<div>', {
+                    class: 'etcm-timer__title',
+                    html: $.merge(
+                        $('<p>', {text: title}),
+                        $('<p>', {text: date.format("MMMM Do(dddd) h:mm")})
+                    )
+                }),
+                $('<div>', {
+                    class: 'etcm-timer__dashboard',
+                    data: {
+                        timer: date.diff(moment(), 'seconds')
+                    }
+                })
+            )}).toggle( date.diff(moment(), 'seconds')>0 );
+    }
+
+    /* HumbleMontly release  first   saturday   3 o'clock   of every month */
+    const firstSaturday = {'date':1, 'day':6, 'hours':3, 'minutes':0, 'seconds':0, 'milliseconds':0},
+
+          releaseDate = moment().set(firstSaturday).isAfter(moment())?
+                    moment().set(firstSaturday)
+                  : moment().add(1,'month').set(firstSaturday),
+          autoSubscribeDate = releaseDate.clone().subtract(7,'days');
+
+
+    $('<div>', { class: 'column etcm-humble-monthly-timer' })
+        .insertAfter( $('aside.e1').children('.column_login') )
+
+        .append( addTimer({title: "Humble Montly", class_name: 'release-monthly', date: releaseDate}))
+        .append( addTimer({title: "자동 결제일", class_name: 'auto-subscribe', date: autoSubscribeDate}))
+
+    .find('.etcm-timer__dashboard')
+        .TimeCircles({
+            count_past_zero: false,
+            total_duration: "Auto",
+            bg_width: 3.2,
+            fg_width: 0.02,
+            circle_bg_color: '#FFF',
+            time: {
+                Days: {
+                    text: "일", color: 'cadetblue'
+                },
+                Hours: {
+                    text: "시", color: '#bb3d3d'
+                },
+                Minutes: {
+                    text: "분", color: '#48698d'
+                },
+                Seconds: {
+                    text: "초", color: '#fdc76c'
+                }
+            }
+        });
+};
+
+
 /* steam server status monitor */
 ETCM.prototype.addSteamServerStatusMonitor = function() {
-    $('.column_login').after(
-        $('<div>', {
-            class: 'column etcm-steam-server-monitor',
-            html: $('<div>', {
-                        class: 'etcm-steam-server-monitor__title',
-                        text: "Steam Server"
-                }).add(
-                    $('<div>', {
-                        class: 'etcm-steam-server-monitor__icon',
-                        on: {
-                            mouseenter: function() {
-                                $(this).animate({ deg: 360 }, {
-                                            duration: 600,
-                                            step: function(now) {
-                                                $(this).css({ transform: `rotate(${now}deg)` });
-                                            },
-                                            complete: function() {
-                                                $(this)[0].deg=0;
-                                            }
-                                        }
-                                );
+    $('<div>', {
+        insertAfter: $('aside.e1').children('.column_login'),
+        class: 'column etcm-steam-server-monitor',
+        html: [
+            $('<div>', {
+                class: 'etcm-steam-server-monitor__title',
+                text: "Steam Server"
+            }),
+            $('<div>', {
+                class: 'etcm-steam-server-monitor__icon',
+                on: {
+                    mouseenter: function() {
+                        $(this).animate({ deg: 360 }, {
+                            duration: 600,
+                            step: function(now) {
+                                $(this).css({ transform: `rotate(${now}deg)` });
                             },
-                            click: refresh
-                        },
-                        html: $('<i>', { class: 'fa fa-dashboard' })
-                    })
-                ).add(
-                    $('<ul>', { class: 'etcm-steam-server-monitor__list' })
-                ).add(
-                    $('<div>', { class: 'etcm-steam-server-monitor__time' })
-                )
-        })
-    );
+                            complete: function() {
+                                $(this)[0].deg=0;
+                            }
+                        });
+                    },
+                    click: refresh
+                },
+                html: $('<i>', { class: 'fa fa-dashboard' })
+            }),
+            $('<ul>', { class: 'etcm-steam-server-monitor__list' }),
+            $('<div>', { class: 'etcm-steam-server-monitor__time' })
+        ]
+    });
 
     function makeSteamServerMonitorList(name, text) {
         $('<li>', {
@@ -429,8 +494,7 @@ ETCM.prototype.addSteamServerStatusMonitor = function() {
     async function refresh() {
         const s = await loadSteamServerStatus();
 
-        $('.etcm-steam-server-monitor__time').text(
-            `update to: ${s.time.getFullYear()}.${s.time.getMonth()}.${s.time.getDate()} ${s.time.getHours()}:${s.time.getMinutes()}`);
+        $('.etcm-steam-server-monitor__time').text( moment().format("LTS") );
 
         $('.etcm-steam-server-monitor__icon').attr('title',s.perc+"%").css({color: s.online.status==="good"? 'green':'red'});
         $('.etcm-steam-server-monitor__list').children('li').each((_,el)=> {
