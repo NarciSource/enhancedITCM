@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         enhancedITCM
 // @namespace    etcm
-// @version      0.1.6
+// @version      0.1.6-1
 // @description  EnhancedITCM is a user script that enhances the http://itcm.co.kr/
 // @author       narci <jwch11@gmail.com>
 // @match        *://itcm.co.kr/*
@@ -179,7 +179,25 @@ class ProxySet extends Set {
     }
 }
 
-
+function ProxyObject(obj, force) {
+    $.each(obj, (key, val)=> {
+        if (force || !localStorage[key]) localStorage[key] = val;
+        else obj[key] = localStorage[key];
+    });
+    
+    return new Proxy(obj, {
+        get(target, key, receiver) {
+            if (!Reflect.has(target, key, receiver)) {
+                return localStorage[key];
+            }
+            return Reflect.get(target, key, receiver);
+        },
+        set(target, key, val, receiver) {
+            localStorage[key] = val;
+            return Reflect.set(target, key, val, receiver);
+        }
+    });
+}
 
 
 
@@ -192,7 +210,7 @@ const dynamicstore_url = "https://store.steampowered.com/dynamicstore/userdata/"
 
 
 function ETCM() {
-    this.default_settings = [
+    this.default_commands = [
         "_initializeArticle",
 
         "enhanceLogo",
@@ -218,10 +236,8 @@ function ETCM() {
         "modifyWishCheck",
 
         "refreshContent",
-
-        "loading--magnify"
     ];
-    this.recursive_settings = [
+    this.recursive_commands = [
         "_initializeArticle",
 
         "addMemberBlacklist",
@@ -233,14 +249,20 @@ function ETCM() {
         "modifyShortlyVote",
         "modifyWishCheck"
     ];
+    this.default_settings = {
+        humble_mothly_show_period: -1, //always
+        loading_case: "magnify"
+    }
 
     moment.locale('ko');
 
     if (localStorage["etcm-version"] !== GM.info.script.version) { //update
         localStorage["etcm-version"] = GM.info.script.version;
-        this.settings = new ProxySet("settings", this.default_settings, true);
+        this.commands = new ProxySet("commands", this.default_commands, true);
+        this.settings = ProxyObject(this.default_settings, true);
     } else {
-        this.settings = new ProxySet("settings", this.default_settings, false);
+        this.commands = new ProxySet("commands", this.default_commands, false);
+        this.settings = ProxyObject(this.default_settings, false);
     }
     this.blacklist = new ProxySet("blacklist", [/*empty*/]);
     this.blacklist_member = new ProxySet("blacklist_mber", [/*empty*/]);
@@ -254,7 +276,7 @@ function ETCM() {
 
     this.run = ()=> {
         Object.keys(Object.getPrototypeOf(this))
-            .filter(property_name=> this.settings.has(property_name))
+            .filter(property_name=> this.commands.has(property_name))
             .map(property_name=> Object.getPrototypeOf(this)[property_name])
             .filter(property=> typeof property === "function")
             .forEach(func=> func.apply(this));
@@ -335,7 +357,7 @@ ETCM.prototype.enhanceInfiniteScroll = function() {
     const etcm = this,
         loading_bar = $('<div>', {
             appendTo: '.btm_mn',
-            class: `etcm-loading etcm-${etcm.settings.filter(val=> val.includes("loading"))[0]}`,
+            class: `etcm-loading etcm-loading--${etcm.settings.loading_case}`,
         }).hide();
 
     $(window).scroll(function() {
@@ -358,8 +380,8 @@ ETCM.prototype.enhanceInfiniteScroll = function() {
 
                 etcm.$contents.children('tbody').append( $loaded_articles );
 
-                etcm.recursive_settings
-                    .filter(func_name => etcm.settings.has(func_name))
+                etcm.recursive_commands
+                    .filter(func_name => etcm.commands.has(func_name))
                     .forEach(func_name => etcm[func_name]( $loaded_articles ));
 
                 repeatModifyUI( $loaded_articles );
@@ -380,16 +402,28 @@ ETCM.prototype.enhanceInfiniteScroll = function() {
 
 
 ETCM.prototype.addHumbleMontlyTimer = function() {
-    function addTimer({title, class_name, date}) {
+    function addTimer({title, class_name, date, humble_href, board_href}) {
         return $('<div>', {
             class: 'etcm-timer '+class_name,
             html: $.merge(
                 $('<div>', {
                     class: 'etcm-timer__title',
-                    html: $.merge(
-                        $('<p>', {text: title}),
-                        $('<p>', {text: date.format("MMMM Do(dddd) h:mm")})
-                    )
+                    html: [
+                        $('<a>', {
+                            class: 'etcm-timer__title__text',
+                            text: title,
+                            href: humble_href
+                        }),
+                        $('<a>', {
+                            class: 'etcm-timer__title__redirect fa fa-tag',
+                            href: board_href,
+                            toggle: board_href!==undefined
+                        }),
+                        $('<p>', {
+                            class: 'etcm-timer__title__time',
+                            text: date.format("MMMM Do(dddd) h:mm")
+                        })
+                    ]                
                 }),
                 $('<div>', {
                     class: 'etcm-timer__dashboard',
@@ -408,12 +442,20 @@ ETCM.prototype.addHumbleMontlyTimer = function() {
                   : moment().add(1,'month').set(firstSaturday),
           autoSubscribeDate = releaseDate.clone().subtract(7,'days');
 
+    if (this.settings.humble_mothly_show_period !== -1
+        && this.settings.humble_mothly_show_period < releaseDate.diff(moment(), 'days')) {
+        return;
+    }
+
 
     $('<div>', { class: 'column etcm-humble-monthly-timer' })
         .insertAfter( $('aside.e1').children('.column_login') )
 
-        .append( addTimer({title: "Humble Montly", class_name: 'release-monthly', date: releaseDate}))
-        .append( addTimer({title: "자동 결제일", class_name: 'auto-subscribe', date: autoSubscribeDate}))
+        .append( addTimer({ title: "Humble Montly", class_name: 'release-monthly', date: releaseDate,
+                            board_href: "/?_filter=search&mid=game_news&search_keyword=humble+monthly&search_target=title",
+                            humble_href: "https://www.humblebundle.com/monthly/checkout?selected_plan=monthly_basic"}))
+        .append( addTimer({ title: "자동 결제일", class_name: 'auto-subscribe', date: autoSubscribeDate,
+                            humble_href: "https://www.humblebundle.com/user/cancel-subscription"}))
 
     .find('.etcm-timer__dashboard')
         .TimeCircles({
@@ -937,7 +979,7 @@ ETCM.prototype.Upgrade = function(target, profileinfo) {
 
     this.run = ()=> {
         Object.keys(Object.getPrototypeOf(this))
-            .filter(property_name=> target.settings.has(property_name))
+            .filter(property_name=> target.commands.has(property_name))
             .map(property_name=> Object.getPrototypeOf(this)[property_name])
             .filter(property=> typeof property === "function")
             .forEach(func => func(this.profileinfo));
@@ -1129,15 +1171,21 @@ ETCM.prototype.modifyWishCheck = function($articles) {
 ETCM.prototype.openSettings = async function() {
     const etcm = this;
 
-    function initialize(settings) {
+    function initialize(commands) {
         $settings.find('.toggleSwitch__input')
             .each(function() {
-                $(this).prop('checked', settings.has( $(this).data('command') ));
+                $(this).prop('checked', commands.has( $(this).data('command') ));
             });
+
+        $('#etcm-settings--humble-montly-timer').each(function() {
+            $(this).prev('select').toggle( commands.has( $(this).data('command')) );
+        })
+        .prev('select').val( etcm.settings["humble_mothly_show_period"] );
+
 
         $settings.find('.etcm-settings__showcase').find('li')
             .filter(function() {
-                return settings.has( $(this).data('loading'))
+                return $(this).data('loading') === etcm.settings.loading_case;
             })
             .each(function() {
                 $(this).addClass('selected')
@@ -1146,11 +1194,18 @@ ETCM.prototype.openSettings = async function() {
             });
     }
 
-    function event(settings) {
+    function event(commands) {
         $settings.find('.toggleSwitch__input')
             .change(function() {
-                settings.io(this.checked, $(this).data('command'));
+                commands.io(this.checked, $(this).data('command'));
             });
+
+        $('#etcm-settings--humble-montly-timer').change(function() {
+            $(this).prev('select').toggle(this.checked);
+        })
+        .prev('select').change(function() {
+            etcm.settings["humble_mothly_show_period"] = $(this).val();
+        });
 
 
         $settings.find('.etcm-settings__showcase').find('li')
@@ -1159,8 +1214,7 @@ ETCM.prototype.openSettings = async function() {
                     .siblings('.selected')
                         .removeClass('selected');
 
-                settings.in( $(this).data('loading') )
-                        .out( $(this).siblings().map((_,li)=> $(li).data('loading')).toArray() );
+                etcm.settings.loading_case = $(this).data('loading');
             });
     }
 
@@ -1171,12 +1225,12 @@ ETCM.prototype.openSettings = async function() {
     $settings.find('.etcm-settings__header__version').text("Ver. "+ GM.info.script.version);
     $settings.find('.etcm-settings__header__save').click(()=> location.reload());
     $settings.find('.etcm-settings__header__reset').click(()=> { 
-        etcm.settings = new ProxySet("settings", etcm.default_settings, true);
-        initialize(etcm.settings);
+        etcm.commands = new ProxySet("commands", etcm.default_commands, true);
+        initialize(etcm.commands);
     });
 
-    initialize(etcm.settings);
-    event(etcm.settings);
+    initialize(etcm.commands);
+    event(etcm.commands);
 };
 
 

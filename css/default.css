@@ -294,27 +294,41 @@
 .etcm-timer__title {
     display: flex;
     flex-direction: row;
-
-    justify-content: space-between;
 }
-.etcm-timer__title p:first-child {
-    padding: 0 10px;
+.etcm-timer__title__text,
+.etcm-timer__title__redirect,
+.etcm-timer__title__time {
+    align-self: center;
+}
+.etcm-timer__title__text:hover,
+.etcm-timer__title__redirect:hover {
+    padding-left: 5px;
+
+    -webkit-transition: all 200ms;
+       -moz-transition: all 200ms;
+        -ms-transition: all 200ms;
+         -o-transition: all 200ms;
+            transition: all 200ms;
+}
+.etcm-timer__title__text {
+    margin: 0 10px;
 
     text-shadow: 0 1px 1px rgba(0,0,0,.1);
 }
-.etcm-timer.release-monthly p:first-child {
+
+.etcm-timer.release-monthly .etcm-timer__title__text {
     font-size: 15px;
 }
-.etcm-timer.auto-subscribe p:first-child {
+.etcm-timer.auto-subscribe .etcm-timer__title__text {
     font-size: 12px;
 }
-.etcm-timer__title p:last-child {
+.etcm-timer__title__time {
     font-size: 10px;
     font-style: italic;
 
     color: #666;
 
-    align-self: center;
+    margin-left: auto;
 }
 
 
