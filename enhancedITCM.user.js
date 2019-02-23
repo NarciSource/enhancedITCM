@@ -1280,9 +1280,10 @@ etcm.run();
         })
     }).appendTo($('.wrap_login').children('div'));
 
-
-    $('.wrap_profile').addClass('etcm-profile');
-    $('#scrollUp').addClass('etcm-scrollUp');
+    $(window).on('load',function() {
+        $('.wrap_profile').addClass('etcm-profile');
+        $('#scrollUp').addClass('etcm-scrollUp');
+    });
 })();
 
 function repeatModifyUI($articles) {

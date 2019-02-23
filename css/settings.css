@@ -127,6 +127,9 @@
     --tgs-height: 36px;
     --tgs-color: indianred;
 }
+.etcm-settings__operations .toggleSwitch > select {
+    width: 70px;
+}
 .etcm-settings__ui .toggleSwitch {
     width: calc(33.333% - 60px);
     margin: 10px 30px;
