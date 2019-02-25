@@ -10,55 +10,61 @@
 
 
     <div class="etcm-settings__body">
-        <div class="etcm-settings__operations">
+        <div class="etcm-settings__list">
             <h3>Operations</h3>
-            <div class="toggleSwitch">
+            <div class="etcm-settings__operation toggleSwitch">
                 <p>Steam server notice</p>
                 <input type="checkbox" id="etcm-settings--steam-server-notice" class="toggleSwitch__input" checked="" data-command="addSteamServerStatusMonitor">
                 <label for="etcm-settings--steam-server-notice" class="toggleSwitch__label" data-off="off" data-on="on"></label>
             </div>
-            <div class="toggleSwitch">
+            <div class="etcm-settings__operation toggleSwitch">
                 <p>Humble Monthly Timer</p>
-                <select>
-                    <option value="1">24hours ago</option>
-                    <option value="7">7Days ago</option>
-                    <option value="15">15Days ago</option>
-                    <option value="-1">Always</option>
-                  </select>
+                <div class="option">
+                    <select class="option__timer-design">
+                        <option>Analog</option>
+                        <option>Digital</option>
+                    </select>
+                    <select class="option__show-period">
+                        <option value="1">24hours ago</option>
+                        <option value="7">7Days ago</option>
+                        <option value="15">15Days ago</option>
+                        <option value="-1">Always</option>
+                    </select>
+                </div>
                 <input type="checkbox" id="etcm-settings--humble-montly-timer" class="toggleSwitch__input" checked="" data-command="addHumbleMontlyTimer">
                 <label for="etcm-settings--humble-montly-timer" class="toggleSwitch__label" data-off="off" data-on="on"></label>
             </div>
-            <div class="toggleSwitch">
+            <div class="etcm-settings__operation toggleSwitch">
                 <p>Infinite scroll</p>
                 <input type="checkbox" id="etcm-settings--infinite-scroll" class="toggleSwitch__input" checked="" data-command="enhanceInfiniteScroll">
                 <label for="etcm-settings--infinite-scroll" class="toggleSwitch__label" data-off="off" data-on="on"></label>
             </div>
-            <div class="toggleSwitch">
+            <div class="etcm-settings__operation toggleSwitch">
                 <p>Filter</p>
                 <input type="checkbox" id="etcm-settings--filter" class="toggleSwitch__input" checked="" data-command="addFilter">
                 <label for="etcm-settings--filter" class="toggleSwitch__label" data-off="off" data-on="on"></label>
             </div>
-            <div class="toggleSwitch">
+            <div class="etcm-settings__operation toggleSwitch">
                 <p>Article blacklist</p>
                 <input type="checkbox" id="etcm-settings--article-blacklist" class="toggleSwitch__input" checked="" data-command="addArticleBlacklist">
                 <label for="etcm-settings--article-blacklist" class="toggleSwitch__label" data-off="off" data-on="on"></label>
             </div>
-            <div class="toggleSwitch">
+            <div class="etcm-settings__operation toggleSwitch">
                 <p>Member blacklist</p>
                 <input type="checkbox" id="etcm-settings--member-blacklist" class="toggleSwitch__input" checked="" data-command="addMemberBlacklist">
                 <label for="etcm-settings--member-blacklist" class="toggleSwitch__label" data-off="off" data-on="on"></label>
             </div>
-            <div class="toggleSwitch">
+            <div class="etcm-settings__operation toggleSwitch">
                 <p>Wishbook</p>
                 <input type="checkbox" id="etcm-settings--wishbook" class="toggleSwitch__input" checked="" data-command="addWishbook">
                 <label for="etcm-settings--wishbook" class="toggleSwitch__label" data-off="off" data-on="on"></label>
             </div>
-            <div class="toggleSwitch">
+            <div class="etcm-settings__operation toggleSwitch">
                 <p>Scrapbook</p>
                 <input type="checkbox" id="etcm-settings--scrapbook" class="toggleSwitch__input" checked="" data-command="addScrapbook">
                 <label for="etcm-settings--scrapbook" class="toggleSwitch__label" data-off="off" data-on="on"></label>
             </div>
-            <div class="toggleSwitch">
+            <div class="etcm-settings__operation toggleSwitch">
                 <p>Enhanced game tag box</p>
                 <input type="checkbox" id="etcm-settings--game-tag-box" class="toggleSwitch__input" checked="" data-command="upgradeGameTagbox">
                 <label for="etcm-settings--game-tag-box" class="toggleSwitch__label" data-off="off" data-on="on"></label>
@@ -77,29 +83,29 @@
             </ul>
         </div>
 
-        <div class="etcm-settings__ui">
+        <div class="etcm-settings__list">
             <h3>UI options</h3>
-            <div class="toggleSwitch">
+            <div class="etcm-settings__ui toggleSwitch">
                 <p>Convert profile image to circle</p>
                 <input type="checkbox" id="etcm-settings--circle-profile" class="toggleSwitch__input" checked="" data-command="modifyProfileToCircle">
                 <label for="etcm-settings--circle-profile" class="toggleSwitch__label" data-off="off" data-on="on"></label>
             </div>
-            <div class="toggleSwitch">
+            <div class="etcm-settings__ui toggleSwitch">
                 <p>Hide badge of rank</p>
                 <input type="checkbox" id="etcm-settings--hide-badge" class="toggleSwitch__input" checked="" data-command="modifyHideBadge">
                 <label for="etcm-settings--hide-badge" class="toggleSwitch__label" data-off="off" data-on="on"></label>
             </div>
-            <div class="toggleSwitch">
+            <div class="etcm-settings__ui toggleSwitch">
                 <p>Groups by date</p>
                 <input type="checkbox" id="etcm-settings--group-date" class="toggleSwitch__input" checked="" data-command="modifyDateGroup">
                 <label for="etcm-settings--group-date" class="toggleSwitch__label" data-off="off" data-on="on"></label>
             </div>
-            <div class="toggleSwitch">
+            <div class="etcm-settings__ui toggleSwitch">
                 <p>Shortly vote</p>
                 <input type="checkbox" id="etcm-settings--shortly-vote" class="toggleSwitch__input" checked="" data-command="modifyShortlyVote">
                 <label for="etcm-settings--shortly-vote" class="toggleSwitch__label" data-off="off" data-on="on"></label>
             </div>
-            <div class="toggleSwitch">
+            <div class="etcm-settings__ui toggleSwitch">
                 <p>Design changes for wish check</p>
                 <input type="checkbox" id="etcm-settings--wish-check" class="toggleSwitch__input" checked="" data-command="modifyWishCheck">
                 <label for="etcm-settings--wish-check" class="toggleSwitch__label" data-off="off" data-on="on"></label>

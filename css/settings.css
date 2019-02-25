@@ -92,34 +92,35 @@
     color: #4b4b4b;
 }
 
-.etcm-settings__operations,
-.etcm-settings__ui {
+.etcm-settings__list {
     display: flex;
 
     width: 100%;
 
     flex-wrap: wrap;
 }
-.etcm-settings__operations .toggleSwitch,
-.etcm-settings__ui .toggleSwitch {
+.etcm-settings__operation,
+.etcm-settings__ui {
+    position: relative;
+
     display: flex;
     flex-direction: row;
 
     align-items: center;
 }
-.etcm-settings__operations .toggleSwitch p,
-.etcm-settings__ui .toggleSwitch p {
+.etcm-settings__operation p,
+.etcm-settings__ui p {
     font-size: 13px;
 
     margin: 0 30px 0 0;
 
     color: #4b4b4b;
 }
-.etcm-settings__operations .toggleSwitch__label,
+.etcm-settings__operation .toggleSwitch__label,
 .etcm-settings__ui .toggleSwitch__label {
     margin-left: auto;
 }
-.etcm-settings__operations .toggleSwitch {
+.etcm-settings__operation {
     width: calc(50% - 60px);
     margin: 10px 30px;
 
@@ -127,10 +128,11 @@
     --tgs-height: 36px;
     --tgs-color: indianred;
 }
-.etcm-settings__operations .toggleSwitch > select {
-    width: 70px;
+.etcm-settings__operation > .option {
+    position: absolute;
+    bottom: -13px;
 }
-.etcm-settings__ui .toggleSwitch {
+.etcm-settings__ui {
     width: calc(33.333% - 60px);
     margin: 10px 30px;
 

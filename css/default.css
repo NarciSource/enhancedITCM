@@ -331,6 +331,16 @@
     margin-left: auto;
 }
 
+.etcm-timer__dashboard.flip-clock-wrapper {
+    font-size: 20px;
+
+    width: max-content;
+    margin: 0;
+    padding: 0;
+
+    transform: translateX(-160px) scale(.45);
+}
+
 
 .etcm-side__book {
     position: relative;

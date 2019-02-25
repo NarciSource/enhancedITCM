@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         enhancedITCM
 // @namespace    etcm
-// @version      0.1.6-3
+// @version      0.1.6-4
 // @description  EnhancedITCM is a user script that enhances the http://itcm.co.kr/
 // @author       narci <jwch11@gmail.com>
 // @match        *://itcm.co.kr/*
@@ -13,11 +13,13 @@
 // @require      https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.24.0/moment.min.js
 // @require      https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.24.0/locale/ko.js
 // @require      https://raw.githubusercontent.com/NarciSource/enhancedITCM/master/vendor/TimeCircles.js
+// @require      https://github.com/objectivehtml/FlipClock/raw/master/compiled/flipclock.min.js
 // @resource     etcm-logo https://raw.githubusercontent.com/NarciSource/enhancedITCM/master/img/logo.png
 // @resource     etcm-dft-style https://raw.githubusercontent.com/NarciSource/enhancedITCM/master/css/default.css
 // @resource     etcm-set-style https://raw.githubusercontent.com/NarciSource/enhancedITCM/master/css/settings.css
 // @resource     etcm-tgg-style https://raw.githubusercontent.com/NarciSource/enhancedITCM/master/css/toggleSwitch.css
-// @resource     etcm-tc-style https://cdnjs.cloudflare.com/ajax/libs/timecircles/1.5.3/TimeCircles.min.css
+// @resource     etcm-tcr-style https://cdnjs.cloudflare.com/ajax/libs/timecircles/1.5.3/TimeCircles.min.css
+// @resource     etcm-flc-style https://github.com/objectivehtml/FlipClock/raw/master/compiled/flipclock.css
 // @resource     etcm-set-layout https://raw.githubusercontent.com/NarciSource/enhancedITCM/master/html/settings.html
 // @updateURL    https://raw.githubusercontent.com/NarciSource/enhancedITCM/master/enhancedITCM.meta.js
 // @downloadURL  https://raw.githubusercontent.com/NarciSource/enhancedITCM/master/enhancedITCM.user.js
@@ -131,7 +133,8 @@ async function addStyle(resource_url) {
 addStyle("etcm-dft-style");
 addStyle("etcm-set-style");
 addStyle("etcm-tgg-style");
-addStyle("etcm-tc-style");
+addStyle("etcm-tcr-style");
+addStyle("etcm-flc-style");
 
 
 
@@ -251,9 +254,10 @@ function ETCM() {
         "modifyWishCheck"
     ];
     this.default_settings = {
-        humble_mothly_show_period: -1, //always
+        humble_monthly_show_period: -1, //always
+        humble_monthly_timer_design: "Analog",
         loading_case: "magnify"
-    }
+    };
 
     moment.locale('ko');
 
@@ -424,7 +428,7 @@ ETCM.prototype.addHumbleMontlyTimer = function() {
                             class: 'etcm-timer__title__time',
                             text: date.format("MMMM Do(dddd) h:mm")
                         })
-                    ]                
+                    ]
                 }),
                 $('<div>', {
                     class: 'etcm-timer__dashboard',
@@ -435,6 +439,47 @@ ETCM.prototype.addHumbleMontlyTimer = function() {
             )}).toggle( date.diff(moment(), 'seconds')>0 );
     }
 
+    function analogView($dashboards) {
+        $dashboards
+            .TimeCircles({
+                count_past_zero: false,
+                total_duration: "Auto",
+                bg_width: 3.2,
+                fg_width: 0.02,
+                number_size: 0.2,
+                text_size: 0.13,
+                circle_bg_color: '#FFF',
+                time: {
+                    Days: {
+                        text: "일", color: 'cadetblue'
+                    },
+                    Hours: {
+                        text: "시", color: '#bb3d3d'
+                    },
+                    Minutes: {
+                        text: "분", color: '#48698d'
+                    },
+                    Seconds: {
+                        text: "초", color: '#fdc76c'
+                    }
+                }
+            });
+    }
+
+    function digitalView($dashboards) {
+        $dashboards.each((_,dashboard) => {
+            const time = $(dashboard).removeData('tcId').data('timer');
+
+            $(dashboard).FlipClock( time, {
+                    autoStart: true,
+                    countdown: true,
+                    clockFace: 'DailyCounter'
+                });
+        });
+    }
+
+
+
     /* HumbleMontly release  first   saturday   3 o'clock   of every month */
     const firstSaturday = {'date':1, 'day':6, 'hours':3, 'minutes':0, 'seconds':0, 'milliseconds':0},
 
@@ -443,8 +488,8 @@ ETCM.prototype.addHumbleMontlyTimer = function() {
                   : moment().add(1,'month').set(firstSaturday),
           autoSubscribeDate = releaseDate.clone().subtract(7,'days');
 
-    if (this.settings.humble_mothly_show_period != -1
-        && this.settings.humble_mothly_show_period < releaseDate.diff(moment(), 'days')) {
+    if (this.settings["humble_monthly_show_period"] != -1
+     && this.settings["humble_monthly_show_period"] < releaseDate.diff(moment(), 'days')) {
         return;
     }
 
@@ -458,33 +503,17 @@ ETCM.prototype.addHumbleMontlyTimer = function() {
         .append( addTimer({ title: "자동 결제일", class_name: 'auto-subscribe', date: autoSubscribeDate,
                             humble_href: "https://www.humblebundle.com/user/cancel-subscription"}))
 
-    try {
-    $(timerDiv).find('.etcm-timer__dashboard')
-        .TimeCircles({
-            count_past_zero: false,
-            total_duration: "Auto",
-            bg_width: 3.2,
-            fg_width: 0.02,
-            number_size: 0.2,
-            text_size: 0.13,
-            circle_bg_color: '#FFF',
-            time: {
-                Days: {
-                    text: "일", color: 'cadetblue'
-                },
-                Hours: {
-                    text: "시", color: '#bb3d3d'
-                },
-                Minutes: {
-                    text: "분", color: '#48698d'
-                },
-                Seconds: {
-                    text: "초", color: '#fdc76c'
-                }
-            }
-        });
-    } catch(e) {
-        console.error(e);
+
+    if (this.settings["humble_monthly_timer_design"] === "Analog") {
+        try {
+            analogView( $(timerDiv).find('.etcm-timer__dashboard') );
+        } catch(e) {
+            console.error(e);
+            digitalView( $(timerDiv).find('.etcm-timer__dashboard') );
+        }
+    }
+    if (this.settings["humble_monthly_timer_design"] === "Digital") {
+        digitalView( $(timerDiv).find('.etcm-timer__dashboard') );
     }
 };
 
@@ -1184,10 +1213,12 @@ ETCM.prototype.openSettings = async function() {
                 $(this).prop('checked', commands.has( $(this).data('command') ));
             });
 
-        $('#etcm-settings--humble-montly-timer').each(function() {
-            $(this).prev('select').toggle( commands.has( $(this).data('command')) );
-        })
-        .prev('select').val( etcm.settings["humble_mothly_show_period"] );
+        $('#etcm-settings--humble-montly-timer')
+            .prev('.etcm-settings__operation > .option')
+                .toggle( commands.has( $('#etcm-settings--humble-montly-timer').data('command')) )
+            .children()
+                .first('.etcm-settings__operation .option__timer-design').val( etcm.settings["humble_monthly_timer_design"])
+                .next('.etcm-settings__operation .option__show-period').val( etcm.settings["humble_monthly_show_period"] );
 
 
         $settings.find('.etcm-settings__showcase').find('li')
@@ -1208,11 +1239,15 @@ ETCM.prototype.openSettings = async function() {
             });
 
         $('#etcm-settings--humble-montly-timer').change(function() {
-            $(this).prev('select').toggle(this.checked);
+            $(this).prev('.etcm-settings__operation > .option').toggle(this.checked);
         })
-        .prev('select').change(function() {
-            etcm.settings["humble_mothly_show_period"] = $(this).val();
-        });
+        .prev('.etcm-settings__operation > .option').children()
+            .first('.etcm-settings__operation .option__timer-design').change(function() {
+                etcm.settings["humble_monthly_timer_design"] = $(this).val();
+            })
+            .next('.etcm-settings__operation .option__show-period').change(function() {
+                etcm.settings["humble_monthly_show_period"] = $(this).val();
+            });
 
 
         $settings.find('.etcm-settings__showcase').find('li')
