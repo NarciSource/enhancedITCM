@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         enhancedITCM
 // @namespace    etcm
-// @version      0.1.6-2
+// @version      0.1.6-3
 // @description  EnhancedITCM is a user script that enhances the http://itcm.co.kr/
 // @author       narci <jwch11@gmail.com>
 // @match        *://itcm.co.kr/*
@@ -75,7 +75,8 @@ if (typeof GM === "undefined") {
         xmlHttpRequest : GM_xmlhttpRequest,
         setValue : GM_setValue,
         getValue : arg=> Promise.resolve(GM_getValue(arg)),
-        deleteValue : GM_deleteValue
+        deleteValue : GM_deleteValue,
+        info : GM_info
     };
 }
 
@@ -448,7 +449,7 @@ ETCM.prototype.addHumbleMontlyTimer = function() {
     }
 
 
-    $('<div>', { class: 'column etcm-humble-monthly-timer' })
+    const timerDiv = $('<div>', { class: 'column etcm-humble-monthly-timer' })
         .insertAfter( $('aside.e1').children('.column_login') )
 
         .append( addTimer({ title: "Humble Montly", class_name: 'release-monthly', date: releaseDate,
@@ -457,7 +458,8 @@ ETCM.prototype.addHumbleMontlyTimer = function() {
         .append( addTimer({ title: "자동 결제일", class_name: 'auto-subscribe', date: autoSubscribeDate,
                             humble_href: "https://www.humblebundle.com/user/cancel-subscription"}))
 
-    .find('.etcm-timer__dashboard')
+    try {
+    $(timerDiv).find('.etcm-timer__dashboard')
         .TimeCircles({
             count_past_zero: false,
             total_duration: "Auto",
@@ -481,6 +483,9 @@ ETCM.prototype.addHumbleMontlyTimer = function() {
                 }
             }
         });
+    } catch(e) {
+        console.error(e);
+    }
 };
 
 
