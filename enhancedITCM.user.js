@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         enhancedITCM
 // @namespace    etcm
-// @version      0.1.6-4
+// @version      0.1.6-5
 // @description  EnhancedITCM is a user script that enhances the http://itcm.co.kr/
 // @author       narci <jwch11@gmail.com>
 // @match        *://itcm.co.kr/*
@@ -284,7 +284,10 @@ function ETCM() {
             .filter(property_name=> this.commands.has(property_name))
             .map(property_name=> Object.getPrototypeOf(this)[property_name])
             .filter(property=> typeof property === "function")
-            .forEach(func=> func.apply(this));
+            .forEach(func=> {
+                try{ func.apply(this) }
+                catch(e) { console.error(e) }
+            });
     };
 };
 
@@ -1122,7 +1125,7 @@ ETCM.prototype.modifyProfileToCircle = function($articles) {
     $articles = $articles || this.$articles;
 
     $articles.children('.author').css({'text-align':'left', 'max-width':'75px', 'text-overflow':'clip'})
-        .find('img').filter(':odd').each((_,el)=> {
+        .find('img').not('.xe_point_level_icon').each((_,el)=> {
             $(el).css({'border-radius':'50px','width':'23px','height':'23px'})
                 .parent().contents().last().get(0).textContent = " "+$(el).attr('title');
         });
@@ -1309,6 +1312,7 @@ etcm.run();
                     .children('.itx_wrp').css({width: '200px'})
                     .parent()
             );
+        $('.voted_count').css({width:'30px'});
     }
 
     $('.cTab').css({'margin-bottom': 0});
@@ -1330,6 +1334,13 @@ etcm.run();
 
 function repeatModifyUI($articles) {
     $articles.find('.hx').each((_, el)=> $(el).text($(el).attr('title')));
+    if (window.location.href.includes("game_news")) {
+        $articles.each((_,el)=> {
+            const $store = $(el).children().eq(0).children().children();
+            $store.attr('title',$store.text().trim()).css({width:'45px',overflow:'hidden'});
+            
+        });
+    }
 }
 repeatModifyUI( etcm.$articles );
 
