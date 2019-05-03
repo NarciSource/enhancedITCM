@@ -358,6 +358,13 @@ var FlipClock;
 		 
 		lists: [],
 
+        /**
+         * Time interval per flip. default: 1 seconds
+         */
+        interval: 1000,
+
+        showSeconds: true,
+
 		/**
 		 * Constructor
 		 *
@@ -370,6 +377,10 @@ var FlipClock;
 			this.lists = [];
 			this.base(options);
 			this.factory = factory;
+
+            if(this.interval >= 1000*60) {
+                this.showSeconds = false;
+            }
 		},
 		
 		/**
@@ -511,7 +522,7 @@ var FlipClock;
 		 */
 		 
 		increment: function() {
-			this.factory.time.addSecond();
+			this.factory.time.addSecond( this.interval/1000 );
 		},
 
 		/**
@@ -523,7 +534,7 @@ var FlipClock;
 	        	this.factory.stop()
 			}
 			else {
-				this.factory.time.subSecond();
+				this.factory.time.subSeconds( this.interval/1000 );
 			}
 		},
 			
@@ -1186,6 +1197,45 @@ var FlipClock;
 	 
 	$.fn.flipClock = function(digit, options) {
 		return $.fn.FlipClock(digit, options);
+	};
+	
+	/**
+	 * jQuery helper method
+	 *
+	 * @param  object  An object of properties to override the default	
+	 */
+	 
+	$.fn.FlipClocks = function(options) {
+		var flipclocks = this.map(function() {
+			return new $(this).FlipClock($(this).data('timer'), options)
+		});
+
+		return {
+			start: (callback)=> 
+				flipclocks.each(function() {
+					this.start(callback)
+				}),
+			stop: (callback)=>
+				flipclocks.each(function() {
+					this.stop(callback)
+				}),
+			reset: (callback)=>
+				flipclocks.each(function() {
+					this.reset(callback)
+				}),
+			setTime: (time)=>
+				flipclocks.each(function() {
+					this.setTime(time)
+				}),
+			getTime:()=>
+				flipclocks.map(function() {
+					return this.getTime()
+				}),
+			setCountdown: (value)=>
+				flipclocks.each(function() {
+					this.setCountdown(value)
+				})
+		};
 	};
 	
 }(jQuery));
@@ -2079,9 +2129,6 @@ var FlipClock;
 	 */
 
 	FlipClock.DailyCounterFace = FlipClock.Face.extend({
-
-		showSeconds: true,
-
 		/**
 		 * Constructor
 		 *

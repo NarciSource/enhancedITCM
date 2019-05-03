@@ -335,10 +335,10 @@
     font-size: 20px;
 
     width: max-content;
-    margin: 0;
-    padding: 0;
+    margin-left: auto;
+    margin-right: auto;
 
-    transform: translateX(-160px) scale(.45);
+    zoom: .45;
 }
 
 

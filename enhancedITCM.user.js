@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         enhancedITCM
 // @namespace    etcm
-// @version      0.1.7-1
+// @version      0.1.7-2
 // @description  EnhancedITCM is a user script that enhances the http://itcm.co.kr/
 // @author       narci <jwch11@gmail.com>
 // @match        *://itcm.co.kr/*
@@ -169,9 +169,9 @@ if (typeof GM === "undefined") {
 
 
 
-saveToStorage = R.curry((storage, name, value)=> storage.setItem(name, (typeof value==="object")? JSON.stringify(value) : value));
-loadFromStorage = R.curry((storage, name)=> storage.getItem(name));
-deleteFromStorage = R.curry((storage, name)=> storage.removeItem(name));
+var saveToStorage = R.curry((storage, name, value)=> storage.setItem(name, (typeof value==="object")? JSON.stringify(value) : value)),
+    loadFromStorage = R.curry((storage, name)=> storage.getItem(name)),
+    deleteFromStorage = R.curry((storage, name)=> storage.removeItem(name));
 
 saveToStorage = saveToStorage(localStorage);//or GM
 loadFromStorage = loadFromStorage(localStorage);
@@ -524,15 +524,12 @@ ETCM.prototype.addHumbleMontlyTimer = function() {
     }
 
     function setToDigitalClock() {
-        this.each((_,dashboard) => {
-            const time = $(dashboard).data('timer');
-
-            $(dashboard).FlipClock( time, {
-                    autoStart: true,
-                    countdown: true,
-                    clockFace: 'DailyCounter'
-                });
-        });
+        this.FlipClocks({
+                autoStart: true,
+                countdown: true,
+                interval: 1000*60,
+                clockFace: 'DailyCounter'
+            });
     }
 
     function lz_makeDashboard(launchDate, autoPayDate) {
@@ -711,7 +708,6 @@ ETCM.prototype.addFilter = function() {
         }
 
         function addTab({store_name, img_src, width, height}) {
-            img_src = img_src || `https://placeholdit.imgix.net/~text?txtsize=15&txtclr=000000&bg=ffffff&txt=${store_name}&w=80&h=50&txttrack=0`;
             width = width || '29px';
             height = height || '29px';
 
@@ -777,10 +773,10 @@ ETCM.prototype.addFilter = function() {
             .addTab({store_name: "WinGameStore", img_src: "https://www.wingamestore.com/images/s2/logo-icon.png"})
             .addTab({store_name: "Nuuvem", img_src: "https://assets.nuuvem.com/assets/fe/images/nuuvem_logo-ab61ec645af3a6db7df0140d4792f31a.svg"})
             .addTab({store_name: "MicrosoftStore", img_src: "https://c.s-microsoft.com/en-us/CMSImages/Microsoft_Corporate_Logo_43_42.jpg?version=77D1E093-019E-5C72-083F-4DF9BF1362F5"})
-            .addTab({store_name: "DailyIndieGame", width: '50px'})
-            .addTab({store_name: "OtakuBundle", width: '50px'})
-            .addTab({store_name: "GoGoBundle", width: '50px'})
-            .addTab({store_name: "기타", img_src: "https://openclipart.org/image/800px/svg_to_png/249613/Guitarra.png"})
+            .addTab({store_name: "DailyIndieGame"})
+            .addTab({store_name: "OtakuBundle"})
+            .addTab({store_name: "GoGoBundle"})
+            .addTab({store_name: "기타"})
             .removeTab("gamethor")
             .appendTo($div);
     })();

@@ -1,19 +1,21 @@
 // ==UserScript==
 // @name         enhancedITCM
 // @namespace    etcm
-// @version      0.1.6-4
+// @version      0.1.7-2
 // @description  EnhancedITCM is a user script that enhances the http://itcm.co.kr/
 // @author       narci <jwch11@gmail.com>
 // @match        *://itcm.co.kr/*
 // @icon         https://raw.githubusercontent.com/NarciSource/enhancedITCM/master/img/icon.png
 // @require      http://code.jquery.com/jquery-3.3.1.min.js
+// @require      http://cdnjs.cloudflare.com/ajax/libs/ramda/0.25.0/ramda.min.js
 // @require      https://raw.githubusercontent.com/NarciSource/steamCb.js/master/src/exchange.js
 // @require      https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.31.1/js/jquery.tablesorter.min.js
 // @require      https://raw.githubusercontent.com/NarciSource/steamCb.js/master/src/tablesorter.js
 // @require      https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.24.0/moment.min.js
 // @require      https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.24.0/locale/ko.js
+// @require      https://cdnjs.cloudflare.com/ajax/libs/moment-timezone/0.5.23/moment-timezone-with-data.min.js
 // @require      https://raw.githubusercontent.com/NarciSource/enhancedITCM/master/vendor/TimeCircles.js
-// @require      https://github.com/objectivehtml/FlipClock/raw/master/compiled/flipclock.min.js
+// @require      https://raw.githubusercontent.com/NarciSource/enhancedITCM/master/vendor/flipclock.js
 // @resource     etcm-logo https://raw.githubusercontent.com/NarciSource/enhancedITCM/master/img/logo.png
 // @resource     etcm-dft-style https://raw.githubusercontent.com/NarciSource/enhancedITCM/master/css/default.css
 // @resource     etcm-set-style https://raw.githubusercontent.com/NarciSource/enhancedITCM/master/css/settings.css
