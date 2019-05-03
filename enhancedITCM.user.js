@@ -1,19 +1,20 @@
 // ==UserScript==
 // @name         enhancedITCM
 // @namespace    etcm
-// @version      0.1.6-5
+// @version      0.1.7
 // @description  EnhancedITCM is a user script that enhances the http://itcm.co.kr/
 // @author       narci <jwch11@gmail.com>
 // @match        *://itcm.co.kr/*
 // @icon         https://raw.githubusercontent.com/NarciSource/enhancedITCM/master/img/icon.png
 // @require      http://code.jquery.com/jquery-3.3.1.min.js
+// @require      http://cdnjs.cloudflare.com/ajax/libs/ramda/0.25.0/ramda.min.js
 // @require      https://raw.githubusercontent.com/NarciSource/steamCb.js/master/src/exchange.js
 // @require      https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.31.1/js/jquery.tablesorter.min.js
 // @require      https://raw.githubusercontent.com/NarciSource/steamCb.js/master/src/tablesorter.js
 // @require      https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.24.0/moment.min.js
 // @require      https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.24.0/locale/ko.js
 // @require      https://raw.githubusercontent.com/NarciSource/enhancedITCM/master/vendor/TimeCircles.js
-// @require      https://github.com/objectivehtml/FlipClock/raw/master/compiled/flipclock.min.js
+// @require      https://raw.githubusercontent.com/NarciSource/enhancedITCM/master/vendor/flipclock.js
 // @resource     etcm-logo https://raw.githubusercontent.com/NarciSource/enhancedITCM/master/img/logo.png
 // @resource     etcm-dft-style https://raw.githubusercontent.com/NarciSource/enhancedITCM/master/css/default.css
 // @resource     etcm-set-style https://raw.githubusercontent.com/NarciSource/enhancedITCM/master/css/settings.css
@@ -68,142 +69,187 @@ console.info(`
 
 this.$ = window.jQuery.noConflict(true);
 
+
+
 if (typeof GM === "undefined") {
-    GM = this.GM = this.GM || {
-        getResourceUrl : url=> {
-            const res = GM_getResourceURL(url).replace("data:text/plain; charset=utf-8","data:text/css; base64");
-            return Promise.resolve(res);
-        },
-        xmlHttpRequest : GM_xmlhttpRequest,
-        setValue : GM_setValue,
-        getValue : arg=> Promise.resolve(GM_getValue(arg)),
-        deleteValue : GM_deleteValue,
-        info : GM_info
-    };
+    GM = this.GM || {};
 }
-
-/* The A-C-A-O problem should be avoided, making the gm.xmlHttpRequest as convenient as jQuery.ajax */
-GM.ajax = function(url, options) {
-    options = options || {url};
-    if ( typeof url === "object" ) {
-        options = url;
-    }
-    console.info(options.type || "GET", options.url);
-
-    let dfd = $.Deferred();
-
-    GM.xmlHttpRequest( $.extend( {}, options, {
-        method: "GET",
-        onload: response => {
-            const headerRegex = /([\w-]+): (.*)/gi,
-                  mimeRegex = /(^\w+)\/(\w+)/g;
-
-            let headers = {}, match;
-            while( match = headerRegex.exec(response.responseHeaders) ) {
-                headers[ match[1].toLowerCase() ] = match[2].toLowerCase();
-            }
-
-            const [mime, mime_type, mime_subtype] = mimeRegex.exec( headers["content-type"] );
-            switch(mime_subtype) {
-                case "xml":
-                    dfd.resolve( new DOMParser().parseFromString( response.responseText, mime ) );
-                    break;
-                case "json":
-                    dfd.resolve( JSON.parse(response.responseText) );
-                    break;
-            }
-            dfd.resolve(response.responseText);
-        },
-        onerror: error => dfd.reject(error)
-    }));
-
-    return dfd.promise();
-};
-
-
-
-/* load style */
-async function addStyle(resource_url) {
-    $("<link>", {
-        rel : "stylesheet",
-        type : "text/css",
-        href : await GM.getResourceUrl(resource_url)
-    }).appendTo("head");
-};
-addStyle("etcm-dft-style");
-addStyle("etcm-set-style");
-addStyle("etcm-tgg-style");
-addStyle("etcm-tcr-style");
-addStyle("etcm-flc-style");
-
-
-
-class ProxySet extends Set {
-    constructor(storage_name, arr, force) {
-        arr = force? arr : localStorage[storage_name]? JSON.parse(localStorage[storage_name]) : arr;
-
-        super(arr);
-        this.storage_name = storage_name;
-
-        this._saveIntoStorage();
-        return this;
-    }
-    _saveIntoStorage() {
-        localStorage[ this.storage_name ] = JSON.stringify( Array.from(this) );
-    }
-
-    in(arg) {
-        if (Array.isArray(arg)) {
-            arg.forEach(each=> this.add(each));
-        } else {
-            this.add(arg);
+(function enhanceGreasemonkeyCompatibility(GM){
+    GM.getResourceUrl = GM.getResourceUrl || (url=> {
+                        const res = GM_getResourceURL(url).replace("data:text/plain; charset=utf-8","data:text/css; base64");
+                        return Promise.resolve(res);
+                    });
+    GM.xmlHttpRequest = GM.xmlHttpRequest || GM_xmlhttpRequest;
+    GM.setValue = GM.setValue || GM_setValue;
+    GM.getValue = GM.getValue || (arg=> Promise.resolve(GM_getValue(arg)));
+    GM.deleteValue = GM.deleteValue || GM_deleteValue;
+    GM.info = GM.info || GM_info;
+    GM.setItem = GM.setValue;
+    GM.getItem = GM.getValue;
+    GM.removeItem = GM.deleteValue;
+    GM.ajax = function(url, options) {
+        options = options || {url};
+        if ( typeof url === "object" ) {
+            options = url;
         }
-        this._saveIntoStorage();
-        return this;
-    }
-    out(arg) {
-        if (Array.isArray(arg)) {
-            arg.forEach(each=> this.delete(each));
-        } else {
-            this.delete(arg);
+        console.info(options.type || "GET", options.url);
+    
+        let dfd = $.Deferred();
+    
+        GM.xmlHttpRequest( $.extend( {}, options, {
+            method: "GET",
+            onload: response => {
+                const headerRegex = /([\w-]+): (.*)/gi,
+                      mimeRegex = /(^\w+)\/(\w+)/g;
+    
+                let headers = {}, match;
+                while( match = headerRegex.exec(response.responseHeaders) ) {
+                    headers[ match[1].toLowerCase() ] = match[2].toLowerCase();
+                }
+    
+                const [mime, mime_type, mime_subtype] = mimeRegex.exec( headers["content-type"] );
+                switch(mime_subtype) {
+                    case "xml":
+                        dfd.resolve( new DOMParser().parseFromString( response.responseText, mime ) );
+                        break;
+                    case "json":
+                        dfd.resolve( JSON.parse(response.responseText) );
+                        break;
+                }
+                dfd.resolve(response.responseText);
+            },
+            onerror: error => dfd.reject(error)
+        }));
+    
+        return dfd.promise();
+    };
+})(GM);
+
+
+
+(function loadStylesheet($head) {
+    $head.addStyle = async function(resource_url) {
+        $("<link>", {
+            rel : "stylesheet",
+            type : "text/css",
+            href : await GM.getResourceUrl(resource_url)
+        }).appendTo(this);
+    };
+    $head.addStyles = function(resource_urls) {
+        resource_urls.forEach(resource_url=> this.addStyle(resource_url));
+    };
+
+
+
+    $head.addStyles([
+        "etcm-dft-style",
+        "etcm-set-style",
+        "etcm-tgg-style",
+        "etcm-tcr-style",
+        "etcm-flc-style"
+    ]);
+})($('head'));
+
+
+
+saveToStorage = R.curry((storage, name, value)=> storage.setItem(name, (typeof value==="object")? JSON.stringify(value) : value));
+loadFromStorage = R.curry((storage, name)=> storage.getItem(name));
+deleteFromStorage = R.curry((storage, name)=> storage.removeItem(name));
+
+saveToStorage = saveToStorage(localStorage);//or GM
+loadFromStorage = loadFromStorage(localStorage);
+deleteFromStorage = deleteFromStorage(localStorage);
+
+
+function ProxySet(key, value, force) {
+    class ProxySet extends Set {
+        constructor(key, value, force) {
+            super((force || !loadFromStorage(key))? value : JSON.parse(loadFromStorage(key)));
+            
+            this._saveIntoStorage = ()=> saveToStorage(key)(Array.from(this));
+
+            this._saveIntoStorage();
+
+            return this;
         }
-        this._saveIntoStorage();
-        return this;
+
+        in(arg) {
+            if (Array.isArray(arg)) {
+                arg.forEach(each=> this.add(each));
+            } else {
+                this.add(arg);
+            }
+            this._saveIntoStorage();
+            return this;
+        }
+        out(arg) {
+            if (Array.isArray(arg)) {
+                arg.forEach(each=> this.delete(each));
+            } else {
+                this.delete(arg);
+            }
+            this._saveIntoStorage();
+            return this;
+        }
+        io(bool, arg) {
+            bool? this.in(arg) : this.out(arg);
+            return this;
+        }
+        switch(arg) {
+            this.has(arg)? this.out(arg) : this.in(arg);
+            return this;
+        }
+        filter(func) {
+            return new ProxySet(undefined, Array.from(this).filter(func));
+        }
     }
-    io(bool, arg) {
-        bool? this.in(arg) : this.out(arg);
-        return this;
-    }
-    switch(arg) {
-        this.has(arg)? this.out(arg) : this.in(arg);
-        return this;
-    }
-    filter(func) {
-        return Array.from(this).filter(func);
-    }
+
+    return new ProxySet(key, value, force);
 }
 
 function ProxyObject(obj, force) {
-    $.each(obj, (key, val)=> {
-        if (force || !localStorage[key]) localStorage[key] = val;
-        else obj[key] = localStorage[key];
+    Object.entries(obj).forEach(([key, val])=> {
+        if (force || !loadFromStorage(key)) saveToStorage(key)(val);
+        else obj[key] = loadFromStorage(key);
     });
     
     return new Proxy(obj, {
         get(target, key, receiver) {
             if (!Reflect.has(target, key, receiver)) {
-                return localStorage[key];
+                return loadFromStorage(key);
             }
             return Reflect.get(target, key, receiver);
         },
         set(target, key, val, receiver) {
-            localStorage[key] = val;
+            saveToStorage(key)(val);
             return Reflect.set(target, key, val, receiver);
         }
     });
 }
 
-
+`
+                       $$                                                                                                      
+                    $$$$$$$$                                                                                                   
+                 $$$$$$$$$$$$$$                      ♪♫•*̈*•.̧ ̧ .•*̈*•♫♪                                                          
+              $$$$$$$$$  $$$$$$$$$$                 ♪ღ♪               ++                                            ++#        
+         $$$$$$$$$$          $$$$$$$$$$            *•♪~ღ.̧ ̧  g +o+h+  e+lo+lo   +-b-+   +w+o+r+  +l+  o+d7+     -++ ++#         
+         $$$$$$$$$             $$$$$$$$$          ♪ღ♪      +++ o++  +++ 7+++ ++  n+   +++ +++ ++     ++~ + +  +8  ++o          
+      @@@   $$$$$$$$$       $$$$$$$$$   ++       https:// git hub .com /Nar  ci So u rce /en  hancd  ITCM/+    #+++o           
+      @@@@@@@  $$$$$$$$$$$$$$$$$$   ++++++                                                                                     
+      @@@@@@@@@@   $$$$$$$$$$    +++++++++        EEEEE   EEEEEEEEEEEEEEEEE   EEEEEEEEEEEEEEE  EEEEEEEEE        EEEEEEEE       
+      @@@@@@@@@@@@@   $$$$   +++++++++            EEEEE   EEEEEEEEEEEEEEEEE  EEEEEEEEEEEEEEEE  EEEEEEEEE        EEEEEEEE       
+      @@@@@   @@@@@@@@@  +++++++++                EEEEE         EEEEE        EEEEEE            EEEEEEEEEE      EEEEEEEEE       
+      @@@@@      @@@@@@  ++++++         ++        EEEEE         EEEEE        EEEEEE            EEEEEEEEEEE     EEEEEEEEE       
+      @@@@@         @@@  ++++         ++++        EEEEE         EEEEE        EEEEEE            EEEEEEEEEEE    EEEEEEEEEE       
+      @@@@@              ++++         ++++        EEEEE         EEEEE        EEEEEE            EEEEEE EEEEE  EEEEE EEEEE       
+      @@@@@@@            ++++      +++++++        EEEEE         EEEEE        EEEEEE            EEEEEE  EEEEEEEEEEE EEEEE       
+        @@@@@@@@         ++++   +++++++++         EEEEE         EEEEE        EEEEEE            EEEEEE  EEEEEEEEEE  EEEEE       
+            @@@@@@@@     ++++++++++++             EEEEE         EEEEE        EEEEEEEEEEEEEEEE  EEEEEE   EEEEEEEE   EEEEE       
+               @@@@@@@@  +++++++++                EEEEE         NARCI         EEEEEEEEEEEEEEE  EEEEEE    EEEEEE    EEEEE       
+                  @@@@@  ++++++                                                                                                
+                      @  +                                                                                                     
+                                                                                                                               
+`
 
 
 const dynamicstore_url = "https://store.steampowered.com/dynamicstore/userdata/",
@@ -235,9 +281,10 @@ function ETCM() {
 
         "modifyProfileToCircle",
         "modifyHideBadge",
-        "modifyDateGroup",
+        //"modifyDateGroup",
         "modifyShortlyVote",
         "modifyWishCheck",
+        "modifyOthers",
 
         "refreshContent",
     ];
@@ -249,43 +296,44 @@ function ETCM() {
 
         "modifyProfileToCircle",
         "modifyHideBadge",
-        "modifyDateGroup",
+        //"modifyDateGroup",
         "modifyShortlyVote",
-        "modifyWishCheck"
+        "modifyWishCheck",
+        "modifyOthers"
     ];
     this.default_settings = {
-        humble_monthly_show_period: -1, //always
+        humble_monthly_show_period: 35, //always
         humble_monthly_timer_design: "Analog",
         loading_case: "magnify"
     };
 
     moment.locale('ko');
 
-    if (localStorage["etcm-version"] !== GM.info.script.version) { //update
-        localStorage["etcm-version"] = GM.info.script.version;
-        this.commands = new ProxySet("commands", this.default_commands, true);
-        this.settings = ProxyObject(this.default_settings, true);
-    } else {
-        this.commands = new ProxySet("commands", this.default_commands, false);
-        this.settings = ProxyObject(this.default_settings, false);
+    if (loadFromStorage("etcm-version") !== GM.info.script.version) { //update
+        saveToStorage("etcm-version")(GM.info.script.version);
+        var set_force = true;
     }
-    this.blacklist = new ProxySet("blacklist", [/*empty*/]);
-    this.blacklist_member = new ProxySet("blacklist_mber", [/*empty*/]);
-    this.selectTabs;
 
-    this.upgrade = new this.Upgrade(this, {/*empty*/});
+    this.commands = ProxySet("commands", this.default_commands, set_force);
+    this.settings = ProxyObject(this.default_settings, set_force);
+
+    this.blacklist = ProxySet("blacklist", [/*empty*/]);
+    this.blacklist_member = ProxySet("blacklist_mber", [/*empty*/]);
+    this.selectTabs = undefined;
 
     this.$contents = $('table.bd_lst.bd_tb');
     this.$articles = this.$contents.children('tbody').children('tr');
 
 
-    this.run = ()=> {
-        Object.keys(Object.getPrototypeOf(this))
-            .filter(property_name=> this.commands.has(property_name))
-            .map(property_name=> Object.getPrototypeOf(this)[property_name])
-            .filter(property=> typeof property === "function")
-            .forEach(func=> {
-                try{ func.apply(this) }
+
+    this.upgrade = new this.Upgrade(this);
+    this.run = (condition, arg)=> {
+        condition = condition || (()=>true);
+
+        Object.entries(Object.getPrototypeOf(this))
+            .filter(([property, value])=> condition([property, value]) && this.commands.has(property) && typeof value === "function")
+            .forEach(([property, func])=> {
+                try{ func.call(this, arg) }
                 catch(e) { console.error(e) }
             });
     };
@@ -302,7 +350,7 @@ ETCM.prototype._loadProfileInfo = async function() {
     if (profileinfo === undefined || profileinfo.rgOwnedApps.length === 0) {
         console.error("Steam account is strange...");
     }
-    GM.setValue("profileinfo", JSON.stringify( profileinfo ));
+    saveToStorage("profileinfo")(profileinfo);
     return profileinfo;
 };
 
@@ -310,7 +358,8 @@ ETCM.prototype._loadProfileInfo = async function() {
 ETCM.prototype._initializeArticle = function($articles) {
     $articles = $articles || this.$articles;
 
-    $articles.addClass('etcm-article')
+    $articles
+        .addClass('etcm-article')
         .each(function() {
             var href = $(this).hasClass('notice')? 
                             $(this).children('.title').children('a').get(0).href
@@ -322,41 +371,48 @@ ETCM.prototype._initializeArticle = function($articles) {
 
 
 
-ETCM.prototype.enhanceLogo = async function() {
-    const signin_name = (await GM.ajax(profile_url))[0].newname;
+ETCM.prototype.enhanceLogo = function() {
+    const etcm = this;
 
-    $('.logo').find('img')
-            .attr({src: await GM.getResourceUrl('etcm-logo')})
-            .css({width:'110px'})
+    (async function newLogo() {
+        $('.logo').find('img')
+        .attr({src: await GM.getResourceUrl('etcm-logo')})
+        .css({width:'110px'})
+    })();
 
-    if (signin_name === undefined) {
-        $('.logo').append(
-            $('<a>', {
-                class: 'etcm-sign',
-                css: {color: 'red'},
-                text: "sign in",
-                href: steam_signin_url
-            })
-        );
-        GM.deleteValue("profileinfo");
-    }
-    else {
-        $('.logo').append(
-            $('<a>', {
-                class: 'etcm-sign',
-                html: $.merge(
-                    $('<i>', { class: 'fa fa-refresh'}),
-                    $('<span>', { text: ` working : ${signin_name}`})
-                ),
-                click: async ()=> {
-                    this.profileinfo = await this._loadProfileInfo();
-                    this.upgrade.set( this.profileinfo ).run();
-                }
-            })
-        );
-        this.profileinfo = await GM.getValue("profileinfo")? JSON.parse( await GM.getValue("profileinfo")) : await this._loadProfileInfo();
-        this.upgrade.set( this.profileinfo ).run();
-    }
+
+    (async function readSteamProfileCurrentlyConnected() {
+        const signin_name = (await GM.ajax(profile_url))[0].newname;
+        if (signin_name === undefined) {
+            $('.logo').append(
+                $('<a>', {
+                    class: 'etcm-sign',
+                    css: {color: 'red'},
+                    text: "sign in",
+                    href: steam_signin_url
+                })
+            );
+            deleteFromStorage("profileinfo");
+        }
+        else {
+            $('.logo').append(
+                $('<a>', {
+                    class: 'etcm-sign',
+                    html: $.merge(
+                        $('<i>', { class: 'fa fa-refresh'}),
+                        $('<span>', { text: ` working : ${signin_name}`})
+                    ),
+                    click: async ()=> {
+                        etcm.profileinfo = await etcm._loadProfileInfo();
+                        etcm.upgrade.run(undefined, etcm.profileinfo);
+                    }
+                })
+            );
+            etcm.profileinfo = await loadFromStorage("profileinfo");
+            etcm.profileinfo = etcm.profileinfo? JSON.parse( etcm.profileinfo ) : await etcm._loadProfileInfo();
+            etcm.upgrade.run(undefined, etcm.profileinfo);
+        }
+    })();
 };
 
 
@@ -368,6 +424,7 @@ ETCM.prototype.enhanceInfiniteScroll = function() {
             class: `etcm-loading etcm-loading--${etcm.settings.loading_case}`,
         }).hide();
 
+
     $(window).scroll(function() {
         if (loading_bar.is(':hidden') && $(window).scrollTop() > $(document).height() - $(window).height() - 50) {
             loading_bar.show();
@@ -378,28 +435,18 @@ ETCM.prototype.enhanceInfiniteScroll = function() {
             }).then(html=> {
                 let $loaded_html = $(html),
                     $loaded_content = $loaded_html.find('.bd_lst.bd_tb').children('tbody'),
-                    $loaded_articles = $loaded_content.children('tr').not('.notice').addClass('etcm-article');
-
-                $loaded_html.find('.app_image').find('img').each(function() {
-                    $(this).attr('src', $(this).data('original') );
-                });
+                    $loaded_articles = $loaded_content.children('tr').not('.notice');
 
 
+                let condition = ([property, value])=> etcm.recursive_commands.includes(property);
+                etcm.run( condition, $loaded_articles );
+                etcm.refreshContent( $loaded_articles );
 
-                etcm.$contents.children('tbody').append( $loaded_articles );
+                etcm.$articles = etcm.$contents.children('tbody').append( $loaded_articles ).children('tr');
 
-                etcm.recursive_commands
-                    .filter(func_name => etcm.commands.has(func_name))
-                    .forEach(func_name => etcm[func_name]( $loaded_articles ));
-
-                repeatModifyUI( $loaded_articles );
-
-
-                $(document).find('.bd_pg').remove();
-                $(document).find('.bd_lst_wrp').append( $loaded_html.find('.bd_pg') );
-
+                $('.bd_pg').replaceWith($loaded_html.find('.bd_pg'));
                 loading_bar.hide();
-                etcm.refreshContent();
+
             }).fail(err=> {
                 console.warn(err);
             });
@@ -589,7 +636,6 @@ ETCM.prototype.addSteamServerStatusMonitor = function() {
     makeSteamServerMonitorList("store", "Store");
     makeSteamServerMonitorList("database", "Database");
     makeSteamServerMonitorList("webapi", "WebAPI");
-
     refresh();
 };
 
@@ -645,48 +691,19 @@ ETCM.prototype.addShortcutSide = function() {
 ETCM.prototype.addFilter = function() {
     const etcm = this;
 
-    (function makeBlackTab() {
-        $('.cTab').append($('<li>', {
-            class: 'etcm-tab--hide',
-            html : $('<a>', {
-                class: 'fa fa-eye-slash',
-                html: $('<span>', { text: "black" }).hide()
-            })
-        }))
-    })();
+    (function handleGamenewsTabs() {
+        if (!( window.location.href.includes("game_news")
+            && $('.inner_content').children('div').eq(0).find('img').attr('src').includes("/store/") )) {
+            return;
+        }
 
-    if (window.location.href.includes("game_news") &&
-        $('.inner_content').children('div').eq(0).find('img').attr('src').includes("/store/")
-    ) {
-        let $cTab_store = $('.inner_content').children('div').eq(0),
-            $etcm_cTab_store =
-                $('<ul>', {
-                    appendTo: $cTab_store,
-                    class: 'etcm-cTab--store',
-                    css: {display: 'flex'}
-                });
-
-        $cTab_store.find('a').each(function() {
-            const store_name = /[&|?]search_keyword=([^&]+)/.exec(decodeURI(this.search))[1];
-            $('<li>', {
-                appendTo: $etcm_cTab_store,
-                class: 'etcm-tab--store',
-                title: store_name,
-                html: $(this).append(
-                        $('<span>', {
-                            text: store_name.toLowerCase()
-                        }).hide()
-                    )
-            });
-        });
-
-        function addStoreFilter({store_name, img_src, width, height}) {
+        function addTab({store_name, img_src, width, height}) {
             img_src = img_src || `https://placeholdit.imgix.net/~text?txtsize=15&txtclr=000000&bg=ffffff&txt=${store_name}&w=80&h=50&txttrack=0`;
             width = width || '29px';
             height = height || '29px';
 
             $('<li>', {
-                appendTo: $etcm_cTab_store,
+                appendTo: this,
                 class: 'etcm-tab--store',
                 title: store_name,
                 html: $('<a>', {
@@ -702,81 +719,121 @@ ETCM.prototype.addFilter = function() {
                     )
                 })
             });
+            return this;
         }
-        function removeStoreFilter(store_name) {
-            $etcm_cTab_store.find('span').filter((_,el)=> el.innerText === store_name)
+
+        function removeTab(store_name) {
+            this.find('span').filter((_,el)=> el.innerText === store_name)
                 .closest('.etcm-tab--store').remove();
+            return this;
         }
 
-        addStoreFilter({store_name: "Chronogg", img_src: "https://www.chrono.gg/assets/images/branding/chrono-icon--dark.9b6946b4.png"});
-        addStoreFilter({store_name: "WinGameStore", img_src: "https://www.wingamestore.com/images/s2/logo-icon.png"});
-        addStoreFilter({store_name: "Nuuvem", img_src: "https://assets.nuuvem.com/assets/fe/images/nuuvem_logo-ab61ec645af3a6db7df0140d4792f31a.svg"});
-        addStoreFilter({store_name: "MicrosoftStore", img_src: "https://c.s-microsoft.com/en-us/CMSImages/Microsoft_Corporate_Logo_43_42.jpg?version=77D1E093-019E-5C72-083F-4DF9BF1362F5"});        
-        addStoreFilter({store_name: "DailyIndieGame", width: '50px'});
-        addStoreFilter({store_name: "OtakuBundle", width: '50px'});
-        addStoreFilter({store_name: "GoGoBundle", width: '50px'});
-        addStoreFilter({store_name: "기타", img_src: "https://openclipart.org/image/800px/svg_to_png/249613/Guitarra.png"});
-        removeStoreFilter("gamethor");
-    }
+        function insertTab($tabs) {
+            this.append(
+                $.map($tabs, function(val) {
+                    const store_name = /[&|?]search_keyword=([^&]+)/.exec(decodeURI(val.search))[1];
+                    return $('<li>', {
+                        class: 'etcm-tab--store',
+                        title: store_name,
+                        html: $(val).append(
+                                $('<span>', {
+                                    text: store_name.toLowerCase()
+                                }).hide()
+                            )
+                    });
+                })
+            );
+            return this;
+        }
 
-    let $tabs = $(/*empty*/);
-    if (window.location.href.includes("game_news")) {
-        $tabs = $('.cTab').children('li').slice(0,4).add('.etcm-tab--hide').add('.etcm-tab--store');
-        etcm.selectTabs = new ProxySet("game_news_tab", $tabs.children('a').map((_,el)=>$(el).text().trim()) );
-    }
-    if (window.location.href.includes("g_board")) {
-        $tabs = $('.cTab').children('li');
-        etcm.selectTabs = new ProxySet("g_board_tab", $tabs.children('a').map((_,el)=>$(el).text().trim()) );
-    }
 
-    $tabs.each((_, li)=>{
-        let $tab = $(li).addClass('etcm-tab');
+        let $div = $('.inner_content').children('div').eq(0),
+            $etcm_cTab_store = $('<ul>', {
+                    class: 'etcm-cTab--store',
+                    css: {display: 'flex'}
+                });
 
-        $('<input>', {
-            appendTo: $tab,
-            type: 'checkbox',
-            checked: function() {
-                const chk = etcm.selectTabs.has($(this).prev().text().trim());
-                if (chk) {
-                    $(this).parent().addClass('check');
-                }
-                return chk;
-            },
-            change: function() {
-                const tab_current_text = $(this).prev().text().trim(),
-                      tab_home_text = $tabs.filter('.home').children('a').text();
+        $etcm_cTab_store.addTab = addTab;
+        $etcm_cTab_store.removeTab = removeTab;
+        $etcm_cTab_store.insertTab = insertTab;
 
-                if ($(this).is(':checked')) {
-                    if (tab_current_text === tab_home_text) {
-                        $tabs.children('input').prop('checked', true)
-                            .parent().addClass('check');
 
-                        etcm.selectTabs.in( Array.from($tabs.children('a').map((_,el)=>$(el).text().trim())) );
+        $etcm_cTab_store
+            .insertTab($div.find('a'))
+            .addTab({store_name: "Chronogg", img_src: "https://www.chrono.gg/assets/images/branding/chrono-icon--dark.9b6946b4.png"})
+            .addTab({store_name: "WinGameStore", img_src: "https://www.wingamestore.com/images/s2/logo-icon.png"})
+            .addTab({store_name: "Nuuvem", img_src: "https://assets.nuuvem.com/assets/fe/images/nuuvem_logo-ab61ec645af3a6db7df0140d4792f31a.svg"})
+            .addTab({store_name: "MicrosoftStore", img_src: "https://c.s-microsoft.com/en-us/CMSImages/Microsoft_Corporate_Logo_43_42.jpg?version=77D1E093-019E-5C72-083F-4DF9BF1362F5"})
+            .addTab({store_name: "DailyIndieGame", width: '50px'})
+            .addTab({store_name: "OtakuBundle", width: '50px'})
+            .addTab({store_name: "GoGoBundle", width: '50px'})
+            .addTab({store_name: "기타", img_src: "https://openclipart.org/image/800px/svg_to_png/249613/Guitarra.png"})
+            .removeTab("gamethor")
+            .appendTo($div);
+    })();
+
+
+
+    (function makeBlacklistTab() {
+        $('.cTab').append($('<li>', {
+            class: 'etcm-tab--hide',
+            html : $('<a>', {
+                class: 'fa fa-eye-slash',
+                html: $('<span>', { text: "black" }).hide()
+            })
+        }))
+    })();
+
+
+
+    (function remodelingTabs() {
+        let $tabs = $(/*empty*/);
+        if (window.location.href.includes("game_news")) {
+            $tabs = $('.cTab').children('li').slice(0,4).add('.etcm-tab--hide').add('.etcm-tab--store');
+            etcm.selectTabs = ProxySet("game_news_tab", $tabs.children('a').map((_,el)=>$(el).text().trim()) );
+        }
+        if (window.location.href.includes("g_board")) {
+            $tabs = $('.cTab').children('li');
+            etcm.selectTabs = ProxySet("g_board_tab", $tabs.children('a').map((_,el)=>$(el).text().trim()) );
+        }
+    
+        $tabs.each((_, li)=>{
+            let $tab = $(li).addClass('etcm-tab');
+    
+            $('<input>', {
+                appendTo: $tab,
+                type: 'checkbox',
+                checked: function() {
+                    const checked = etcm.selectTabs.has($(this).prev().text().trim());
+                    $(this).parent().toggleClass('check', checked);
+                    return checked;
+                },
+                change: function() {
+                    const tab_current_text = $(this).prev().text().trim(),
+                          checked = $(this).is(':checked');
+    
+    
+                    $tab.toggleClass('check', checked);
+                    etcm.selectTabs.io(checked, tab_current_text);
+    
+    
+                    if ($tab.hasClass('home')) {
+                        $tabs.not('.home').children('input').prop('checked',checked).change();
+    
+                    } else {
+                        if (!checked) {
+                            const tab_home_text = $tabs.filter('.home').children('a').text();
+    
+                            $tabs.filter('.home').toggleClass('check', checked)
+                                .children('input').prop('checked',checked);
+                            etcm.selectTabs.io(checked, tab_home_text);
+                        }
                     }
-
-                    $(this).parent().addClass('check');
-
-                    etcm.selectTabs.in( tab_current_text );                    
-                } else {
-                    if (tab_current_text === tab_home_text) {
-                        $tabs.children('input').prop('checked', false)
-                            .parent().removeClass('check');
-
-                        etcm.selectTabs.clear();
-                    }
-
-                    $tabs.filter('.home').children('input').prop('checked', false)
-                        .parent().removeClass('check');
-                    $(this).parent().removeClass('check');
-
-                    etcm.selectTabs.out( tab_home_text );
-
-                    etcm.selectTabs.out( tab_current_text );
+                    etcm.refreshContent();
                 }
-                etcm.refreshContent();
-            }
+            });
         });
-    });
+    })();    
 };
 
 /* Show blacklist icon and manage list */
@@ -820,53 +877,14 @@ ETCM.prototype.addMemberBlacklist = function($articles) {
 
 
 /* side menu */
-ETCM.prototype.addScrapbook = async function() {
-    let $scrapbook = $('<div>', { class: 'etcm-side__book' })
-            .append($('<h2>', {text: "스크랩"}))
-            .append($('<i>', {class: 'fa fa-compress'}))
-            .append($('<i>', {class: 'fa fa-refresh'}))
-            .append($('<ul>', {class: 'etcm-side__book__list'})),
-        scrapbook = new ProxySet("scrapbook", []);
-    $('.sub_wrap_widget').children().eq(0).after($scrapbook);
-
-
-    if (scrapbook.size === 0) {
-        await loadScrapbook();
-    }
-    refresh();
-
-
-    $scrapbook.children('h2')
-        .click(()=> window.location.replace("http://itcm.co.kr/index.php?act=dispMemberScrappedDocument"));
-    $scrapbook.children('.fa-refresh')
-        .click(async()=> { await loadScrapbook(); refresh(); });
-    $scrapbook.children('.fa-compress')
-        .click(function() { $(this).siblings('.etcm-side__book__list').toggleClass('etcm-side__book__list--collapse') });
-
-    if (scrapbook.size < 12) {
-        $scrapbook.children('.fa-compress').hide();
-    } else {
-        $scrapbook.children('.fa-compress').show();
+async function addSideBook({name, title, url, parser}) {
+    async function loadListbook() {
+        let html = await GM.ajax( url );
+        return parser(html);
     }
 
-
-
-    async function loadScrapbook() {
-        let html = await GM.ajax("http://itcm.co.kr/index.php?act=dispMemberScrappedDocument"),
-            list = $(html).find('.table-striped').find('td.title').children('a')
-                        .map((_, article)=> {
-                            return {
-                                text: article.innerText,
-                                href: article.pathname
-                            };
-                        }).toArray();
-
-        scrapbook.clear();
-        scrapbook.in( list );
-    }
-    function refresh() {
-        $scrapbook.find('li').remove();
-        scrapbook.forEach(({text, href})=> {
+    function processing(list) {
+        return Array.from(list).map(({text, href})=>
             $('<li>', {
                 class: 'etcm-side__book__list__article',
                 html: $('<a>', {
@@ -876,81 +894,103 @@ ETCM.prototype.addScrapbook = async function() {
                         $('<span>', {text})
                     )
                 })
-            }).appendTo($scrapbook.children('ul'));
-        });
+            }));
+    }
+
+
+
+    let listbook = ProxySet(name, []),
+        $listbook = $('<div>', { class: 'etcm-side__book' });
+
+    $listbook.refresh = function( list ) {
+        this.find('li').remove();
+        this.children('ul').append( processing(list) );
+        return this;
+    };
+
+    $listbook
+        .append(
+            $('<h2>', {
+                text: title,
+                click: ()=> window.location.replace( url )
+            }))
+        .append(
+            $('<i>', {
+                class: 'fa fa-compress',
+                click: function() {
+                    $(this).siblings('.etcm-side__book__list').toggleClass('etcm-side__book__list--collapse')
+                }
+            }))
+        .append(
+            $('<i>', {
+                class: 'fa fa-refresh',
+                click: async()=> { 
+                    listbook.clear();
+                    listbook.in( await loadListbook() );
+                    $listbook.refresh( listbook );
+                }
+            }))
+        .append(
+            $('<ul>', {
+                class: 'etcm-side__book__list'
+            }));
+    
+    $('.sub_wrap_widget').children().eq(0).after($listbook);
+
+
+
+    if (listbook.size === 0) {
+        listbook.in( await loadListbook() );
+    }
+
+    $listbook.refresh( listbook );
+
+    if (listbook.size < 12) {
+        $listbook.children('.fa-compress').hide();
+    } else {
+        $listbook.children('.fa-compress').show();
     }
 };
-
+ETCM.prototype.addScrapbook = async function() {
+    addSideBook({
+        name: "scrapbook",
+        title: "스크랩",
+        url: "http://itcm.co.kr/index.php?act=dispMemberScrappedDocument",
+        parser: html=>
+            $(html).find('.table-striped').find('td.title').children('a')
+                .map((_, article)=> {
+                    return {
+                        text: article.innerText,
+                        href: article.pathname
+                    };
+                }).toArray()
+    });
+};
 ETCM.prototype.addWishbook = async function() {
-    let $wishbook = $('<div>', { class: 'etcm-side__book' })
-            .append($('<h2>', {text: "찜목록"}))
-            .append($('<i>', {class: 'fa fa-compress'}))
-            .append($('<i>', {class: 'fa fa-refresh'}))
-            .append($('<ul>', {class: 'etcm-side__book__list'})),
-        wishbook = new ProxySet("wishbook", []);
-    $('.sub_wrap_widget').children().eq(0).after($wishbook);
-
-
-    if (wishbook.size === 0) {
-        await loadwishbook();
-    }
-    refresh();
-
-
-    $wishbook.children('h2')
-        .click(()=> window.location.replace("http://itcm.co.kr/index.php?mid=game_news&_sort_index=check_wlist"));
-    $wishbook.children('.fa-refresh')
-        .click(async()=> { await loadwishbook(); refresh(); });
-    $wishbook.children('.fa-compress')
-        .click(function() { $(this).siblings('.etcm-side__book__list').toggleClass('etcm-side__book__list--collapse') });
-
-
-    if (wishbook.size < 12) {
-        $wishbook.children('.fa-compress').hide();
-    } else {
-        $wishbook.children('.fa-compress').show();
-    }
-
-
-
-    async function loadwishbook() {
-        let html = await GM.ajax("http://itcm.co.kr/index.php?mid=game_news&_sort_index=check_wlist"),
-            list = $(html).find('.bd_lst.bd_tb').children('tbody').children('tr').not('.notice').find('td.title').children('a:even')
-                        .map((_, article)=> {
-                            const href = article.search;
-                            return {
-                                text: article.innerText.trim(),
-                                href: /document_srl=(\d+)/.exec(href)[1]
-                            };
-                        }).toArray();
-
-        wishbook.clear();
-        wishbook.in( list );
-    }
-    function refresh() {
-        $wishbook.find('li').remove();
-        wishbook.forEach(({text, href})=> {
-            $('<li>', {
-                class: 'etcm-side__book__list__article',
-                html: $('<a>', {
-                    href,
-                    html: $.merge(
-                        $('<img>', {src: "/widgets/treasurej_popular/skins/DW_Portal/img/docu.gif"}),
-                        $('<span>', {text})
-                    )
-                })
-            }).appendTo($wishbook.children('ul'));
-        });
-    }
+    addSideBook({
+        name: "wishbook",
+        title: "찜목록",
+        url: "http://itcm.co.kr/index.php?mid=game_news&_sort_index=check_wlist",
+        parser: html=>
+            $(html).find('.bd_lst.bd_tb').children('tbody').children('tr').not('.notice').find('td.title').children('a:even')
+                .map((_, article)=> {
+                    const href = article.search;
+                    return {
+                        text: article.innerText.trim(),
+                        href: /document_srl=(\d+)/.exec(href)[1]
+                    };
+                }).toArray()
+    });
 };
 
 
 
 /* refresh content */
-ETCM.prototype.refreshContent = function() {
+ETCM.prototype.refreshContent = function($articles) {
     const etcm = this;
+    $articles = $articles || etcm.$articles;
 
-    this.$articles
+    $articles
         .each((_,article)=> {
             /* parse this article */
             let category = $(article).children('td.cate').text().trim(),
@@ -1008,20 +1048,13 @@ ETCM.prototype.refreshContent = function() {
 
 
 /* Procedures that require profileinfo. */
-ETCM.prototype.Upgrade = function(target, profileinfo) {
-    this.profileinfo = profileinfo;
+ETCM.prototype.Upgrade = function(target) {
+    this.run = (condition, arg)=> {
+        condition = condition || (()=>true);
 
-    this.set = profileinfo=> {
-        this.profileinfo = profileinfo;
-        return this;
-    };
-
-    this.run = ()=> {
-        Object.keys(Object.getPrototypeOf(this))
-            .filter(property_name=> target.commands.has(property_name))
-            .map(property_name=> Object.getPrototypeOf(this)[property_name])
-            .filter(property=> typeof property === "function")
-            .forEach(func => func(this.profileinfo));
+        Object.entries(Object.getPrototypeOf(this))
+            .filter(([property, value])=> condition([property, value]) && target.commands.has(property) && typeof value === "function")
+            .forEach(([property, func])=> func.call(this, arg));
     };
 };
 
@@ -1046,40 +1079,50 @@ ETCM.prototype.Upgrade.prototype.upgradeAppInfoDetails = function(profileinfo) {
 };
 
 ETCM.prototype.Upgrade.prototype.upgradeGameTagbox = function(profileinfo) {
-    $('.steam_read_selected').each(function() {
-        const $tagbox = $(this);
-
-        if ($tagbox.find('.mi_app_live').length === 0) {
-            const makeLine = (text) =>
-                $('<tr>', {
-                    class: 'mi_app_live',
-                    html: $('<td>',{
-                        attr: {colspan: '4'},
+    function makeLine(text) {
+        return $('<tr>', {
+                class: 'mi_app_live',
+                html: $('<td>',{
+                    attr: {colspan: '4'},
+                    html: $('<span>',{
+                        class: 'line',
                         html: $('<span>',{
-                            class: 'line',
-                            html: $('<span>',{
-                                class:'line_txt',
-                                html: $('<i>',{
-                                    class: 'fa fa-chevron-down',
-                                    attr: {'aria-hidden':'true'},
-                                    text
-                                })
+                            class:'line_txt',
+                            html: $('<i>',{
+                                class: 'fa fa-chevron-down',
+                                attr: {'aria-hidden':'true'},
+                                text
                             })
                         })
                     })
-                });
+                })
+            });
+    }
 
-            $tagbox.find('tbody')
-                .append( makeLine(" 미보유 게임"))
-                .append( makeLine(" 보유 게임"));
-        }
+    function parsing($app) {
+        const [match, div, id] = /steampowered\.com\/(\w+)\/(\d+)/.exec(
+            $app.find('.item_content .name').attr('href')
+        );
+        return {div, id: Number(id)};
+    }
 
-        $tagbox.find('.no_mi_app, .mi_app')
-            .each((_,app)=> {
-                let [match, div, id] = /steampowered\.com\/(\w+)\/(\d+)/.exec(
-                    $(app).find('.item_content .name').attr('href')
-                );
-                id = Number(id);
+
+
+    $('.steam_read_selected').each(function() {
+        const $tagbox = $(this);
+
+        (function addSeperator() {
+            if ($tagbox.find('.mi_app_live').length === 0) {
+                $tagbox.find('tbody')
+                    .append( makeLine(" 미보유 게임"))
+                    .append( makeLine(" 보유 게임"));
+            }
+        })();
+
+
+        (function fixOwningStatus($apps) {
+            $apps.each((_,app)=> {
+                const {div, id} = parsing($(app));
 
                 if ((div === "app" && !profileinfo.rgOwnedApps.includes(id))
                     || (div === "package" && !profileinfo.rgOwnedPackages.includes(id))) {
@@ -1093,6 +1136,13 @@ ETCM.prototype.Upgrade.prototype.upgradeGameTagbox = function(profileinfo) {
                             .addClass('mi_app')
                             .siblings('.mi_app_live').eq(1).after($(app));
                 }
+            });
+        })($tagbox.find('.no_mi_app, .mi_app'));
+
+
+        (function addWishAndIgnoreStatus($apps) {
+            $apps.each((_,app)=> {
+                const {div, id} = parsing($(app));
 
                 if (profileinfo.rgWishlist.includes(id)) {
                     $(app).addClass('etcm-wishApp');
@@ -1102,19 +1152,21 @@ ETCM.prototype.Upgrade.prototype.upgradeGameTagbox = function(profileinfo) {
                     $(app).addClass('etcm-ignoreApp');
                 }
             });
+        })($tagbox.find('.no_mi_app, .mi_app'));
 
-        $tagbox.find('.mi_app_live')
-            .css({cursor: 'pointer'})
-            .on({
-                click: function() {
-                    if ($(this).text().trim() === "미보유 게임") {
-                        $tagbox.find('.no_mi_app').toggle();
-                    }
-                    if ($(this).text().trim() === "보유 게임") {
-                        $tagbox.find('.mi_app').toggle();
-                    }
-                }
-            })
+
+        (function collapseList($button, $owningApps, $missingApps) {
+            $button
+                .css({cursor: 'pointer'})
+                .click(function() {
+                        if ($(this).text().trim() === "미보유 게임") {
+                            $owningApps.toggle();
+                        }
+                        if ($(this).text().trim() === "보유 게임") {
+                            $missingApps.toggle();
+                        }
+                    });
+        })($tagbox.find('.mi_app_live'), $tagbox.find('.mi_app'), $tagbox.find('.no_mi_app'));
     });
 };
 
@@ -1162,7 +1214,7 @@ ETCM.prototype.modifyDateGroup = function($articles) {
 
 ETCM.prototype.modifyShortlyVote = function($articles) {
     const etcm = this;
-    $articles = $articles || this.$articles;
+    $articles = $articles || etcm.$articles;
 
     const entry = etcm.$contents.find('th').length,
           index = etcm.$contents.find('th').index( etcm.$contents.find('.voted_count') );
@@ -1193,6 +1245,7 @@ ETCM.prototype.modifyShortlyVote = function($articles) {
 
 
 ETCM.prototype.modifyWishCheck = function($articles) {
+    const etcm = this;
     $articles = $articles || etcm.$articles;
 
     $articles.find('.steam_list_check')
@@ -1205,77 +1258,133 @@ ETCM.prototype.modifyWishCheck = function($articles) {
 };
 
 
+ETCM.prototype.modifyOthers = function($articles) {
+    const etcm = this;
+    $articles = $articles || etcm.$articles;
+
+    (function fixAppImageFading($app_img) {
+        $app_img.find('img').each(function() {
+            $(this).attr('src', $(this).data('original') );
+        });
+    })($articles.find('.app_image'));
+
+
+    (function fixTitleFading($hx) {
+        $hx.each((_, el)=> $(el).text($(el).attr('title')));
+    })($articles.find('.hx'));
+
+
+    if (window.location.href.includes("game_news")) {
+
+        (function fixStoreFilterTitle() {
+            $articles.each((_,el)=> {
+                const $store = $(el).children().eq(0).children().children();
+                $store.attr('title',$store.text().trim()).css({width:'45px',overflow:'hidden'});
+            });
+        })();
+    }
+};
+
+
 
 /* Setting */
 ETCM.prototype.openSettings = async function() {
     const etcm = this;
 
     function initialize(commands) {
-        $settings.find('.toggleSwitch__input')
-            .each(function() {
+
+        (function setSwitchBasedOnPreviousRecord($switches) {
+            $switches.each(function() {
                 $(this).prop('checked', commands.has( $(this).data('command') ));
             });
-
-        $('#etcm-settings--humble-montly-timer')
-            .prev('.etcm-settings__operation > .option')
-                .toggle( commands.has( $('#etcm-settings--humble-montly-timer').data('command')) )
-            .children()
-                .first('.etcm-settings__operation .option__timer-design').val( etcm.settings["humble_monthly_timer_design"])
-                .next('.etcm-settings__operation .option__show-period').val( etcm.settings["humble_monthly_show_period"] );
+        })(this.find('.toggleSwitch__input'));
 
 
-        $settings.find('.etcm-settings__showcase').find('li')
-            .filter(function() {
-                return $(this).data('loading') === etcm.settings.loading_case;
-            })
-            .each(function() {
-                $(this).addClass('selected')
-                    .siblings('.selected')
-                        .removeClass('selected');
-            });
+        (function setSubvalueOfHumbleMontlyTimerBasedOnPreviousRecord($humble_timer_checkbox) {
+            $humble_timer_checkbox
+                .prev('.etcm-settings__operation > .option')
+                    .toggle( commands.has( $humble_timer_checkbox.data('command')) )
+                .children()
+                    .first('.etcm-settings__operation .option__timer-design').val( etcm.settings["humble_monthly_timer_design"])
+                    .next('.etcm-settings__operation .option__show-period').val( etcm.settings["humble_monthly_show_period"] );
+
+        })(this.find('#etcm-settings--humble-montly-timer'));
+
+
+        (function highlightLoadingCaseBasedOnPreviousRecord($loading_cases) {
+            $loading_cases
+                .filter(function() {
+                    return $(this).data('loading') === etcm.settings.loading_case;
+                })
+                .each(function() {
+                    $(this).addClass('selected')
+                        .siblings('.selected')
+                            .removeClass('selected');
+                });
+        })(this.find('.etcm-settings__showcase').find('li'));
+
+        return this;
     }
 
-    function event(commands) {
-        $settings.find('.toggleSwitch__input')
-            .change(function() {
-                commands.io(this.checked, $(this).data('command'));
-            });
-
-        $('#etcm-settings--humble-montly-timer').change(function() {
-            $(this).prev('.etcm-settings__operation > .option').toggle(this.checked);
-        })
-        .prev('.etcm-settings__operation > .option').children()
-            .first('.etcm-settings__operation .option__timer-design').change(function() {
-                etcm.settings["humble_monthly_timer_design"] = $(this).val();
-            })
-            .next('.etcm-settings__operation .option__show-period').change(function() {
-                etcm.settings["humble_monthly_show_period"] = $(this).val();
-            });
+    function setEvent(commands) {
+        (function setEventSwitch($switches) {
+            $switches
+                .change(function() {
+                    commands.io(this.checked, $(this).data('command'));
+                });
+        })(this.find('.toggleSwitch__input'));
 
 
-        $settings.find('.etcm-settings__showcase').find('li')
-            .click(function() {
-                $(this) .addClass('selected')
-                    .siblings('.selected')
-                        .removeClass('selected');
+        (function setEventSubvalueOFHumbleMonthlyTimer($humble_timer_checkbox) {
+            $humble_timer_checkbox
+                .change(function() {
+                    $(this).prev('.etcm-settings__operation > .option').toggle(this.checked);
+                })
+                .prev('.etcm-settings__operation > .option').children()
+                    .first('.etcm-settings__operation .option__timer-design').change(function() {
+                        etcm.settings["humble_monthly_timer_design"] = $(this).val();
+                    })
+                    .next('.etcm-settings__operation .option__show-period').change(function() {
+                        etcm.settings["humble_monthly_show_period"] = $(this).val();
+                    });
+        })(this.find('#etcm-settings--humble-montly-timer'));
 
-                etcm.settings.loading_case = $(this).data('loading');
-            });
+        
+        (function setEventLoadingCase($loading_cases) {
+            $loading_cases
+                .click(function() {
+                    $(this) .addClass('selected')
+                        .siblings('.selected')
+                            .removeClass('selected');
+
+                    etcm.settings.loading_case = $(this).data('loading');
+                });
+        })($settings.find('.etcm-settings__showcase').find('li'));
+
+        return this;
     }
+
+
 
     var $settings = $( await $.get( await GM.getResourceUrl("etcm-set-layout")) );
+    $settings.initialize = initialize;
+    $settings.setEvent = setEvent;
 
-    $('.inner_content').children().not('script').hide().parent().append( $settings );
 
     $settings.find('.etcm-settings__header__version').text("Ver. "+ GM.info.script.version);
     $settings.find('.etcm-settings__header__save').click(()=> location.reload());
     $settings.find('.etcm-settings__header__reset').click(()=> { 
-        etcm.commands = new ProxySet("commands", etcm.default_commands, true);
-        initialize(etcm.commands);
+        etcm.commands = ProxySet("commands", etcm.default_commands, true);
+        $settings.initialize(etcm.commands);
     });
+    $settings.appendTo(
+        $('.inner_content').children().not('script').hide().parent());
 
-    initialize(etcm.commands);
-    event(etcm.commands);
+
+
+    $settings
+        .initialize(etcm.commands)
+        .setEvent(etcm.commands);
 };
 
 
@@ -1287,7 +1396,6 @@ etcm.run();
 
 
 
-/* modify ui */
 (function modifyUI() {
     if (window.location.href.includes("game_news")) {
         $('.viewer_with').closest('.bd_hd')
@@ -1331,18 +1439,6 @@ etcm.run();
         $('#scrollUp').addClass('etcm-scrollUp');
     });
 })();
-
-function repeatModifyUI($articles) {
-    $articles.find('.hx').each((_, el)=> $(el).text($(el).attr('title')));
-    if (window.location.href.includes("game_news")) {
-        $articles.each((_,el)=> {
-            const $store = $(el).children().eq(0).children().children();
-            $store.attr('title',$store.text().trim()).css({width:'45px',overflow:'hidden'});
-            
-        });
-    }
-}
-repeatModifyUI( etcm.$articles );
 
 
 })( jQuery, window, document);
