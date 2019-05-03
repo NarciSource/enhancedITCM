@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         enhancedITCM
 // @namespace    etcm
-// @version      0.1.7
+// @version      0.1.7-1
 // @description  EnhancedITCM is a user script that enhances the http://itcm.co.kr/
 // @author       narci <jwch11@gmail.com>
 // @match        *://itcm.co.kr/*
@@ -13,6 +13,7 @@
 // @require      https://raw.githubusercontent.com/NarciSource/steamCb.js/master/src/tablesorter.js
 // @require      https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.24.0/moment.min.js
 // @require      https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.24.0/locale/ko.js
+// @require      https://cdnjs.cloudflare.com/ajax/libs/moment-timezone/0.5.23/moment-timezone-with-data.min.js
 // @require      https://raw.githubusercontent.com/NarciSource/enhancedITCM/master/vendor/TimeCircles.js
 // @require      https://raw.githubusercontent.com/NarciSource/enhancedITCM/master/vendor/flipclock.js
 // @resource     etcm-logo https://raw.githubusercontent.com/NarciSource/enhancedITCM/master/img/logo.png
@@ -124,6 +125,22 @@ if (typeof GM === "undefined") {
         return dfd.promise();
     };
 })(GM);
+
+
+
+(function enhanceMoment(moment) {
+    moment.prototype.nextDay = function(day) {
+        if (typeof day === "string") {
+            day = this.localeData().weekdaysParse(day);
+        }
+        if (this.weekday() > day) {
+            this.add(1,'week');
+        }
+        this.weekday(day);
+        return this;
+    };
+    moment.locale('ko');
+})(moment);
 
 
 
@@ -307,7 +324,7 @@ function ETCM() {
         loading_case: "magnify"
     };
 
-    moment.locale('ko');
+
 
     if (loadFromStorage("etcm-version") !== GM.info.script.version) { //update
         saveToStorage("etcm-version")(GM.info.script.version);
@@ -427,29 +444,27 @@ ETCM.prototype.enhanceInfiniteScroll = function() {
 
     $(window).scroll(function() {
         if (loading_bar.is(':hidden') && $(window).scrollTop() > $(document).height() - $(window).height() - 50) {
-            loading_bar.show();
+            let url = $('.bd_pg').find('.direction').last().attr('href');
+            if (url) {
+                loading_bar.show();                
+                
+                $.ajax({ url }).then(html=> {
+                    let $loaded_html = $(html),
+                        $loaded_content = $loaded_html.find('.bd_lst.bd_tb').children('tbody'),
+                        $loaded_articles = $loaded_content.children('tr').not('.notice');
 
-            $.ajax({
-                url: $('.bd_pg').find('.direction').last().attr('href')
 
-            }).then(html=> {
-                let $loaded_html = $(html),
-                    $loaded_content = $loaded_html.find('.bd_lst.bd_tb').children('tbody'),
-                    $loaded_articles = $loaded_content.children('tr').not('.notice');
+                    let condition = ([property, value])=> etcm.recursive_commands.includes(property);
+                    etcm.run( condition, $loaded_articles );
+                    etcm.refreshContent( $loaded_articles );
 
+                    etcm.$articles = etcm.$contents.children('tbody').append( $loaded_articles ).children('tr');
 
-                let condition = ([property, value])=> etcm.recursive_commands.includes(property);
-                etcm.run( condition, $loaded_articles );
-                etcm.refreshContent( $loaded_articles );
+                    $('.bd_pg').replaceWith($loaded_html.find('.bd_pg'));
+                    loading_bar.hide();
 
-                etcm.$articles = etcm.$contents.children('tbody').append( $loaded_articles ).children('tr');
-
-                $('.bd_pg').replaceWith($loaded_html.find('.bd_pg'));
-                loading_bar.hide();
-
-            }).fail(err=> {
-                console.warn(err);
-            });
+                }).fail(err=> console.warn(err));
+            }
         }
     });
 };
@@ -489,36 +504,28 @@ ETCM.prototype.addHumbleMontlyTimer = function() {
             )}).toggle( date.diff(moment(), 'seconds')>0 );
     }
 
-    function analogView($dashboards) {
-        $dashboards
-            .TimeCircles({
+    function setToAnalogClock() {
+        this.TimeCircles({
                 count_past_zero: false,
-                total_duration: "Auto",
+                total_duration: 'Months',
+                animation: 'smooth',
                 bg_width: 3.2,
                 fg_width: 0.02,
                 number_size: 0.2,
                 text_size: 0.13,
                 circle_bg_color: '#FFF',
                 time: {
-                    Days: {
-                        text: "일", color: 'cadetblue'
-                    },
-                    Hours: {
-                        text: "시", color: '#bb3d3d'
-                    },
-                    Minutes: {
-                        text: "분", color: '#48698d'
-                    },
-                    Seconds: {
-                        text: "초", color: '#fdc76c'
-                    }
+                    Days: { text: "일", color: 'cadetblue' },
+                    Hours: { text: "시", color: '#bb3d3d' },
+                    Minutes: { text: "분", color: '#48698d' },
+                    Seconds: { text: "초", color: '#fdc76c' }
                 }
             });
     }
 
-    function digitalView($dashboards) {
-        $dashboards.each((_,dashboard) => {
-            const time = $(dashboard).removeData('tcId').data('timer');
+    function setToDigitalClock() {
+        this.each((_,dashboard) => {
+            const time = $(dashboard).data('timer');
 
             $(dashboard).FlipClock( time, {
                     autoStart: true,
@@ -528,42 +535,48 @@ ETCM.prototype.addHumbleMontlyTimer = function() {
         });
     }
 
+    function lz_makeDashboard(launchDate, autoPayDate) {
+        let instance = undefined;
+        return function() {
+            instance = instance ||
+                $('<div>', { class: 'column etcm-humble-monthly-timer' })
+                    .insertAfter( $('aside.e1').children('.column_login') )
 
+                    .append( addTimer({ title: "Humble Montly", class_name: 'release-monthly', date: launchDate,
+                                        board_href: "/?_filter=search&mid=game_news&search_keyword=humble+monthly&search_target=title",
+                                        humble_href: "https://www.humblebundle.com/monthly/checkout?selected_plan=monthly_basic"}))
+                    .append( addTimer({ title: "자동 결제일", class_name: 'auto-subscribe', date: autoPayDate,
+                                        humble_href: "https://www.humblebundle.com/user/cancel-subscription"}))
 
-    /* HumbleMontly release  first   saturday   3 o'clock   of every month */
-    const firstSaturday = {'date':1, 'day':6, 'hours':3, 'minutes':0, 'seconds':0, 'milliseconds':0},
+                    .find('.etcm-timer__dashboard');
 
-          releaseDate = moment().set(firstSaturday).isAfter(moment())?
-                    moment().set(firstSaturday)
-                  : moment().add(1,'month').set(firstSaturday),
-          autoSubscribeDate = releaseDate.clone().subtract(7,'days');
-
-    if (this.settings["humble_monthly_show_period"] != -1
-     && this.settings["humble_monthly_show_period"] < releaseDate.diff(moment(), 'days')) {
-        return;
-    }
-
-
-    const timerDiv = $('<div>', { class: 'column etcm-humble-monthly-timer' })
-        .insertAfter( $('aside.e1').children('.column_login') )
-
-        .append( addTimer({ title: "Humble Montly", class_name: 'release-monthly', date: releaseDate,
-                            board_href: "/?_filter=search&mid=game_news&search_keyword=humble+monthly&search_target=title",
-                            humble_href: "https://www.humblebundle.com/monthly/checkout?selected_plan=monthly_basic"}))
-        .append( addTimer({ title: "자동 결제일", class_name: 'auto-subscribe', date: autoSubscribeDate,
-                            humble_href: "https://www.humblebundle.com/user/cancel-subscription"}))
-
-
-    if (this.settings["humble_monthly_timer_design"] === "Analog") {
-        try {
-            analogView( $(timerDiv).find('.etcm-timer__dashboard') );
-        } catch(e) {
-            console.error(e);
-            digitalView( $(timerDiv).find('.etcm-timer__dashboard') );
+            instance.setToAnalogClock = setToAnalogClock;
+            instance.setToDigitalClock = setToDigitalClock;
+            return instance;
         }
     }
-    if (this.settings["humble_monthly_timer_design"] === "Digital") {
-        digitalView( $(timerDiv).find('.etcm-timer__dashboard') );
+
+    function upcoming(event) {
+        const now = moment(),
+              eventday = event(now);
+        return now.isBefore(eventday)? eventday : event(now.add(1,'month'));
+    }
+
+
+
+    const humbleMontlyEvent = time=> time.clone().tz('America/New_York').startOf('month').nextDay('금요일').hours(13).tz('Asia/Seoul'),
+          launchDate = upcoming(humbleMontlyEvent),
+          autoPayDate = launchDate.clone().subtract(1,'week'),
+          call_dashboards = lz_makeDashboard(launchDate, autoPayDate);
+
+
+    if (this.settings["humble_monthly_show_period"] >= launchDate.diff(moment(), 'days')) {
+        if (this.settings["humble_monthly_timer_design"] === "Analog") {
+            call_dashboards().setToAnalogClock();
+        }
+        else if (this.settings["humble_monthly_timer_design"] === "Digital") {
+            call_dashboards().setToDigitalClock();
+        }
     }
 };
 
