@@ -334,11 +334,12 @@
 .etcm-timer__dashboard.flip-clock-wrapper {
     font-size: 20px;
 
-    width: max-content;
-    margin-left: auto;
-    margin-right: auto;
+    left: 150px;
 
-    zoom: .45;
+    width: max-content;
+    margin: 0;
+
+    transform: scale(.5) translate(-100%);
 }
 
 
