@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         enhancedITCM
 // @namespace    etcm
-// @version      0.1.7-3
+// @version      0.1.8
 // @description  EnhancedITCM is a user script that enhances the http://itcm.co.kr/
 // @author       narci <jwch11@gmail.com>
 // @match        *://itcm.co.kr/*
@@ -9,6 +9,7 @@
 // @require      http://code.jquery.com/jquery-3.3.1.min.js
 // @require      http://cdnjs.cloudflare.com/ajax/libs/ramda/0.25.0/ramda.min.js
 // @require      https://raw.githubusercontent.com/NarciSource/steamCb.js/master/src/exchange.js
+// @require      https://cdnjs.cloudflare.com/ajax/libs/jquery-contextmenu/2.8.0/jquery.contextMenu.min.js
 // @require      https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.31.1/js/jquery.tablesorter.min.js
 // @require      https://raw.githubusercontent.com/NarciSource/steamCb.js/master/src/tablesorter.js
 // @require      https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.24.0/moment.min.js
@@ -22,6 +23,7 @@
 // @resource     etcm-tgg-style https://raw.githubusercontent.com/NarciSource/enhancedITCM/master/css/toggleSwitch.css
 // @resource     etcm-tcr-style https://cdnjs.cloudflare.com/ajax/libs/timecircles/1.5.3/TimeCircles.min.css
 // @resource     etcm-flc-style https://github.com/objectivehtml/FlipClock/raw/master/compiled/flipclock.css
+// @resource     etcm-cmn-style https://cdnjs.cloudflare.com/ajax/libs/jquery-contextmenu/2.8.0/jquery.contextMenu.min.css
 // @resource     etcm-set-layout https://raw.githubusercontent.com/NarciSource/enhancedITCM/master/html/settings.html
 // @updateURL    https://raw.githubusercontent.com/NarciSource/enhancedITCM/master/enhancedITCM.meta.js
 // @downloadURL  https://raw.githubusercontent.com/NarciSource/enhancedITCM/master/enhancedITCM.user.js
@@ -163,27 +165,32 @@ if (typeof GM === "undefined") {
         "etcm-set-style",
         "etcm-tgg-style",
         "etcm-tcr-style",
-        "etcm-flc-style"
+        "etcm-flc-style",
+        "etcm-cmn-style",
     ]);
 })($('head'));
 
 
 
-var saveToStorage = R.curry((storage, name, value)=> storage.setItem(name, (typeof value==="object")? JSON.stringify(value) : value)),
-    loadFromStorage = R.curry((storage, name)=> storage.getItem(name)),
-    deleteFromStorage = R.curry((storage, name)=> storage.removeItem(name));
+var saveTo = R.curry((storage, name, value)=> storage.setItem(name, (typeof value==="object")? JSON.stringify(value) : value)),
+    loadFrom = R.curry((storage, name)=> storage.getItem(name)),
+    deleteFrom = R.curry((storage, name)=> storage.removeItem(name));
 
-saveToStorage = saveToStorage(localStorage);//or GM
-loadFromStorage = loadFromStorage(localStorage);
-deleteFromStorage = deleteFromStorage(localStorage);
+saveToLocalStorage = saveTo(localStorage);
+loadFromLocalStorage = loadFrom(localStorage);
+deleteFromLocalStorage = deleteFrom(localStorage);
+saveToGMStorage = saveTo(GM);
+loadFromGMStorage = loadFrom(GM);
+deleteFromGMStorage = deleteFrom(GM);
+
 
 
 function ProxySet(key, value, force) {
     class ProxySet extends Set {
         constructor(key, value, force) {
-            super((force || !loadFromStorage(key))? value : JSON.parse(loadFromStorage(key)));
+            super((force || !loadFromLocalStorage(key))? value : JSON.parse(loadFromLocalStorage(key)));
             
-            this._saveIntoStorage = ()=> saveToStorage(key)(Array.from(this));
+            this._saveIntoStorage = ()=> saveToLocalStorage(key)(Array.from(this));
 
             this._saveIntoStorage();
 
@@ -226,19 +233,19 @@ function ProxySet(key, value, force) {
 
 function ProxyObject(obj, force) {
     Object.entries(obj).forEach(([key, val])=> {
-        if (force || !loadFromStorage(key)) saveToStorage(key)(val);
-        else obj[key] = loadFromStorage(key);
+        if (force || !loadFromLocalStorage(key)) saveToLocalStorage(key)(val);
+        else obj[key] = loadFromLocalStorage(key);
     });
     
     return new Proxy(obj, {
         get(target, key, receiver) {
             if (!Reflect.has(target, key, receiver)) {
-                return loadFromStorage(key);
+                return loadFromLocalStorage(key);
             }
             return Reflect.get(target, key, receiver);
         },
         set(target, key, val, receiver) {
-            saveToStorage(key)(val);
+            saveToLocalStorage(key)(val);
             return Reflect.set(target, key, val, receiver);
         }
     });
@@ -284,17 +291,19 @@ function ETCM() {
         "enhanceInfiniteScroll",
 
         "addFilter",
-        "addSteamServerStatusMonitor",
-        "addHumbleMontlyTimer",
+        //"addSteamServerStatusMonitor",
+        "addHumbleChoiceTimer",
         "addShortcutSide",
         "addArticleBlacklist",
         //"addMemberBlacklist",
         "addScrapbook",
         //"addWishbook",
+        "addContextMenu",
 
         "upgradeProfile",
-        "upgradeAppInfoDetails",
+        //"upgradeAppInfoDetails",
         "upgradeGameTagbox",
+        "upgradCBTable",
 
         "modifyProfileToCircle",
         "modifyHideBadge",
@@ -319,15 +328,15 @@ function ETCM() {
         "modifyOthers"
     ];
     this.default_settings = {
-        humble_monthly_show_period: 35, //always
-        humble_monthly_timer_design: "Analog",
+        humble_choice_show_period: 35, //always
+        humble_choice_timer_design: "Analog",
         loading_case: "magnify"
     };
 
 
 
-    if (loadFromStorage("etcm-version") !== GM.info.script.version) { //update
-        saveToStorage("etcm-version")(GM.info.script.version);
+    if (loadFromLocalStorage("etcm-version") !== GM.info.script.version) { //update
+        saveToLocalStorage("etcm-version")(GM.info.script.version);
         var set_force = true;
     }
 
@@ -367,7 +376,7 @@ ETCM.prototype._loadProfileInfo = async function() {
     if (profileinfo === undefined || profileinfo.rgOwnedApps.length === 0) {
         console.error("Steam account is strange...");
     }
-    saveToStorage("profileinfo")(profileinfo);
+    saveToGMStorage("profileinfo")(profileinfo);
     return profileinfo;
 };
 
@@ -409,7 +418,7 @@ ETCM.prototype.enhanceLogo = function() {
                     href: steam_signin_url
                 })
             );
-            deleteFromStorage("profileinfo");
+            deleteFromLocalStorage("profileinfo");
         }
         else {
             $('.logo').append(
@@ -425,7 +434,7 @@ ETCM.prototype.enhanceLogo = function() {
                     }
                 })
             );
-            etcm.profileinfo = await loadFromStorage("profileinfo");
+            etcm.profileinfo = await loadFromGMStorage("profileinfo");
             etcm.profileinfo = etcm.profileinfo? JSON.parse( etcm.profileinfo ) : await etcm._loadProfileInfo();
             etcm.upgrade.run(undefined, etcm.profileinfo);
         }
@@ -471,7 +480,7 @@ ETCM.prototype.enhanceInfiniteScroll = function() {
 
 
 
-ETCM.prototype.addHumbleMontlyTimer = function() {
+ETCM.prototype.addHumbleChoiceTimer = function() {
     function addTimer({title, class_name, date, humble_href, board_href}) {
         return $('<div>', {
             class: 'etcm-timer '+class_name,
@@ -536,14 +545,14 @@ ETCM.prototype.addHumbleMontlyTimer = function() {
         let instance = undefined;
         return function() {
             instance = instance ||
-                $('<div>', { class: 'column etcm-humble-monthly-timer' })
+                $('<div>', { class: 'column etcm-humble-choice-timer' })
                     .insertAfter( $('aside.e1').children('.column_login') )
 
-                    .append( addTimer({ title: "Humble Montly", class_name: 'release-monthly', date: launchDate,
-                                        board_href: "/?_filter=search&mid=game_news&search_keyword=humble+monthly&search_target=title",
-                                        humble_href: "https://www.humblebundle.com/monthly/checkout?selected_plan=monthly_basic"}))
+                    .append( addTimer({ title: "Humble Choice", class_name: 'release-choice', date: launchDate,
+                                        board_href: "/?_filter=search&mid=game_news&search_keyword=humble+choice&search_target=title",
+                                        humble_href: "https://www.humblebundle.com/subscription"}))
                     .append( addTimer({ title: "자동 결제일", class_name: 'auto-subscribe', date: autoPayDate,
-                                        humble_href: "https://www.humblebundle.com/user/cancel-subscription"}))
+                                        humble_href: "https://www.humblebundle.com/user/pause-subscription"}))
 
                     .find('.etcm-timer__dashboard');
 
@@ -561,17 +570,17 @@ ETCM.prototype.addHumbleMontlyTimer = function() {
 
 
 
-    const humbleMontlyEvent = time=> time.clone().tz('America/New_York').startOf('month').nextDay('금요일').hours(13).tz('Asia/Seoul'),
-          launchDate = upcoming(humbleMontlyEvent),
+    const humbleChoiceEvent = time=> time.clone().tz('America/New_York').startOf('month').nextDay('금요일').hours(13).tz('Asia/Seoul'),
+          launchDate = upcoming(humbleChoiceEvent),
           autoPayDate = launchDate.clone().subtract(1,'week'),
           call_dashboards = lz_makeDashboard(launchDate, autoPayDate);
 
 
-    if (this.settings["humble_monthly_show_period"] >= launchDate.diff(moment(), 'days')) {
-        if (this.settings["humble_monthly_timer_design"] === "Analog") {
+    if (this.settings["humble_choice_show_period"] >= launchDate.diff(moment(), 'days')) {
+        if (this.settings["humble_choice_timer_design"] === "Analog") {
             call_dashboards().setToAnalogClock();
         }
-        else if (this.settings["humble_monthly_timer_design"] === "Digital") {
+        else if (this.settings["humble_choice_timer_design"] === "Digital") {
             call_dashboards().setToDigitalClock();
         }
     }
@@ -994,6 +1003,73 @@ ETCM.prototype.addWishbook = async function() {
 
 
 
+ETCM.prototype.addContextMenu = function () {
+    $('body').append(
+        $('<menu>', {
+            type: 'context',
+            id: "ContextMenu1",
+            html: $.merge(
+                $('<menuitem>', {
+                    label: '스팀 라이브러리',
+                    click: () => window.location.href = `steam://open/minigameslist`
+                }),
+                $('<menuitem>', {
+                    label: '스팀 콘솔',
+                    click: () => window.location.href = `steam://open/console`
+                }))
+        })
+    ).attr('contextmenu', "ContextMenu1");
+
+
+
+    $('a')
+        .filter((_, item) => $(item).attr('href') && $(item).attr('href').includes("steampowered.com/app/"))
+        .addClass('steamUrl')
+        .each((_, item) => {
+            const [match, div, id] = /steampowered\.com\/(\w+)\/(\d+)/.exec(item.href);
+
+            $(item).data({ div, id, name: item.text });
+        });
+
+    $.contextMenu({
+        selector: '.steamUrl',
+        items: {
+            store: { name: "스토어 페이지로 가기" },
+            steamdb: { name: "스팀디비로 가기" },
+            itad: { name: "itad로 가기" },
+            itcm: { name: "잇셈 게시글 찾기" },
+            step1: "---------",
+            run: { name: "바로 실행" }
+        },
+        callback: function (key, options) {
+            let div = this.data("div"),
+                id = this.data("id"),
+                name = this.data("name");
+
+            switch (key) {
+                case "store":
+                    window.location.href = `https://store.steampowered.com/${div}/${id}`;
+                    break;
+                case "steamdb":
+                    window.location.href = `https://steamdb.info/${div}/${id}/`;
+                    break;
+                case "itad":
+                    window.location.href = `https://isthereanydeal.com/search/?q=${name}`;
+                    break;
+                case "itcm":
+                    if (div === "app")
+                        window.location.href = `http://itcm.co.kr/index.php?mid=g_board&app=${id}`;
+                    break;
+                case "run":
+                    window.location.href = `steam://install/${id}`;
+                    break;
+            }
+        }
+    });
+}
+
+
+
 /* refresh content */
 ETCM.prototype.refreshContent = function($articles) {
     const etcm = this;
@@ -1005,6 +1081,7 @@ ETCM.prototype.refreshContent = function($articles) {
             let category = $(article).children('td.cate').text().trim(),
                 document_srl = $(article).data('document_srl'),
                 writer_id = $(article).children('td.author').find('a').attr('class'),
+                title = $(article).children('td.title').children('a.hx').title,
                 store;
 
             if (window.location.href.includes("game_news")) {
@@ -1128,22 +1205,22 @@ ETCM.prototype.Upgrade.prototype.upgradeGameTagbox = function(profileinfo) {
             }
         })();
 
+        $tagbox.find('.mi_app_live').eq(0).addClass('.mi_not_owned');
+        $tagbox.find('.mi_app_live').eq(1).addClass('.mi_owned');
+
 
         (function fixOwningStatus($apps) {
             $apps.each((_,app)=> {
                 const {div, id} = parsing($(app));
 
-                if ((div === "app" && !profileinfo.rgOwnedApps.includes(id))
-                    || (div === "package" && !profileinfo.rgOwnedPackages.includes(id))) {
-                    $(app).removeClass('mi_app')
-                            .addClass('no_mi_app')
-                            .siblings('.mi_app_live').eq(0).after($(app));
-                }
                 if ((div === "app" && profileinfo.rgOwnedApps.includes(id))
-                    || (div === "package" && !profileinfo.rgOwnedPackages.includes(id))) {
-                    $(app).removeClass('no_mi_app')
-                            .addClass('mi_app')
-                            .siblings('.mi_app_live').eq(1).after($(app));
+                    || (div === "package" && profileinfo.rgOwnedPackages.includes(id))) {
+                    $(app).addClass('mi_app').removeClass('no_mi_app')                          
+                          .siblings('.mi_owned').after($(app));
+                }
+                else {
+                    $(app).addClass('no_mi_app').removeClass('mi_app')                          
+                          .siblings('.mi_not_owned').after($(app));
                 }
             });
         })($tagbox.find('.no_mi_app, .mi_app'));
@@ -1168,15 +1245,41 @@ ETCM.prototype.Upgrade.prototype.upgradeGameTagbox = function(profileinfo) {
             $button
                 .css({cursor: 'pointer'})
                 .click(function() {
-                        if ($(this).text().trim() === "미보유 게임") {
+                        if ($(this).hasClass('.mi_not_owned')) {
                             $owningApps.toggle();
                         }
-                        if ($(this).text().trim() === "보유 게임") {
+                        if ($(this).hasClass('.mi_owned')) {
                             $missingApps.toggle();
                         }
                     });
-        })($tagbox.find('.mi_app_live'), $tagbox.find('.mi_app'), $tagbox.find('.no_mi_app'));
+        })($tagbox.find('.mi_app_live'), $tagbox.find('.no_mi_app'), $tagbox.find('.mi_app'));
     });
+};
+
+ETCM.prototype.Upgrade.prototype.upgradCBTable = function(profileinfo) {
+    $('.cb-table > tbody > tr')
+        .each(function () {
+            const href = $(this).find('a').attr('href');
+            let [match, div, id] = /steampowered\.com\/(\w+)\/(\d+)/.exec(href);
+            id = Number(id);
+
+
+            if ((div === "app" && profileinfo.rgOwnedApps.includes(id))
+                || (div === "package" && profileinfo.rgOwnedPackages.includes(id))) {
+                $(this)
+                    .attr('title', "보유 게임")
+                    .css('opacity', 0.3);
+            }
+
+            if (profileinfo.rgWishlist.includes(id)) {
+                $(this).children().first()
+                    .append($('<i>', {
+                        class: 'fa fa-shopping-cart',
+                        title: "찜한 게임",
+                        css: { 'margin-left': '5px' }
+                    }));
+            }
+        });
 };
 
 
@@ -1260,9 +1363,15 @@ ETCM.prototype.modifyWishCheck = function($articles) {
     $articles.find('.steam_list_check')
         .find('label').children().hide()
         .closest('label').filter(':even').append(
-            $('<i>', { class: 'fa fa-credit-card' })
+            $('<i>', {
+                class: 'fa fa-credit-card',
+                title: "구입 목록에 추가"
+            })
         ).next().append(
-            $('<i>', { class: 'fa fa-shopping-cart' })
+            $('<i>', {
+                class: 'fa fa-shopping-cart',
+                title: "찜 목록에 추가"
+            })
         );
 };
 
@@ -1309,13 +1418,13 @@ ETCM.prototype.openSettings = async function() {
         })(this.find('.toggleSwitch__input'));
 
 
-        (function setSubvalueOfHumbleMontlyTimerBasedOnPreviousRecord($humble_timer_checkbox) {
+        (function setSubvalueOfHumbleChoiceTimerBasedOnPreviousRecord($humble_timer_checkbox) {
             $humble_timer_checkbox
                 .prev('.etcm-settings__operation > .option')
                     .toggle( commands.has( $humble_timer_checkbox.data('command')) )
                 .children()
-                    .first('.etcm-settings__operation .option__timer-design').val( etcm.settings["humble_monthly_timer_design"])
-                    .next('.etcm-settings__operation .option__show-period').val( etcm.settings["humble_monthly_show_period"] );
+                    .first('.etcm-settings__operation .option__timer-design').val( etcm.settings["humble_choice_timer_design"])
+                    .next('.etcm-settings__operation .option__show-period').val( etcm.settings["humble_choice_show_period"] );
 
         })(this.find('#etcm-settings--humble-montly-timer'));
 
@@ -1344,17 +1453,17 @@ ETCM.prototype.openSettings = async function() {
         })(this.find('.toggleSwitch__input'));
 
 
-        (function setEventSubvalueOFHumbleMonthlyTimer($humble_timer_checkbox) {
+        (function setEventSubvalueOFHumbleChoiceTimer($humble_timer_checkbox) {
             $humble_timer_checkbox
                 .change(function() {
                     $(this).prev('.etcm-settings__operation > .option').toggle(this.checked);
                 })
                 .prev('.etcm-settings__operation > .option').children()
                     .first('.etcm-settings__operation .option__timer-design').change(function() {
-                        etcm.settings["humble_monthly_timer_design"] = $(this).val();
+                        etcm.settings["humble_choice_timer_design"] = $(this).val();
                     })
                     .next('.etcm-settings__operation .option__show-period').change(function() {
-                        etcm.settings["humble_monthly_show_period"] = $(this).val();
+                        etcm.settings["humble_choice_show_period"] = $(this).val();
                     });
         })(this.find('#etcm-settings--humble-montly-timer'));
 

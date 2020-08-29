@@ -3,7 +3,7 @@
     <div class="etcm-settings__header">
         <div class="etcm-settings__header__line"></div>
         <h1>Enhanced ITCM Setting</h1>
-        <button class="etcm-settings__header__save">Reflect</button>
+        <button class="etcm-settings__header__save">Save</button>
         <div class="etcm-settings__header__version">Ver. 0.1.xxx</div>
         <i class="etcm-settings__header__reset fa fa-refresh"> Default</i>
     </div>
@@ -13,12 +13,12 @@
         <div class="etcm-settings__list">
             <h3>Operations</h3>
             <div class="etcm-settings__operation toggleSwitch">
-                <p>Steam server notice</p>
-                <input type="checkbox" id="etcm-settings--steam-server-notice" class="toggleSwitch__input" checked="" data-command="addSteamServerStatusMonitor">
+                <p><STRIKE>Steam server notice</STRIKE></p>
+                <input type="checkbox" id="etcm-settings--steam-server-notice" class="toggleSwitch__input" checked="" data-command="addSteamServerStatusMonitor" disabled>
                 <label for="etcm-settings--steam-server-notice" class="toggleSwitch__label" data-off="off" data-on="on"></label>
             </div>
             <div class="etcm-settings__operation toggleSwitch">
-                <p>Humble Monthly Timer</p>
+                <p>Humble Choice Timer</p>
                 <div class="option">
                     <select class="option__timer-design">
                         <option>Analog</option>
@@ -31,8 +31,8 @@
                         <option value="35">Always</option>
                     </select>
                 </div>
-                <input type="checkbox" id="etcm-settings--humble-montly-timer" class="toggleSwitch__input" checked="" data-command="addHumbleMontlyTimer">
-                <label for="etcm-settings--humble-montly-timer" class="toggleSwitch__label" data-off="off" data-on="on"></label>
+                <input type="checkbox" id="etcm-settings--humble-choice-timer" class="toggleSwitch__input" checked="" data-command="addHumbleChoiceTimer">
+                <label for="etcm-settings--humble-choice-timer" class="toggleSwitch__label" data-off="off" data-on="on"></label>
             </div>
             <div class="etcm-settings__operation toggleSwitch">
                 <p>Infinite scroll</p>
@@ -68,6 +68,16 @@
                 <p>Enhanced game tag box</p>
                 <input type="checkbox" id="etcm-settings--game-tag-box" class="toggleSwitch__input" checked="" data-command="upgradeGameTagbox">
                 <label for="etcm-settings--game-tag-box" class="toggleSwitch__label" data-off="off" data-on="on"></label>
+            </div>
+            <div class="etcm-settings__operation toggleSwitch">
+                <p>Upgrad CBTable</p>
+                <input type="checkbox" id="etcm-settings--upagrade-cbtable" class="toggleSwitch__input" checked="" data-command="upgradCBTable">
+                <label for="etcm-settings--upagrade-cbtable" class="toggleSwitch__label" data-off="off" data-on="on"></label>
+            </div>
+            <div class="etcm-settings__operation toggleSwitch">
+                <p>Context Menu</p>
+                <input type="checkbox" id="etcm-settings--context-menu" class="toggleSwitch__input" checked="" data-command="addContextMenu">
+                <label for="etcm-settings--context-menu" class="toggleSwitch__label" data-off="off" data-on="on"></label>
             </div>
         </div>
 

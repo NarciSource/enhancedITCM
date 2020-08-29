@@ -316,7 +316,7 @@
     text-shadow: 0 1px 1px rgba(0,0,0,.1);
 }
 
-.etcm-timer.release-monthly .etcm-timer__title__text {
+.etcm-timer.release-choice .etcm-timer__title__text {
     font-size: 15px;
 }
 .etcm-timer.auto-subscribe .etcm-timer__title__text {
