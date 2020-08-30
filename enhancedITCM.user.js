@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         enhancedITCM
 // @namespace    etcm
-// @version      0.1.8
+// @version      0.1.8-1
 // @description  EnhancedITCM is a user script that enhances the http://itcm.co.kr/
 // @author       narci <jwch11@gmail.com>
 // @match        *://itcm.co.kr/*
@@ -575,7 +575,8 @@ ETCM.prototype.addHumbleChoiceTimer = function() {
           autoPayDate = launchDate.clone().subtract(1,'week'),
           call_dashboards = lz_makeDashboard(launchDate, autoPayDate);
 
-
+    //causes resource problem
+    call_dashboards().setToDigitalClock();return;
     if (this.settings["humble_choice_show_period"] >= launchDate.diff(moment(), 'days')) {
         if (this.settings["humble_choice_timer_design"] === "Analog") {
             call_dashboards().setToAnalogClock();
