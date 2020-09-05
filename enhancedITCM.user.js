@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         enhancedITCM
 // @namespace    etcm
-// @version      0.1.8-1
+// @version      0.1.8-2
 // @description  EnhancedITCM is a user script that enhances the http://itcm.co.kr/
 // @author       narci <jwch11@gmail.com>
 // @match        *://itcm.co.kr/*
@@ -176,12 +176,12 @@ var saveTo = R.curry((storage, name, value)=> storage.setItem(name, (typeof valu
     loadFrom = R.curry((storage, name)=> storage.getItem(name)),
     deleteFrom = R.curry((storage, name)=> storage.removeItem(name));
 
-saveToLocalStorage = saveTo(localStorage);
-loadFromLocalStorage = loadFrom(localStorage);
-deleteFromLocalStorage = deleteFrom(localStorage);
-saveToGMStorage = saveTo(GM);
-loadFromGMStorage = loadFrom(GM);
-deleteFromGMStorage = deleteFrom(GM);
+var saveToLocalStorage = saveTo(localStorage),
+    loadFromLocalStorage = loadFrom(localStorage),
+    deleteFromLocalStorage = deleteFrom(localStorage),
+    saveToGMStorage = saveTo(GM),
+    loadFromGMStorage = loadFrom(GM),
+    deleteFromGMStorage = deleteFrom(GM); 
 
 
 
@@ -481,26 +481,21 @@ ETCM.prototype.enhanceInfiniteScroll = function() {
 
 
 ETCM.prototype.addHumbleChoiceTimer = function() {
-    function addTimer({title, class_name, date, humble_href, board_href}) {
+    function addTimer({text, title, class_name, date, href, board_title, board_href}) {
         return $('<div>', {
             class: 'etcm-timer '+class_name,
-            html: $.merge(
+            html: [
                 $('<div>', {
                     class: 'etcm-timer__title',
                     html: [
                         $('<a>', {
                             class: 'etcm-timer__title__text',
-                            text: title,
-                            href: humble_href
+                            text, title, href
                         }),
                         $('<a>', {
                             class: 'etcm-timer__title__redirect fa fa-tag',
-                            href: board_href,
+                            title: board_title, href: board_href,
                             toggle: board_href!==undefined
-                        }),
-                        $('<p>', {
-                            class: 'etcm-timer__title__time',
-                            text: date.format("MMMM Do(dddd) h:mm")
                         })
                     ]
                 }),
@@ -509,8 +504,17 @@ ETCM.prototype.addHumbleChoiceTimer = function() {
                     data: {
                         timer: date.diff(moment(), 'seconds')
                     }
+                }),
+                $('<div>', {
+                    class: 'etcm-timer__footer',
+                    html: [
+                        $('<p>', {
+                            class: 'etcm-timer__footer__time',
+                            text: date.format("MMMM Do(dddd) h:mm")
+                        })
+                    ]
                 })
-            )}).toggle( date.diff(moment(), 'seconds')>0 );
+            ]}).toggle( date.diff(moment(), 'seconds')>0 );
     }
 
     function setToAnalogClock() {
@@ -548,11 +552,14 @@ ETCM.prototype.addHumbleChoiceTimer = function() {
                 $('<div>', { class: 'column etcm-humble-choice-timer' })
                     .insertAfter( $('aside.e1').children('.column_login') )
 
-                    .append( addTimer({ title: "Humble Choice", class_name: 'release-choice', date: launchDate,
+                    .append( addTimer({ text: "Humble Choice", class_name: 'release-choice', date: launchDate,
+                                        title: "구매하러 가기",
+                                        board_title: "게시판에서 찾기",
                                         board_href: "/?_filter=search&mid=game_news&search_keyword=humble+choice&search_target=title",
-                                        humble_href: "https://www.humblebundle.com/subscription"}))
-                    .append( addTimer({ title: "자동 결제일", class_name: 'auto-subscribe', date: autoPayDate,
-                                        humble_href: "https://www.humblebundle.com/user/pause-subscription"}))
+                                        href: "https://www.humblebundle.com/subscription"}))
+                    .append( addTimer({ text: "자동 결제일", class_name: 'auto-subscribe', date: autoPayDate,
+                                        title: "일시정지하러 가기",
+                                        href: "https://www.humblebundle.com/user/pause-subscription"}))
 
                     .find('.etcm-timer__dashboard');
 
@@ -575,9 +582,8 @@ ETCM.prototype.addHumbleChoiceTimer = function() {
           autoPayDate = launchDate.clone().subtract(1,'week'),
           call_dashboards = lz_makeDashboard(launchDate, autoPayDate);
 
-    //causes resource problem
-    call_dashboards().setToDigitalClock();return;
-    if (this.settings["humble_choice_show_period"] >= launchDate.diff(moment(), 'days')) {
+    if (this.settings["humble_choice_show_period"] >= launchDate.diff(moment(), 'days')) {//causes resource problem
+        call_dashboards().setToDigitalClock(); return;
         if (this.settings["humble_choice_timer_design"] === "Analog") {
             call_dashboards().setToAnalogClock();
         }
@@ -930,25 +936,43 @@ async function addSideBook({name, title, url, parser}) {
     $listbook
         .append(
             $('<h2>', {
+                class: 'etcm-side__book__title',
                 text: title,
-                click: ()=> window.location.replace( url )
-            }))
-        .append(
-            $('<i>', {
-                class: 'fa fa-compress',
-                click: function() {
-                    $(this).siblings('.etcm-side__book__list').toggleClass('etcm-side__book__list--collapse')
-                }
-            }))
-        .append(
-            $('<i>', {
-                class: 'fa fa-refresh',
-                click: async()=> { 
-                    listbook.clear();
-                    listbook.in( await loadListbook() );
-                    $listbook.refresh( listbook );
-                }
-            }))
+                html: [
+                    $('<span>', {
+                        text: title,
+                        click: () => window.location.replace(url),
+                    }),
+                    $('<div>', {
+                        html: [
+                            $('<label>', {
+                                class: 'fa fa-compress',
+                                title: "축소/확장",
+                                html:
+                                    $('<input>', {
+                                        type: 'checkbox',
+                                        click: function () {
+                                            $(this).parent().toggleClass('fa-expand');
+                                            $(this).parent().toggleClass('fa-compress');
+                                            $(this).closest('.etcm-side__book').children('.etcm-side__book__list')
+                                                .toggleClass('etcm-side__book__list--collapse');
+                                        }
+                                    })
+                            }),
+                            $('<i>', {
+                                class: 'fa fa-refresh',
+                                title: "업데이트",
+                                click: async () => {
+                                    listbook.clear();
+                                    listbook.in(await loadListbook());
+                                    $listbook.refresh(listbook);
+                                }
+                            })
+                        ]
+                    })                    
+                ]
+            })
+        )
         .append(
             $('<ul>', {
                 class: 'etcm-side__book__list'
@@ -1012,11 +1036,11 @@ ETCM.prototype.addContextMenu = function () {
             html: $.merge(
                 $('<menuitem>', {
                     label: '스팀 라이브러리',
-                    click: () => window.location.href = `steam://open/minigameslist`
+                    click: () => window.open(`steam://open/minigameslist`,'_self')
                 }),
                 $('<menuitem>', {
                     label: '스팀 콘솔',
-                    click: () => window.location.href = `steam://open/console`
+                    click: () => window.open(`steam://open/console`,'_self')
                 }))
         })
     ).attr('contextmenu', "ContextMenu1");
@@ -1039,6 +1063,7 @@ ETCM.prototype.addContextMenu = function () {
             steamdb: { name: "스팀디비로 가기" },
             itad: { name: "itad로 가기" },
             itcm: { name: "잇셈 게시글 찾기" },
+            itcm_sale: { name: "잇셈 할인글 찾기"},
             step1: "---------",
             run: { name: "바로 실행" }
         },
@@ -1049,20 +1074,23 @@ ETCM.prototype.addContextMenu = function () {
 
             switch (key) {
                 case "store":
-                    window.location.href = `https://store.steampowered.com/${div}/${id}`;
+                    window.open(`https://store.steampowered.com/${div}/${id}`,'_blank');
                     break;
                 case "steamdb":
-                    window.location.href = `https://steamdb.info/${div}/${id}/`;
+                    window.open(`https://steamdb.info/${div}/${id}/`,'_blank');
                     break;
                 case "itad":
-                    window.location.href = `https://isthereanydeal.com/search/?q=${name}`;
+                    window.open(`https://isthereanydeal.com/search/?q=${name}`,'_blank');
                     break;
                 case "itcm":
                     if (div === "app")
-                        window.location.href = `http://itcm.co.kr/index.php?mid=g_board&app=${id}`;
+                        window.open(`http://itcm.co.kr/index.php?mid=g_board&app=${id}`,'_blank');
+                    break;
+                case "itcm_sale":
+                    window.open(`http://itcm.co.kr/?_filter=search&mid=game_news&search_keyword=${name}&search_target=title_content`,'_blank');
                     break;
                 case "run":
-                    window.location.href = `steam://install/${id}`;
+                    window.open(`steam://install/${id}`,'_self');
                     break;
             }
         }
@@ -1427,7 +1455,7 @@ ETCM.prototype.openSettings = async function() {
                     .first('.etcm-settings__operation .option__timer-design').val( etcm.settings["humble_choice_timer_design"])
                     .next('.etcm-settings__operation .option__show-period').val( etcm.settings["humble_choice_show_period"] );
 
-        })(this.find('#etcm-settings--humble-montly-timer'));
+        })(this.find('#etcm-settings--humble-choice-timer'));
 
 
         (function highlightLoadingCaseBasedOnPreviousRecord($loading_cases) {
@@ -1466,7 +1494,7 @@ ETCM.prototype.openSettings = async function() {
                     .next('.etcm-settings__operation .option__show-period').change(function() {
                         etcm.settings["humble_choice_show_period"] = $(this).val();
                     });
-        })(this.find('#etcm-settings--humble-montly-timer'));
+        })(this.find('#etcm-settings--humble-choice-timer'));
 
         
         (function setEventLoadingCase($loading_cases) {

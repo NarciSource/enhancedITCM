@@ -291,14 +291,14 @@
 }
 
 
-.etcm-timer__title {
-    display: flex;
-    flex-direction: row;
+.etcm-timer {
+    margin: 10px;
 }
-.etcm-timer__title__text,
-.etcm-timer__title__redirect,
-.etcm-timer__title__time {
-    align-self: center;
+.etcm-timer__title__text {
+    text-shadow: 0 1px 1px rgba(0,0,0,.1);
+}
+.etcm-timer__title__redirect {
+    margin: 0 10px;
 }
 .etcm-timer__title__text:hover,
 .etcm-timer__title__redirect:hover {
@@ -310,10 +310,18 @@
          -o-transition: all 200ms;
             transition: all 200ms;
 }
-.etcm-timer__title__text {
-    margin: 0 10px;
+.etcm-timer__footer {
+    display: flex;
+}
+.etcm-timer__footer__time {
+    font-size: 10px;
+    font-style: italic;
 
-    text-shadow: 0 1px 1px rgba(0,0,0,.1);
+    color: #666;
+
+    margin-top: 0;
+    margin-left: auto;
+    margin-bottom: 0;
 }
 
 .etcm-timer.release-choice .etcm-timer__title__text {
@@ -322,19 +330,11 @@
 .etcm-timer.auto-subscribe .etcm-timer__title__text {
     font-size: 12px;
 }
-.etcm-timer__title__time {
-    font-size: 10px;
-    font-style: italic;
-
-    color: #666;
-
-    margin-left: auto;
-}
 
 .etcm-timer__dashboard.flip-clock-wrapper {
     font-size: 20px;
 
-    left: 150px;
+    left: 140px;
 
     width: max-content;
     margin: 0;
@@ -348,21 +348,22 @@
 
     border-bottom: 1px solid #ddd;
 }
-.etcm-side__book h2 {
-    cursor: pointer;
+.etcm-side__book__title {
+    display: flex;
 }
-.etcm-side__book .fa {
-    position: absolute;
-    top: 0;
+.etcm-side__book__title > div {
+    margin-left: auto;
+    margin-right: 10px;
+}
+.etcm-side__book__title > div input {
+    display: none;
+}
+.etcm-side__book__title > span,
+.etcm-side__book__title > div > label,
+.etcm-side__book__title > div > i {
+    margin-right: 10px;
 
     cursor: pointer;
-    transform: translateY(100%);
-}
-.etcm-side__book .fa-compress {
-    right: 30px;
-}
-.etcm-side__book .fa-refresh {
-    right: 10px;
 }
 .etcm-side__book__list {
     overflow-y: auto;
