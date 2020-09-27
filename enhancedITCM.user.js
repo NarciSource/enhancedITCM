@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         enhancedITCM
 // @namespace    etcm
-// @version      0.1.8-2
+// @version      0.1.9
 // @description  EnhancedITCM is a user script that enhances the http://itcm.co.kr/
 // @author       narci <jwch11@gmail.com>
 // @match        *://itcm.co.kr/*
@@ -11,12 +11,13 @@
 // @require      https://raw.githubusercontent.com/NarciSource/steamCb.js/master/src/exchange.js
 // @require      https://cdnjs.cloudflare.com/ajax/libs/jquery-contextmenu/2.8.0/jquery.contextMenu.min.js
 // @require      https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.31.1/js/jquery.tablesorter.min.js
-// @require      https://raw.githubusercontent.com/NarciSource/steamCb.js/master/src/tablesorter.js
 // @require      https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.24.0/moment.min.js
 // @require      https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.24.0/locale/ko.js
 // @require      https://cdnjs.cloudflare.com/ajax/libs/moment-timezone/0.5.23/moment-timezone-with-data.min.js
 // @require      https://raw.githubusercontent.com/NarciSource/enhancedITCM/master/vendor/TimeCircles.js
 // @require      https://raw.githubusercontent.com/NarciSource/enhancedITCM/master/vendor/flipclock.js
+// @require      https://raw.githubusercontent.com/NarciSource/enhancedITCM/master/vendor/GreasemonkeyCompatibility.js
+// @require      https://raw.githubusercontent.com/NarciSource/steamCb.js/master/src/tablesorter.js
 // @resource     etcm-logo https://raw.githubusercontent.com/NarciSource/enhancedITCM/master/img/logo.png
 // @resource     etcm-dft-style https://raw.githubusercontent.com/NarciSource/enhancedITCM/master/css/default.css
 // @resource     etcm-set-style https://raw.githubusercontent.com/NarciSource/enhancedITCM/master/css/settings.css
@@ -73,61 +74,9 @@ console.info(`
 this.$ = window.jQuery.noConflict(true);
 
 
-
 if (typeof GM === "undefined") {
     GM = this.GM || {};
 }
-(function enhanceGreasemonkeyCompatibility(GM){
-    GM.getResourceUrl = GM.getResourceUrl || (url=> {
-                        const res = GM_getResourceURL(url).replace("data:text/plain; charset=utf-8","data:text/css; base64");
-                        return Promise.resolve(res);
-                    });
-    GM.xmlHttpRequest = GM.xmlHttpRequest || GM_xmlhttpRequest;
-    GM.setValue = GM.setValue || GM_setValue;
-    GM.getValue = GM.getValue || (arg=> Promise.resolve(GM_getValue(arg)));
-    GM.deleteValue = GM.deleteValue || GM_deleteValue;
-    GM.info = GM.info || GM_info;
-    GM.setItem = GM.setValue;
-    GM.getItem = GM.getValue;
-    GM.removeItem = GM.deleteValue;
-    GM.ajax = function(url, options) {
-        options = options || {url};
-        if ( typeof url === "object" ) {
-            options = url;
-        }
-        console.info(options.type || "GET", options.url);
-    
-        let dfd = $.Deferred();
-    
-        GM.xmlHttpRequest( $.extend( {}, options, {
-            method: "GET",
-            onload: response => {
-                const headerRegex = /([\w-]+): (.*)/gi,
-                      mimeRegex = /(^\w+)\/(\w+)/g;
-    
-                let headers = {}, match;
-                while( match = headerRegex.exec(response.responseHeaders) ) {
-                    headers[ match[1].toLowerCase() ] = match[2].toLowerCase();
-                }
-    
-                const [mime, mime_type, mime_subtype] = mimeRegex.exec( headers["content-type"] );
-                switch(mime_subtype) {
-                    case "xml":
-                        dfd.resolve( new DOMParser().parseFromString( response.responseText, mime ) );
-                        break;
-                    case "json":
-                        dfd.resolve( JSON.parse(response.responseText) );
-                        break;
-                }
-                dfd.resolve(response.responseText);
-            },
-            onerror: error => dfd.reject(error)
-        }));
-    
-        return dfd.promise();
-    };
-})(GM);
-
 
 
 (function enhanceMoment(moment) {
@@ -151,7 +100,7 @@ if (typeof GM === "undefined") {
         $("<link>", {
             rel : "stylesheet",
             type : "text/css",
-            href : await GM.getResourceUrl(resource_url)
+            href: await GM.getResourceUrl(resource_url, "text/css")
         }).appendTo(this);
     };
     $head.addStyles = function(resource_urls) {
@@ -402,7 +351,7 @@ ETCM.prototype.enhanceLogo = function() {
 
     (async function newLogo() {
         $('.logo').find('img')
-        .attr({src: await GM.getResourceUrl('etcm-logo')})
+        .attr({ src: await GM.getResourceUrl('etcm-logo', "image/png")})
         .css({width:'110px'})
     })();
 
@@ -1513,7 +1462,7 @@ ETCM.prototype.openSettings = async function() {
 
 
 
-    var $settings = $( await $.get( await GM.getResourceUrl("etcm-set-layout")) );
+    var $settings = $(await $.get(await GM.getResourceUrl("etcm-set-layout", "text/html")) );
     $settings.initialize = initialize;
     $settings.setEvent = setEvent;
 
