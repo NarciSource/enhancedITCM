@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         enhancedITCM
 // @namespace    etcm
-// @version      0.1.9
+// @version      0.1.9.1
 // @description  EnhancedITCM is a user script that enhances the http://itcm.co.kr/
 // @author       narci <jwch11@gmail.com>
 // @match        *://itcm.co.kr/*
@@ -851,13 +851,13 @@ ETCM.prototype.addMemberBlacklist = function($articles) {
 
 
 /* side menu */
-async function addSideBook({name, title, url, parser}) {
+async function addSideBook({name, title, url, tabIcon, parser}) {
     async function loadListbook() {
         let html = await GM.ajax( url );
         return parser(html);
     }
 
-    function processing(list) {
+    function decorateList(list) {
         return Array.from(list).map(({text, href})=>
             $('<li>', {
                 class: 'etcm-side__book__list__article',
@@ -871,83 +871,145 @@ async function addSideBook({name, title, url, parser}) {
             }));
     }
 
+    function tabMenuToggle(thisBtn) {
+        var targetBox = $('#' + thisBtn.attr('name'));
+        var targetUl = thisBtn.parent('li').parent('ul');
+        var allBox = thisBtn.parent('li').parent('ul').parent('div').next('div').children('div');
+        var targetLi = thisBtn.parent('li').parent('ul').children('li');
+        var target_Li = thisBtn.parent('li');
 
+        if (!thisBtn.parent('li').hasClass('on')) {
+            targetLi.removeClass('on');
+            allBox.removeClass('wrapTab_on');
+            targetBox.addClass('wrapTab_on');
+            target_Li.addClass('on');
+        };
+        if (thisBtn.attr('href') === '#') {
+            return false;
+        };
+    }
 
-    let listbook = ProxySet(name, []),
-        $listbook = $('<div>', { class: 'etcm-side__book' });
-
-    $listbook.refresh = function( list ) {
-        this.find('li').remove();
-        this.children('ul').append( processing(list) );
-        return this;
-    };
-
-    $listbook
-        .append(
-            $('<h2>', {
-                class: 'etcm-side__book__title',
-                text: title,
-                html: [
-                    $('<span>', {
-                        text: title,
-                        click: () => window.location.replace(url),
-                    }),
-                    $('<div>', {
-                        html: [
-                            $('<label>', {
-                                class: 'fa fa-compress',
-                                title: "축소/확장",
-                                html:
-                                    $('<input>', {
-                                        type: 'checkbox',
-                                        click: function () {
-                                            $(this).parent().toggleClass('fa-expand');
-                                            $(this).parent().toggleClass('fa-compress');
-                                            $(this).closest('.etcm-side__book').children('.etcm-side__book__list')
-                                                .toggleClass('etcm-side__book__list--collapse');
+    /* side frame */
+    const $side = $('.etcm-side').length != 0 ? $('.etcm-side')
+        : $('<div>', {
+            class: 'etcm-side',
+            html: [
+                $('<h2>', {
+                    class: 'etcm-side__title',
+                    html: [
+                        $('<span>', { text: "개인 목록" }),
+                        $('<div>', {
+                            html: [
+                                $('<label>', {
+                                    class: 'fa fa-compress',
+                                    title: "축소/확장",
+                                    html:
+                                        $('<input>', {
+                                            type: 'checkbox',
+                                            click: function () {
+                                                $(this).parent().toggleClass('fa-expand');
+                                                $(this).parent().toggleClass('fa-compress');
+                                                $(this).closest('.etcm-side').find('.etcm-side__book__list')
+                                                       .toggleClass('etcm-side__book__list--collapse');
+                                            }
+                                        }),
+                                    hover: function () {
+                                        $(this).toggleClass('fa-expand');
+                                        $(this).toggleClass('fa-compress');
+                                    }
+                                }),
+                                $('<i>', {
+                                    class: 'fa fa-refresh',
+                                    title: "업데이트",
+                                    on: {
+                                        click: function() {
+                                            $(this).closest('.etcm-side').find('.tab_a').each((_, item) => $(item).click());
+                                        },
+                                        mouseenter: function () {
+                                            $(this).animate({ deg: 360 }, {
+                                                duration: 600,
+                                                step: function (now) { $(this).css({ transform: `rotate(${now}deg)` }) },
+                                                complete: function () { $(this)[0].deg = 0 }
+                                            });
                                         }
-                                    })
-                            }),
-                            $('<i>', {
-                                class: 'fa fa-refresh',
-                                title: "업데이트",
-                                click: async () => {
-                                    listbook.clear();
-                                    listbook.in(await loadListbook());
-                                    $listbook.refresh(listbook);
-                                }
+                                    }
+                                })
+                            ]
+                        })
+                    ]
+                }),
+
+                $('<div>', {
+                    class: 'etcm-side__body',
+                    html: [
+                        $('<div>', {
+                            class: 'tab_top',
+                            html: $('<ul>', {
+                                class: 'wrapTab clearBoth'
                             })
-                        ]
-                    })                    
-                ]
-            })
-        )
-        .append(
-            $('<ul>', {
-                class: 'etcm-side__book__list'
-            }));
-    
-    $('.sub_wrap_widget').children().eq(0).after($listbook);
+                        }),
+                        $('<div>', {
+                            class: 'tab_bottom'
+                        })
+                    ]
+                })
+            ]
+        });
+
+    $('.sub_wrap_widget').children().eq(0).after($side);
 
 
 
-    if (listbook.size === 0) {
-        listbook.in( await loadListbook() );
-    }
+    /* add tab menu */
+    $('<li>', {
+        class: 'tab_li',
+        html: $('<a>', {
+            class: 'tab_a',
+            name,
+            html: [
+                $('<i>', { class: tabIcon }),
+                title
+            ],
+            on: {
+                click: async function update() {
+                    let listbook = ProxySet(name, []);
+                    listbook.clear();
+                    listbook.in(await loadListbook());
 
-    $listbook.refresh( listbook );
+                    $("#" + name).children('.etcm-side__book__list').children('li')
+                        .remove();
+                    $("#" + name).children('.etcm-side__book__list')
+                        .append(decorateList(listbook));
+                },
+                dblclick: () => window.open(url, '_self'),
+                mouseover: function () { tabMenuToggle($(this)) }
+            }
+        })
+    }).appendTo($side.find('.tab_top').children('ul'));
 
-    if (listbook.size < 12) {
-        $listbook.children('.fa-compress').hide();
-    } else {
-        $listbook.children('.fa-compress').show();
-    }
+
+    /* add list */
+    $('<div>', {
+        id: name,
+        class: 'tab_div',
+        html: $('<ul>' , {
+            class: 'etcm-side__book__list etcm-side__book__list--collapse',
+            html: decorateList(ProxySet(name, []))
+        })
+    }).appendTo($side.find('.tab_bottom'));
+
+
+    /* init */
+    $side.find('.tab_top').children('ul').children('li').eq(0).addClass('on');
+    $side.find('.tab_div').eq(0).addClass('wrapTab_on');
 };
+
 ETCM.prototype.addScrapbook = async function() {
     addSideBook({
         name: "scrapbook",
         title: "스크랩",
         url: "http://itcm.co.kr/index.php?act=dispMemberScrappedDocument",
+        tabIcon: 'xi-bookmark',
         parser: html=>
             $(html).find('.table-striped').find('td.title').children('a')
                 .map((_, article)=> {
@@ -963,6 +1025,7 @@ ETCM.prototype.addWishbook = async function() {
         name: "wishbook",
         title: "찜목록",
         url: "http://itcm.co.kr/index.php?mid=game_news&_sort_index=check_wlist",
+        tabIcon: 'xi-cart',
         parser: html=>
             $(html).find('.bd_lst.bd_tb').children('tbody').children('tr').not('.notice').find('td.title').children('a:even')
                 .map((_, article)=> {
