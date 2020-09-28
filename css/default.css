@@ -4,6 +4,8 @@
     --etcm-yellow: #fdc76c;
 }
 
+
+
 .etcm-sign {
     font-size: 10px !important;
     font-style: italic;
@@ -27,6 +29,16 @@
 .etcm-profile > .in_profile,
 .etcm-profile img {
     border-radius: 50px;
+}
+
+
+.etch-board-width {
+    min-width: 1070px !important;
+    max-width: none !important;
+}
+.etcm-resizable-handle--hover {
+    opacity: 0.5;
+    background: var(--etcm-blue);
 }
 
 

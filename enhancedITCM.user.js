@@ -1,12 +1,13 @@
 // ==UserScript==
 // @name         enhancedITCM
 // @namespace    etcm
-// @version      0.1.9.1
+// @version      0.1.9.2
 // @description  EnhancedITCM is a user script that enhances the http://itcm.co.kr/
 // @author       narci <jwch11@gmail.com>
 // @match        *://itcm.co.kr/*
 // @icon         https://raw.githubusercontent.com/NarciSource/enhancedITCM/master/img/icon.png
 // @require      http://code.jquery.com/jquery-3.3.1.min.js
+// @require      http://code.jquery.com/ui/1.12.1/jquery-ui.min.js
 // @require      http://cdnjs.cloudflare.com/ajax/libs/ramda/0.25.0/ramda.min.js
 // @require      https://raw.githubusercontent.com/NarciSource/steamCb.js/master/src/exchange.js
 // @require      https://cdnjs.cloudflare.com/ajax/libs/jquery-contextmenu/2.8.0/jquery.contextMenu.min.js
@@ -238,6 +239,7 @@ function ETCM() {
 
         "enhanceLogo",
         "enhanceInfiniteScroll",
+        "enhanceSizableBoard",
 
         "addFilter",
         //"addSteamServerStatusMonitor",
@@ -279,7 +281,8 @@ function ETCM() {
     this.default_settings = {
         humble_choice_show_period: 35, //always
         humble_choice_timer_design: "Analog",
-        loading_case: "magnify"
+        loading_case: "magnify",
+        board_width: "1070px",
     };
 
 
@@ -426,6 +429,24 @@ ETCM.prototype.enhanceInfiniteScroll = function() {
         }
     });
 };
+
+
+ETCM.prototype.enhanceSizableBoard = function() {
+    $('.xe').css({
+                width: this.settings["board_width"],
+                margin: '0px auto'
+            })
+            .resizable({
+                handles: 'e',
+                minWidth: '1070px',
+                stop: (e, ui)=> { this.settings["board_width"] = ui.size.width }
+            })
+        .children('.ui-resizable-handle')
+            .hover(function () { $(this).toggleClass('etcm-resizable-handle--hover') })
+            .appendTo('.wrap_content');
+    $('.xe_width')
+        .addClass('etch-board-width');
+}
 
 
 
