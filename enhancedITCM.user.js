@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         enhancedITCM
 // @namespace    etcm
-// @version      0.1.9.2
+// @version      0.1.9.3
 // @description  EnhancedITCM is a user script that enhances the http://itcm.co.kr/
 // @author       narci <jwch11@gmail.com>
 // @match        *://itcm.co.kr/*
@@ -249,6 +249,7 @@ function ETCM() {
         //"addMemberBlacklist",
         "addScrapbook",
         //"addWishbook",
+        //"addPurchasebook",
         "addContextMenu",
 
         "upgradeProfile",
@@ -1047,6 +1048,23 @@ ETCM.prototype.addWishbook = async function() {
         title: "찜목록",
         url: "http://itcm.co.kr/index.php?mid=game_news&_sort_index=check_wlist",
         tabIcon: 'xi-cart',
+        parser: html=>
+            $(html).find('.bd_lst.bd_tb').children('tbody').children('tr').not('.notice').find('td.title').children('a:even')
+                .map((_, article)=> {
+                    const href = article.search;
+                    return {
+                        text: article.innerText.trim(),
+                        href: /document_srl=(\d+)/.exec(href)[1]
+                    };
+                }).toArray()
+    });
+};
+ETCM.prototype.addPurchasebook = async function() {
+    addSideBook({
+        name: "purchasebook",
+        title: "구매목록",
+        url: "http://itcm.co.kr/index.php?mid=game_news&_sort_index=check_plist",
+        tabIcon: 'xi-wallet',
         parser: html=>
             $(html).find('.bd_lst.bd_tb').children('tbody').children('tr').not('.notice').find('td.title').children('a:even')
                 .map((_, article)=> {
