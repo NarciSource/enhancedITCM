@@ -6,6 +6,10 @@
 
 
 
+.logo img {
+    width: 110px;
+}
+
 .etcm-sign {
     font-size: 10px !important;
     font-style: italic;
@@ -22,6 +26,38 @@
 .etcm-sign:hover {
     color: #48698d !important;
 }
+
+
+
+.etcm-dark-mode-switch {
+    margin: 7px 7px;
+
+    --tgs-width: 40px;
+    --tgs-height: 15px;
+    --tgs-margin: -30px;
+    --tgs-color: var(--etcm-dark-highlight);
+}
+.etcm-dark-mode-switch > label > div {
+    display: flex;
+
+    width: 100%;
+
+    justify-content: center;
+}
+.etcm-dark-mode-switch .xi-sun,
+.etcm-dark-mode-switch .xi-night {
+    font-size: 15px;
+
+    color:  #bfbfbf;
+
+    margin: 1.5px 0;
+}
+.etcm-dark-mode-switch .toggleSwitch__input:checked + .toggleSwitch__label .xi-sun,
+.etcm-dark-mode-switch .toggleSwitch__input:not(:checked) + .toggleSwitch__label .xi-night {
+    color: transparent;
+}
+
+
 
 .etcm-profile {
     height: auto;

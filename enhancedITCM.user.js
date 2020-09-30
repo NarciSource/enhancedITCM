@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         enhancedITCM
 // @namespace    etcm
-// @version      0.1.9.3
+// @version      0.1.9.4
 // @description  EnhancedITCM is a user script that enhances the http://itcm.co.kr/
 // @author       narci <jwch11@gmail.com>
 // @match        *://itcm.co.kr/*
@@ -20,7 +20,9 @@
 // @require      https://raw.githubusercontent.com/NarciSource/enhancedITCM/master/vendor/GreasemonkeyCompatibility.js
 // @require      https://raw.githubusercontent.com/NarciSource/steamCb.js/master/src/tablesorter.js
 // @resource     etcm-logo https://raw.githubusercontent.com/NarciSource/enhancedITCM/master/img/logo.png
+// @resource     etcm-dark-logo https://raw.githubusercontent.com/NarciSource/enhancedITCM/master/img/logo-dark.png
 // @resource     etcm-dft-style https://raw.githubusercontent.com/NarciSource/enhancedITCM/master/css/default.css
+// @resource     etcm-drk-style https://raw.githubusercontent.com/NarciSource/enhancedITCM/master/css/dark.css
 // @resource     etcm-set-style https://raw.githubusercontent.com/NarciSource/enhancedITCM/master/css/settings.css
 // @resource     etcm-tgg-style https://raw.githubusercontent.com/NarciSource/enhancedITCM/master/css/toggleSwitch.css
 // @resource     etcm-tcr-style https://cdnjs.cloudflare.com/ajax/libs/timecircles/1.5.3/TimeCircles.min.css
@@ -117,6 +119,7 @@ if (typeof GM === "undefined") {
         "etcm-tcr-style",
         "etcm-flc-style",
         "etcm-cmn-style",
+        "etcm-drk-style",
     ]);
 })($('head'));
 
@@ -240,6 +243,7 @@ function ETCM() {
         "enhanceLogo",
         "enhanceInfiniteScroll",
         "enhanceSizableBoard",
+        "enhanceDarkMode",
 
         "addFilter",
         //"addSteamServerStatusMonitor",
@@ -284,6 +288,7 @@ function ETCM() {
         humble_choice_timer_design: "Analog",
         loading_case: "magnify",
         board_width: "1070px",
+        dark_mode: window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches,
     };
 
 
@@ -354,9 +359,11 @@ ETCM.prototype.enhanceLogo = function() {
     const etcm = this;
 
     (async function newLogo() {
-        $('.logo').find('img')
-        .attr({ src: await GM.getResourceUrl('etcm-logo', "image/png")})
-        .css({width:'110px'})
+        $('.logo').on('imgSwitch', async function(e) {
+            $(this).find('img')
+                .attr({ src: await GM.getResourceUrl(e.url || 'etcm-logo', "image/png") });
+        })
+        .trigger($.Event('imgSwitch'));
     })();
 
 
@@ -447,6 +454,39 @@ ETCM.prototype.enhanceSizableBoard = function() {
             .appendTo('.wrap_content');
     $('.xe_width')
         .addClass('etch-board-width');
+}
+
+
+ETCM.prototype.enhanceDarkMode = function() {
+    $('<div>', {
+        class: 'etcm-dark-mode-switch toggleSwitch',
+        html: [
+            $('<input>', {
+                type: 'checkbox',
+                id: 'etcm-dark-mode',
+                class: 'toggleSwitch__input',
+                checked: $.parseJSON(etcm.settings["dark_mode"]),
+                change: async function () {
+                    etcm.settings["dark_mode"] = $(this).prop('checked');
+
+                    $('html').toggleClass('etcm--dark', etcm.settings["dark_mode"]);
+
+                    $('.logo').trigger($.Event(
+                        'imgSwitch', { url: etcm.settings["dark_mode"] ? 'etcm-dark-logo' : undefined }));
+                }
+            }),
+            $('<label>', {
+                for: 'etcm-dark-mode',
+                class: 'toggleSwitch__label',
+                html: $('<div>', {
+                    html: [ $('<i>', { class: 'xi-night' }),
+                            $('<i>', { class: 'xi-sun' }) ]
+                })
+            })
+        ]
+    }).appendTo($('<li>')).parent().appendTo($('.wrap_login').children('div'));
+
+    $('html').toggleClass('etcm--dark', $.parseJSON(etcm.settings["dark_mode"]));
 }
 
 
@@ -1630,7 +1670,7 @@ etcm.run();
             click: etcm.openSettings.bind(etcm),
             css: {cursor: "pointer"}
         })
-    }).appendTo($('.wrap_login').children('div'));
+    }).insertBefore($('.wrap_login').find('li').last());
 
     $(window).on('load',function() {
         $('.wrap_profile').addClass('etcm-profile');

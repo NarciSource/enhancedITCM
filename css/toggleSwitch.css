@@ -62,7 +62,7 @@
 .toggleSwitch__label:after {
     position: absolute;
     z-index: 0;
-    left: -20px;
+    left: var(--tgs-margin, -20px);
 
     display: flex;
 
