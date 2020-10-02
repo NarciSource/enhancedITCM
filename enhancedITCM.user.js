@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         enhancedITCM
 // @namespace    etcm
-// @version      0.1.9.4
+// @version      0.1.9.5
 // @description  EnhancedITCM is a user script that enhances the http://itcm.co.kr/
 // @author       narci <jwch11@gmail.com>
 // @match        *://itcm.co.kr/*
@@ -261,9 +261,7 @@ function ETCM() {
         "upgradeGameTagbox",
         "upgradCBTable",
 
-        "modifyProfileToCircle",
-        "modifyHideBadge",
-        //"modifyDateGroup",
+        "modifyArticle",
         "modifyShortlyVote",
         "modifyWishCheck",
         "modifyOthers",
@@ -276,9 +274,7 @@ function ETCM() {
         "addMemberBlacklist",
         "addArticleBlacklist",
 
-        "modifyProfileToCircle",
-        "modifyHideBadge",
-        //"modifyDateGroup",
+        "modifyArticle",
         "modifyShortlyVote",
         "modifyWishCheck",
         "modifyOthers"
@@ -453,7 +449,7 @@ ETCM.prototype.enhanceSizableBoard = function() {
             .hover(function () { $(this).toggleClass('etcm-resizable-handle--hover') })
             .appendTo('.wrap_content');
     $('.xe_width')
-        .addClass('etch-board-width');
+        .addClass('etcm-board-width');
 }
 
 
@@ -487,6 +483,9 @@ ETCM.prototype.enhanceDarkMode = function() {
     }).appendTo($('<li>')).parent().appendTo($('.wrap_login').children('div'));
 
     $('html').toggleClass('etcm--dark', $.parseJSON(etcm.settings["dark_mode"]));
+
+    $('.logo').trigger($.Event(
+        'imgSwitch', { url: etcm.settings["dark_mode"] ? 'etcm-dark-logo' : undefined }));
 }
 
 
@@ -1206,7 +1205,7 @@ ETCM.prototype.refreshContent = function($articles) {
 
             if (window.location.href.includes("game_news")) {
                 $(article).children('td').eq(0).children().children().each(function() {
-                    if ($(this).children('img').length) {
+                    if ($(this).children('img').nullChk()) {
                         store= $(this).children('img').attr('title').toLowerCase();
                     } else {
                         store = $(this).text().toLowerCase().trim().replace("-","");
@@ -1318,7 +1317,8 @@ ETCM.prototype.Upgrade.prototype.upgradeGameTagbox = function(profileinfo) {
         const $tagbox = $(this);
 
         (function addSeperator() {
-            if ($tagbox.find('.mi_app_live').length === 0) {
+            if ($tagbox.find('.mi_app_live').length < 2) {
+                $tagbox.find('.mi_app_live').remove();
                 $tagbox.find('tbody')
                     .append( makeLine(" 미보유 게임"))
                     .append( makeLine(" 보유 게임"));
@@ -1405,42 +1405,62 @@ ETCM.prototype.Upgrade.prototype.upgradCBTable = function(profileinfo) {
 
 
 /* modify ui */
-ETCM.prototype.modifyProfileToCircle = function($articles) {
+ETCM.prototype.modifyArticle = function($articles) {
     $articles = $articles || this.$articles;
-
-    $articles.children('.author').css({'text-align':'left', 'max-width':'75px', 'text-overflow':'clip'})
-        .find('img').not('.xe_point_level_icon').each((_,el)=> {
-            $(el).css({'border-radius':'50px','width':'23px','height':'23px'})
-                .parent().contents().last().get(0).textContent = " "+$(el).attr('title');
-        });
-};
-
-ETCM.prototype.modifyHideBadge = function($articles) {
-    $articles = $articles || this.$articles;
-    $articles.find('.xe_point_level_icon').remove();
-};
+    $contents = this.$contents;
 
 
-ETCM.prototype.modifyDateGroup = function($articles) {
-    const etcm = this;
-    $articles = $articles || etcm.$articles;
-
-    $articles.not('.notice').each((_, el)=> {
-        const cur_text = $(el).children('.time').text()
-              prev_text = $(el).prev().children('.time').text();
-
-        if (/\d+\.\d+/.test( cur_text ) && cur_text != prev_text ) {
-            $(el).before(
-                $('<tr>', {
-                    class: 'etcm-article--empty',
-                    html: $('<td>', { text: cur_text })
-                })
-            )
+    if (!$contents.hasClass('etcm-article-design')) {
+        $contents.addClass('etcm-article-design');
+        if (window.location.href.includes("game_news")) {
+            $contents.find('th').filter(':eq(0), :eq(6), :eq(7), :eq(8)').remove();
+            $contents.find('th.title').after($contents.find('th').last());
         }
-    });
+        else if (window.location.href.includes("timeline")) {
+            $contents.find('th').filter(':eq(0), :eq(5), :eq(6), :eq(7)').remove();
+        }
+        else {
+            $contents.find('th').filter(':eq(4), :eq(5), :eq(6)').remove();
+        }
+    }
 
-    $('th.regdate, .notice td.time').remove();
-    $articles.children('.time').remove();
+
+    $articles.each((_,article) => {
+        if (window.location.href.includes("game_news")) {
+            $(article).children('.m_no').first().addClass('store');
+        }
+        $(article).children('.m_no').last().addClass('voted_count');
+        $(article).children('.m_no').last().prev().addClass('readed_count');
+
+        $(article).children('.author').find('.xe_point_level_icon').remove();
+        $(article).children('.author').find('a').contents().last()[0].textContent
+            = $(article).children('.author').find('img').attr('title');
+
+
+        $(article).prepend([
+            $('<td>', {
+                html: [
+                    $(article).children('.store').replaceTag('div'),
+                    $(article).children('.mid').replaceTag('div'),
+                    $(article).children('.cate').replaceTag('div')
+                ]
+            }),
+            $('<td>', {
+                class: 'post',
+                html: [
+                    $(article).find('.time').replaceTag('span'),
+                    $(article).children('.title').replaceTag('div'),
+                    $('<span>', {
+                        class: 'replyNum',
+                        html: $(article).find('.replyNum').removeClass('replyNum').prepend("댓글: ")
+                    }),
+                    $(article).children('.readed_count').replaceTag('span').prepend("조회: "),
+                    $(article).children('.voted_count').replaceTag('span').prepend("추천: "),
+                ]
+            }),
+            $(article).children('.steam_list_check')
+        ]);
+    });
 };
 
 
@@ -1451,8 +1471,9 @@ ETCM.prototype.modifyShortlyVote = function($articles) {
     const entry = etcm.$contents.find('th').length,
           index = etcm.$contents.find('th').index( etcm.$contents.find('.voted_count') );
 
-    $articles.children(`:nth-child(${entry}n+${index+1})`)
-        .addClass('vote')
+   ($articles.find('.voted_count').nullChk()
+   ||
+   $articles.children(`:nth-child(${entry}n+${index + 1})`).addClass('vote_count'))
         .each((_, el)=> {
 
             $(el).html($('<i>', { text: $(el).text() }))
@@ -1626,9 +1647,26 @@ ETCM.prototype.openSettings = async function() {
 };
 
 
-let etcm = new ETCM();
-etcm.run();
 
+$.fn.replaceTag = function (tag) {
+    return this.map((_, el) => {
+        var subject = $(`<${tag}>`).append($(el).contents());
+        subject[0].className = el.className;
+        $(el).replaceWith(subject);
+        return subject[0];
+    });
+};
+
+$.fn.nullChk = function() {
+    return this.length === 0 ? undefined : this;
+};
+
+
+
+    /* start point */
+    let etcm = new ETCM();
+    etcm.run();
+    /*------------*/
 
 
 

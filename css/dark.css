@@ -5,7 +5,7 @@
 
     --etcm-dark-background: #1A2533;
     --etcm-dark-header: #111;
-    --etcm-dark-side: #161920;
+    --etcm-dark-foreground: #161920;
 
     --etcm-dark-highlight: #3D6D8E;
     --etcm-dark-title: #DDD;
@@ -57,7 +57,7 @@
 
 /* menu bar */
 .etcm--dark .main_menu ul {
-    background: var(--etcm-dark-side);
+    background: var(--etcm-dark-foreground);
 }
 .etcm--dark .main_menu ul li {
     border-top: none;
@@ -106,28 +106,27 @@
 /* profile signiture */
 .etcm--dark .rd_sign {
     border: none;
-    background: var(--etcm-dark-side);
+    background: var(--etcm-dark-foreground);
 }
 
 /* comment header */
-.etcm--dark .bd .bg_f_f9,
-.etcm--dark .rd_hd et.board .top_area {
+.etcm--dark .fdb_tag {
     border: 1px solid var(--etcm-dark-border);
-    background: var(--etcm-dark-header);
 }
+
 
 /* comments */
 .etcm--dark .fdb_lst_wrp,
 .etcm--dark .fdb_itm {
     border-top: 1px solid var(--etcm-dark-border);
     border-bottom: 1px solid var(--etcm-dark-border);
-    background: var(--etcm-dark-side) !important;
+    background: var(--etcm-dark-foreground) !important;
 }
 
 /* editor */
 .etcm--dark .cmt_editor {
     border: none;
-    background: var(--etcm-dark-side);
+    background: var(--etcm-dark-foreground);
 }
 
 
@@ -146,14 +145,21 @@
 }
 
 /* board */
+.etcm--dark .bg_f_f9 {
+    background: var(--etcm-dark-header);
+}
 .etcm--dark .bd_tb_lst th {
     box-shadow: none;
 }
 .etcm--dark .bd_tb_lst td, .bd_zine li,
 .etcm--dark .bd_tb_lst th,
 .etcm--dark .bd_tb_lst .notice td, .bd_zine li.notice, .bd_tb_lst .select{
-    border-top: 1px solid var(--etcm-dark-depth-border);
-    border-bottom: 1px solid var(--etcm-dark-border);
+    border: none;
+}
+
+/* hover article */
+.etcm--dark .etcm-article:hover {
+    background: var(--etcm-dark-highlight);;
 }
 
 /* notice article */
@@ -161,9 +167,15 @@
     background: transparent;
 }
 
-/* selected article */
+/* watching article */
 .etcm--dark .bd_tb_lst .select {
     background: var(--etcm-dark-highlight);
+}
+
+/* bubble */
+.etcm--dark .bubble .wrp {
+    background: var(--etcm-dark-foreground);
+    border: 1px solid var(--etcm-dark-border);
 }
 
 
@@ -203,8 +215,14 @@
 
 /* button */
 .etcm--dark .btn_img,
-.etcm--dark .bd_srch_btm select {
-    background: var(--etcm-dark-white);
+.etcm--dark .bd_srch_btm select,
+.etcm--dark .rd_nav_style2 .rd_nav,
+.etcm--dark .rd_nav_side .rd_nav,
+.etcm--dark .bd_set .bg_f_f9{
+    color: var(--etcm-dark-blue);
+    border: 1px solid var(--etcm-dark-border);
+    background: var(--etcm-dark-header);
+    text-shadow: none;
 }
 .etcm--dark .HBinputText {
     background: var(--etcm-dark-highlight) !important;
@@ -217,15 +235,15 @@
 
 /* side */
 .etcm--dark .e1 {
-    border: 2px solid var(--etcm-dark-side);
-    background: var(--etcm-dark-side);
+    border: 2px solid var(--etcm-dark-foreground);
+    background: var(--etcm-dark-foreground);
 }
 .etcm--dark .login_PlayoutA,
 .etcm--dark hr.hrA,
 .etcm--dark hr.hrB,
 .etcm--dark .wrap_locNav h2 {
     border: none;
-    background: var(--etcm-dark-side);
+    background: var(--etcm-dark-foreground);
 }
 .etcm--dark .locNav,
 .etcm--dark .locNav li,
@@ -246,7 +264,7 @@
     background: var(--etcm-dark-blue);
     
     animation-name: flicker;
-    animation-duration:2s;
+    animation-duration:3s;
     animation-iteration-count:infinite;
     animation-direction:alternate;
 }
@@ -270,7 +288,7 @@
 /* tab */
 .etcm--dark .tab_top {
     border: none;
-    background: var(--etcm-dark-side);
+    background: var(--etcm-dark-foreground);
 }
 .etcm--dark .wrapTab li a {
     color: var(--etcm-dark-content) !important;
@@ -287,9 +305,41 @@
     border: none;
 }
 .etcm--dark .app_info_details .wrap_info {
-    background-color: var(--etcm-dark-side);
+    background-color: var(--etcm-dark-foreground);
 }
 
+/* editor */
+.etcm--dark .bd_wrt.bd_wrt_main.clear {
+    border: 1px solid var(--etcm-dark-border);
+    background: var(--etcm-dark-foreground);
+}
+.etcm--dark .exForm th,
+.etcm--dark .exForm td,
+.etcm--dark .addon_write_insert_media,
+.etcm--dark .cke_1 .cke_top {
+    border: 1px solid var(--etcm-dark-border);
+    background: var(--etcm-dark-background);
+}
+.etcm--dark .cke_chrome {
+    border: none;
+}
+
+/* game box */
+.etcm--dark .steam_read_selected tr.mi_app_live .line,
+.etcm--dark .steam_read_selected tr.mi_app_live .line_txt {
+    color: var(--etcm-dark-title);
+    background: var(--etcm-dark-background);
+}
+.etcm--dark .steam_read_selected tr {
+    border: 0px solid var(--etcm-dark-border);
+}
+.etcm--dark .steam_read_selected td.wm .metascore {
+    background-color: transparent;
+}
+.etcm--dark .et_vars.bd_tb th,
+.etcm--dark .et_vars.bd_tb td {
+    border: 1px solid var(--etcm-dark-border);
+}
 
 
 /* settings */
@@ -311,7 +361,8 @@
 
 @keyframes flicker {
     from {
-        background: white;
+        border: 1px solid #1B4761;
+        background: #1B4761;
     }
     to {
         background: var(--etcm-dark-blue);
