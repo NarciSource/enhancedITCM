@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         enhancedITCM
 // @namespace    etcm
-// @version      0.1.9.5
+// @version      0.1.9.6
 // @description  EnhancedITCM is a user script that enhances the http://itcm.co.kr/
 // @author       narci <jwch11@gmail.com>
 // @match        *://itcm.co.kr/*
@@ -1197,10 +1197,10 @@ ETCM.prototype.refreshContent = function($articles) {
     $articles
         .each((_,article)=> {
             /* parse this article */
-            let category = $(article).children('td.cate').text().trim(),
+            let category = $(article).find('.cate').text().trim(),
                 document_srl = $(article).data('document_srl'),
-                writer_id = $(article).children('td.author').find('a').attr('class'),
-                title = $(article).children('td.title').children('a.hx').title,
+                writer_id = $(article).find('.author').find('a').attr('class'),
+                title = $(article).find('.title').children('a.hx').title,
                 store;
 
             if (window.location.href.includes("game_news")) {
