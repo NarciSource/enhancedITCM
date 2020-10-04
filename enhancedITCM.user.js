@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         enhancedITCM
 // @namespace    etcm
-// @version      0.1.9.6
+// @version      0.1.10
 // @description  EnhancedITCM is a user script that enhances the http://itcm.co.kr/
 // @author       narci <jwch11@gmail.com>
 // @match        *://itcm.co.kr/*
@@ -1284,6 +1284,74 @@ ETCM.prototype.Upgrade.prototype.upgradeAppInfoDetails = function(profileinfo) {
 };
 
 ETCM.prototype.Upgrade.prototype.upgradeGameTagbox = function(profileinfo) {
+    /* add games to gametag using cb-table */
+    let cbTable_games = $('.cb-table').children('tbody').children('tr')
+        .map((_, tr) => $(tr).children('td').first()[0]).children('a')
+        .toArray()
+        .map(a => [.../steampowered\.com\/(\w+)\/(\d+)/.exec(a.href).slice(1), a.text]);
+
+    let gameTag_games = $('.steam_read_selected').find('.steamUrl')
+        .toArray()
+        .map(a => /steampowered\.com\/(\w+)\/(\d+)/.exec(a.href).slice(1));
+    
+
+    cbTable_games.diff(gameTag_games, (a,b)=> a[0] == b[0] && a[1] == b[1])
+        .map(each => ({ div: each[0], id: each[1], name: each[2] }))
+        .filter(({ div, id, name }) => div === "app")
+        .map(({ div, id, name }) =>
+                $('<tr>', {
+                    class: 'no_mi_app',
+                    html: [
+                        $('<td>', {
+                            class: 'app',
+                            html: [
+                                $('<a>', {
+                                    class: 'item_image',
+                                    attr: {
+                                        href: `/index.php?mid=g_board&${div}=${id}`
+                                    },
+                                    html: $('<span>', {
+                                        html: $('<img>', {
+                                            class: 'header_image',
+                                            src: `https://steamcdn-a.akamaihd.net/steam/apps/${id}/header.jpg`
+                                        })
+                                    })
+                                }),
+                                $('<span>', {
+                                    class: 'item_content',
+                                    html: $('<span>', {
+                                        class: 'wrap_name',
+                                        html: $('<a>', {
+                                            class: 'name steamUrl',
+                                            attr: {
+                                                href: `https://store.steampowered.com/${div}/${id}`,
+                                                target: '_blank'
+                                            },
+                                            text: name
+                                        })
+                                    })
+                                })
+                            ]
+                        }),
+                        $('<td>', {
+                            class: 'hangul',
+                        }),
+                        $('<td>', {
+                            class: 'wm',
+                        }),
+                        $('<td>', {
+                            class: 'p',
+                        })
+                    ]
+                })[0]
+        )
+        .coveredTo($)
+        .appendTo($('.steam_read_selected').find('tbody'));
+
+
+
+
+    /* recalcuration */
     function makeLine(text) {
         return $('<tr>', {
                 class: 'mi_app_live',
@@ -1311,8 +1379,6 @@ ETCM.prototype.Upgrade.prototype.upgradeGameTagbox = function(profileinfo) {
         return {div, id: Number(id)};
     }
 
-
-
     $('.steam_read_selected').each(function() {
         const $tagbox = $(this);
 
@@ -1325,8 +1391,8 @@ ETCM.prototype.Upgrade.prototype.upgradeGameTagbox = function(profileinfo) {
             }
         })();
 
-        $tagbox.find('.mi_app_live').eq(0).addClass('.mi_not_owned');
-        $tagbox.find('.mi_app_live').eq(1).addClass('.mi_owned');
+        $tagbox.find('.mi_app_live').eq(0).addClass('mi_not_owned');
+        $tagbox.find('.mi_app_live').eq(1).addClass('mi_owned');
 
 
         (function fixOwningStatus($apps) {
@@ -1365,10 +1431,10 @@ ETCM.prototype.Upgrade.prototype.upgradeGameTagbox = function(profileinfo) {
             $button
                 .css({cursor: 'pointer'})
                 .click(function() {
-                        if ($(this).hasClass('.mi_not_owned')) {
+                        if ($(this).hasClass('mi_not_owned')) {
                             $owningApps.toggle();
                         }
-                        if ($(this).hasClass('.mi_owned')) {
+                        if ($(this).hasClass('mi_owned')) {
                             $missingApps.toggle();
                         }
                     });
@@ -1661,6 +1727,12 @@ $.fn.nullChk = function() {
     return this.length === 0 ? undefined : this;
 };
 
+Array.prototype.diff = function (subject, cmp) {
+    return this.filter(each => !subject.some(cmp ? s => cmp(each, s) : each))
+}
+Array.prototype.coveredTo = function (subject) {
+    return subject(this);
+}
 
 
     /* start point */
