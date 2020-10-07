@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         enhancedITCM
 // @namespace    etcm
-// @version      0.1.10
+// @version      0.1.10.1
 // @description  EnhancedITCM is a user script that enhances the http://itcm.co.kr/
 // @author       narci <jwch11@gmail.com>
 // @match        *://itcm.co.kr/*
@@ -44,6 +44,7 @@
 // @connect      store.steampowered.com
 // @connect      steamcommunity.com
 // @connect      crowbar.steamstat.us
+// @run-at       document-start
 // @license      MIT
 // ==/UserScript==
 
@@ -437,6 +438,7 @@ ETCM.prototype.enhanceSizableBoard = function() {
 
 
 ETCM.prototype.enhanceDarkMode = function() {
+    const etcm = this;
     $('<div>', {
         class: 'etcm-dark-mode-switch toggleSwitch',
         html: [
@@ -1570,6 +1572,10 @@ ETCM.prototype.modifyOthers = function($articles) {
     const etcm = this;
     $articles = $articles || etcm.$articles;
 
+    $('.wrap_profile').addClass('etcm-profile');
+    $('#scrollUp').addClass('etcm-scrollUp');
+
+
     (function fixAppImageFading($app_img) {
         $app_img.find('img').each(function() {
             $(this).attr('src', $(this).data('original') );
@@ -1598,6 +1604,18 @@ ETCM.prototype.modifyOthers = function($articles) {
 /* Setting */
 ETCM.prototype.openSettings = async function() {
     const etcm = this;
+
+
+    $('<li>', {
+        html: $('<a>', {
+            class: 'login_A',
+            text: 'EnhancedITCM설정',
+            click: etcm.openSettings.bind(etcm),
+            css: { cursor: "pointer" }
+        })
+    }).insertBefore($('.wrap_login').find('li').last());
+
+
 
     function initialize(commands) {
 
@@ -1718,58 +1736,36 @@ Array.prototype.coveredTo = function (subject) {
 }
 
 
+$(document).on('DOMContentLoaded', function () {
     /* start point */
     let etcm = new ETCM();
     etcm.run();
     /*------------*/
+});
 
+    
+console.info(`
 
-
-
-
-(function modifyUI() {
-    if (window.location.href.includes("game_news")) {
-        $('.viewer_with').closest('.bd_hd')
-            .css({display:'flex', 'align-items':'center', 'justify-content':'space-between'})
-            .prepend(
-                $('<a>', {
-                    css: {'margin-left':'auto'},
-                    href: "/index.php?mid=game_news&_sort_index=timer_filter&act=dispBoardWrite",
-                    html: $.merge(
-                        $('<b>', {
-                            class: 'ico_16px write'
-                        }),
-                        $('<span>', {
-                            text: "쓰기"
-                        })
-                    )
-                })
-            )
-            .prepend(
-                $('.bd_srch_btm').clone()
-                        .addClass('on')
-                    .children('.itx_wrp').css({width: '200px'})
-                    .parent()
-            );
-        $('.voted_count').css({width:'30px'});
-    }
-
-    $('.cTab').css({'margin-bottom': 0});
-
-    $('<li>', {
-        html: $('<a>', {
-            class: 'login_A',
-            text: 'EnhancedITCM설정',
-            click: etcm.openSettings.bind(etcm),
-            css: {cursor: "pointer"}
-        })
-    }).insertBefore($('.wrap_login').find('li').last());
-
-    $(window).on('load',function() {
-        $('.wrap_profile').addClass('etcm-profile');
-        $('#scrollUp').addClass('etcm-scrollUp');
-    });
-})();
-
-
+                       $$                                                                                                      
+                    $$$$$$$$                                                                                                   
+                 $$$$$$$$$$$$$$                      ♪♫•*̈*•.̧ ̧ .•*̈*•♫♪                                                          
+              $$$$$$$$$  $$$$$$$$$$                 ♪ღ♪               ++                                            ++#        
+         $$$$$$$$$$          $$$$$$$$$$            *•♪~ღ.̧ ̧  g +o+h+  e+lo+lo   +-b-+   +w+o+r+  +l+  o+d7+     -++ ++#         
+         $$$$$$$$$             $$$$$$$$$          ♪ღ♪      +++ o++  +++ 7+++ ++  n+   +++ +++ ++     ++~ + +  +8  ++o          
+      @@@   $$$$$$$$$       $$$$$$$$$   ++       https:// git hub .com /Nar  ci So u rce /en  hancd  ITCM/+    #+++o           
+      @@@@@@@  $$$$$$$$$$$$$$$$$$   ++++++                                                                                     
+      @@@@@@@@@@   $$$$$$$$$$    +++++++++        EEEEE   EEEEEEEEEEEEEEEEE   EEEEEEEEEEEEEEE  EEEEEEEEE        EEEEEEEE       
+      @@@@@@@@@@@@@   $$$$   +++++++++            EEEEE   EEEEEEEEEEEEEEEEE  EEEEEEEEEEEEEEEE  EEEEEEEEE        EEEEEEEE       
+      @@@@@   @@@@@@@@@  +++++++++                EEEEE         EEEEE        EEEEEE            EEEEEEEEEE      EEEEEEEEE       
+      @@@@@      @@@@@@  ++++++         ++        EEEEE         EEEEE        EEEEEE            EEEEEEEEEEE     EEEEEEEEE       
+      @@@@@         @@@  ++++         ++++        EEEEE         EEEEE        EEEEEE            EEEEEEEEEEE    EEEEEEEEEE       
+      @@@@@              ++++         ++++        EEEEE         EEEEE        EEEEEE            EEEEEE EEEEE  EEEEE EEEEE       
+      @@@@@@@            ++++      +++++++        EEEEE         EEEEE        EEEEEE            EEEEEE  EEEEEEEEEEE EEEEE       
+        @@@@@@@@         ++++   +++++++++         EEEEE         EEEEE        EEEEEE            EEEEEE  EEEEEEEEEE  EEEEE       
+            @@@@@@@@     ++++++++++++             EEEEE         EEEEE        EEEEEEEEEEEEEEEE  EEEEEE   EEEEEEEE   EEEEE       
+               @@@@@@@@  +++++++++                EEEEE         NARCI         EEEEEEEEEEEEEEE  EEEEEE    EEEEEE    EEEEE       
+                  @@@@@  ++++++                                                                                                
+                      @  +                                                                                                     
+                                                                                                                               
+`);
 })( jQuery, window, document);
