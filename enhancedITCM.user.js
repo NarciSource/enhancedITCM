@@ -82,6 +82,17 @@ if (typeof GM === "undefined") {
 }
 
 
+GM.addStyle([
+    "etcm-dft-style",
+    "etcm-set-style",
+    "etcm-tgg-style",
+    "etcm-tcr-style",
+    "etcm-flc-style",
+    "etcm-cmn-style",
+    "etcm-drk-style",
+], "resource");
+
+
 (function enhanceMoment(moment) {
     moment.prototype.nextDay = function(day) {
         if (typeof day === "string") {
@@ -95,34 +106,6 @@ if (typeof GM === "undefined") {
     };
     moment.locale('ko');
 })(moment);
-
-
-
-(function loadStylesheet($head) {
-    $head.addStyle = async function(resource_url) {
-        $("<link>", {
-            rel : "stylesheet",
-            type : "text/css",
-            href: await GM.getResourceUrl(resource_url, "text/css")
-        }).appendTo(this);
-    };
-    $head.addStyles = function(resource_urls) {
-        resource_urls.forEach(resource_url=> this.addStyle(resource_url));
-    };
-
-
-
-    $head.addStyles([
-        "etcm-dft-style",
-        "etcm-set-style",
-        "etcm-tgg-style",
-        "etcm-tcr-style",
-        "etcm-flc-style",
-        "etcm-cmn-style",
-        "etcm-drk-style",
-    ]);
-})($('head'));
-
 
 
 var saveTo = R.curry((storage, name, value)=> storage.setItem(name, (typeof value==="object")? JSON.stringify(value) : value)),

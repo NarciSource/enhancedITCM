@@ -42,6 +42,35 @@
         }
     })();
 
+    GM.addStyle = (data, option) => {
+        let head = document.getElementsByTagName('head')[0];
+        if (head) {
+            if (option === "resource") {
+                async function fn(url) {
+                    let link = document.createElement('link');
+                    link.setAttribute('rel', 'stylesheet');
+                    link.setAttribute('type', 'text/css');
+                    link.setAttribute('href', await GM.getResourceUrl(url, 'text/css'));
+                    head.appendChild(link);
+                }
+
+                if (data instanceof Array) {
+                    data.forEach(each => fn(each));
+                }
+                else {
+                    fn(data);
+                }
+            }
+            else {
+                let style = document.createElement('style');
+                style.setAttribute('type', 'text/css');
+                style.textContent = data;
+                head.appendChild(style);
+            }
+        }
+        return head;
+    }
+
     GM.ajax = function (url, options) {
         options = options || { url };
         if (typeof url === "object") {
