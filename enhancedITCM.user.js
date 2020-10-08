@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         enhancedITCM
 // @namespace    etcm
-// @version      0.1.10.1
+// @version      0.1.10.2
 // @description  EnhancedITCM is a user script that enhances the http://itcm.co.kr/
 // @author       narci <jwch11@gmail.com>
 // @match        *://itcm.co.kr/*
@@ -222,6 +222,7 @@ const dynamicstore_url = "https://store.steampowered.com/dynamicstore/userdata/"
 
 function ETCM() {
     this.default_commands = [
+        "_initialize",
         "_initializeArticle",
 
         "enhanceLogo",
@@ -318,6 +319,24 @@ ETCM.prototype._loadProfileInfo = async function() {
     return profileinfo;
 };
 
+
+ETCM.prototype._initialize = function() {
+    const etcm = this;
+
+    /* setting page buttons */
+    $('<li>', {
+        html: $('<a>', {
+            class: 'login_A',
+            text: 'EnhancedITCM설정',
+            click: etcm.openSettings.bind(etcm),
+            css: { cursor: "pointer" }
+        })
+    }).insertAfter($('.wrap_login').find('li').last());
+
+
+    $('.wrap_profile').addClass('etcm-profile');
+    $('#scrollUp').addClass('etcm-scrollUp');
+}
 
 ETCM.prototype._initializeArticle = function($articles) {
     $articles = $articles || this.$articles;
@@ -1169,7 +1188,19 @@ ETCM.prototype.addContextMenu = function () {
                     break;
             }
         }
-    });
+    }); 
+    
+    $('.steamUrl')
+        .attr('title',"")
+        .tooltip({
+            classes: {
+                "ui-tooltip": "highlight",
+            },
+            tooltipClass: "etcm-tooltip-styling",
+            content: function () {
+                return `<img src="https://steamcdn-a.akamaihd.net/steam/apps/${$(this).data("id")}/header.jpg"/>`
+            }
+        });
 }
 
 
@@ -1572,9 +1603,6 @@ ETCM.prototype.modifyOthers = function($articles) {
     const etcm = this;
     $articles = $articles || etcm.$articles;
 
-    $('.wrap_profile').addClass('etcm-profile');
-    $('#scrollUp').addClass('etcm-scrollUp');
-
 
     (function fixAppImageFading($app_img) {
         $app_img.find('img').each(function() {
@@ -1604,18 +1632,6 @@ ETCM.prototype.modifyOthers = function($articles) {
 /* Setting */
 ETCM.prototype.openSettings = async function() {
     const etcm = this;
-
-
-    $('<li>', {
-        html: $('<a>', {
-            class: 'login_A',
-            text: 'EnhancedITCM설정',
-            click: etcm.openSettings.bind(etcm),
-            css: { cursor: "pointer" }
-        })
-    }).insertBefore($('.wrap_login').find('li').last());
-
-
 
     function initialize(commands) {
 
@@ -1740,32 +1756,10 @@ $(document).on('DOMContentLoaded', function () {
     /* start point */
     let etcm = new ETCM();
     etcm.run();
+    console.info("EnhancedITCM running.");
     /*------------*/
 });
 
-    
-console.info(`
 
-                       $$                                                                                                      
-                    $$$$$$$$                                                                                                   
-                 $$$$$$$$$$$$$$                      ♪♫•*̈*•.̧ ̧ .•*̈*•♫♪                                                          
-              $$$$$$$$$  $$$$$$$$$$                 ♪ღ♪               ++                                            ++#        
-         $$$$$$$$$$          $$$$$$$$$$            *•♪~ღ.̧ ̧  g +o+h+  e+lo+lo   +-b-+   +w+o+r+  +l+  o+d7+     -++ ++#         
-         $$$$$$$$$             $$$$$$$$$          ♪ღ♪      +++ o++  +++ 7+++ ++  n+   +++ +++ ++     ++~ + +  +8  ++o          
-      @@@   $$$$$$$$$       $$$$$$$$$   ++       https:// git hub .com /Nar  ci So u rce /en  hancd  ITCM/+    #+++o           
-      @@@@@@@  $$$$$$$$$$$$$$$$$$   ++++++                                                                                     
-      @@@@@@@@@@   $$$$$$$$$$    +++++++++        EEEEE   EEEEEEEEEEEEEEEEE   EEEEEEEEEEEEEEE  EEEEEEEEE        EEEEEEEE       
-      @@@@@@@@@@@@@   $$$$   +++++++++            EEEEE   EEEEEEEEEEEEEEEEE  EEEEEEEEEEEEEEEE  EEEEEEEEE        EEEEEEEE       
-      @@@@@   @@@@@@@@@  +++++++++                EEEEE         EEEEE        EEEEEE            EEEEEEEEEE      EEEEEEEEE       
-      @@@@@      @@@@@@  ++++++         ++        EEEEE         EEEEE        EEEEEE            EEEEEEEEEEE     EEEEEEEEE       
-      @@@@@         @@@  ++++         ++++        EEEEE         EEEEE        EEEEEE            EEEEEEEEEEE    EEEEEEEEEE       
-      @@@@@              ++++         ++++        EEEEE         EEEEE        EEEEEE            EEEEEE EEEEE  EEEEE EEEEE       
-      @@@@@@@            ++++      +++++++        EEEEE         EEEEE        EEEEEE            EEEEEE  EEEEEEEEEEE EEEEE       
-        @@@@@@@@         ++++   +++++++++         EEEEE         EEEEE        EEEEEE            EEEEEE  EEEEEEEEEE  EEEEE       
-            @@@@@@@@     ++++++++++++             EEEEE         EEEEE        EEEEEEEEEEEEEEEE  EEEEEE   EEEEEEEE   EEEEE       
-               @@@@@@@@  +++++++++                EEEEE         NARCI         EEEEEEEEEEEEEEE  EEEEEE    EEEEEE    EEEEE       
-                  @@@@@  ++++++                                                                                                
-                      @  +                                                                                                     
-                                                                                                                               
-`);
+
 })( jQuery, window, document);
