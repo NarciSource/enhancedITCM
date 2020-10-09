@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         enhancedITCM
 // @namespace    etcm
-// @version      0.1.10.2
+// @version      0.1.10.3
 // @description  EnhancedITCM is a user script that enhances the http://itcm.co.kr/
 // @author       narci <jwch11@gmail.com>
 // @match        *://itcm.co.kr/*
@@ -1720,7 +1720,7 @@ ETCM.prototype.openSettings = async function() {
         $settings.initialize(etcm.commands);
     });
     $settings.appendTo(
-        $('.inner_content').children().not('script').hide().parent());
+        $('#body').children().not('script').hide().parent());
 
 
 
