@@ -116,8 +116,8 @@ var saveTo = R.curry((storage, name, value)=> storage.setItem(name, (typeof valu
 var saveToLocalStorage = saveTo(localStorage),
     loadFromLocalStorage = loadFrom(localStorage),
     deleteFromLocalStorage = deleteFrom(localStorage),
-    saveToGMStorage = saveTo(GM),
-    loadFromGMStorage = loadFrom(GM),
+    saveToHugeStorage = saveTo(GM),
+    loadFromHugeStorage = loadFrom(GM),
     deleteFromGMStorage = deleteFrom(GM); 
 
 
@@ -315,7 +315,7 @@ ETCM.prototype._loadProfileInfo = async function() {
     if (profileinfo === undefined || profileinfo.rgOwnedApps.length === 0) {
         console.error("Steam account is strange...");
     }
-    saveToGMStorage("profileinfo")(profileinfo);
+    saveToHugeStorage("profileinfo")(profileinfo);
     return profileinfo;
 };
 
@@ -393,7 +393,7 @@ ETCM.prototype.enhanceLogo = function() {
                     }
                 })
             );
-            etcm.profileinfo = await loadFromGMStorage("profileinfo");
+            etcm.profileinfo = await loadFromHugeStorage("profileinfo");
             etcm.profileinfo = etcm.profileinfo? JSON.parse( etcm.profileinfo ) : await etcm._loadProfileInfo();
             etcm.upgrade.run(undefined, etcm.profileinfo);
         }
@@ -1150,6 +1150,17 @@ ETCM.prototype.addContextMenu = function () {
             $(item).data({ div, id, name: item.text });
         });
 
+    $('a')
+        .filter((_, item) => $(item).attr('href') && $(item).attr('href').includes("app="))
+        .addClass('itcmGameUrl')
+        .each((_, item) => {
+            const [match, id] = /app\=(\d+)/.exec(item.href);
+
+            $(item).data({ div: "app", id, name: item.text });
+        });
+
+
+
     $.contextMenu({
         selector: '.steamUrl',
         items: {
@@ -1190,15 +1201,13 @@ ETCM.prototype.addContextMenu = function () {
         }
     }); 
     
-    $('.steamUrl')
-        .attr('title',"")
+    $('.steamUrl, .itcmGameUrl')
+        .attr('title', "")
         .tooltip({
-            classes: {
-                "ui-tooltip": "highlight",
-            },
+            classes: { "ui-tooltip": "highlight" },
             tooltipClass: "etcm-tooltip-styling",
             content: function () {
-                return `<img src="https://steamcdn-a.akamaihd.net/steam/apps/${$(this).data("id")}/header.jpg"/>`
+                return `<img src="https://steamcdn-a.akamaihd.net/steam/apps/${$(this).closest('.steamUrl, .itcmGameUrl').data("id")}/header.jpg"/>`;
             }
         });
 }
@@ -1306,7 +1315,7 @@ ETCM.prototype.Upgrade.prototype.upgradeGameTagbox = function(profileinfo) {
         .toArray()
         .map(a => [.../steampowered\.com\/(\w+)\/(\d+)/.exec(a.href).slice(1), a.text]);
 
-    let gameTag_games = $('.steam_read_selected').find('.steamUrl')
+    let gameTag_games = $('.steam_read_selected').find('.item_content').find('.name')
         .toArray()
         .map(a => /steampowered\.com\/(\w+)\/(\d+)/.exec(a.href).slice(1));
     
