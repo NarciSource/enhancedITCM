@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         enhancedITCM
 // @namespace    etcm
-// @version      0.1.10.3
+// @version      0.1.11
 // @description  EnhancedITCM is a user script that enhances the http://itcm.co.kr/
 // @author       narci <jwch11@gmail.com>
 // @match        *://itcm.co.kr/*
@@ -25,6 +25,7 @@
 // @resource     etcm-drk-style https://raw.githubusercontent.com/NarciSource/enhancedITCM/master/css/dark.css
 // @resource     etcm-set-style https://raw.githubusercontent.com/NarciSource/enhancedITCM/master/css/settings.css
 // @resource     etcm-tgg-style https://raw.githubusercontent.com/NarciSource/enhancedITCM/master/css/toggleSwitch.css
+// @resource     etcm-bmk-style https://raw.githubusercontent.com/NarciSource/enhancedITCM/master/css/bookmark.css
 // @resource     etcm-tcr-style https://cdnjs.cloudflare.com/ajax/libs/timecircles/1.5.3/TimeCircles.min.css
 // @resource     etcm-flc-style https://github.com/objectivehtml/FlipClock/raw/master/compiled/flipclock.css
 // @resource     etcm-cmn-style https://cdnjs.cloudflare.com/ajax/libs/jquery-contextmenu/2.8.0/jquery.contextMenu.min.css
@@ -87,6 +88,7 @@ GM.addStyle([
     "etcm-dft-style",
     "etcm-set-style",
     "etcm-tgg-style",
+    "etcm-bmk-style",
     "etcm-tcr-style",
     "etcm-flc-style",
     "etcm-cmn-style",
@@ -134,6 +136,20 @@ function ProxySet(key, value, force) {
             return this;
         }
 
+        has(arg) {
+            if (typeof arg === "object") {
+                let subject = JSON.stringify(arg);
+                arg = [...this].find(each => JSON.stringify(each) === subject) || arg;
+            }
+            return Set.prototype.has.call(this, arg);
+        }
+        delete(arg) {
+            if (typeof arg === "object") {
+                let subject = JSON.stringify(arg);
+                arg = [...this].find(each => JSON.stringify(each) === subject) || arg;
+            }
+            return Set.prototype.delete.call(this, arg);
+        }
         in(arg) {
             if (Array.isArray(arg)) {
                 arg.forEach(each=> this.add(each));
@@ -239,6 +255,7 @@ function ETCM() {
         "addScrapbook",
         //"addWishbook",
         //"addPurchasebook",
+        "addBookmark",
         "addContextMenu",
 
         "upgradeProfile",
@@ -1121,6 +1138,50 @@ ETCM.prototype.addPurchasebook = async function() {
 };
 
 
+ETCM.prototype.addBookmark = function() {
+    let bookmark = ProxySet("bookmark", []);
+
+    $('#menu').find('li')
+        .each((_, item) => {
+            let $a = $(item).children('a'),
+                text = $a.text().trim(),
+                href = $a.attr('href');
+
+            $(item).append(
+                $('<label>', {
+                    class: 'bookmark',
+                    html: [
+                        $('<input>', {
+                            type: 'checkbox',
+                            checked: bookmark.has({ href, text }),
+                            on: {
+                                change: function () {
+                                    bookmark.io($(this).prop('checked'), { href, text });
+                                }
+                            }
+                        }),
+                        $('<span>')
+                    ]
+                })
+            );
+        });
+
+    if (bookmark.size && $('.menu_bookmark_remocon').length === 0) {
+        $('<div>', {
+            class: 'menu_bookmark_remocon',
+            html: [
+                $('<h2>', { text: "즐겨찾기" }),
+                $('<ul>')
+            ]
+        }).appendTo('.right_banner');
+    }
+
+    $('.menu_bookmark_remocon').find('ul').append(
+        [...bookmark].map(({ href, text }) => $('<li>', { html: [":: ", $('<a>', { href, text })] }))
+    );
+}
+
+
 
 ETCM.prototype.addContextMenu = function () {
     $('body').append(
@@ -1467,7 +1528,7 @@ ETCM.prototype.Upgrade.prototype.upgradeGameTagbox = function(profileinfo) {
     });
 };
 
-ETCM.prototype.Upgrade.prototype.upgradCBTable = function(profileinfo) {
+ETCM.prototype.Upgrade.prototype.upgradeCBTable = function(profileinfo) {
     $('.cb-table > tbody > tr')
         .each(function () {
             const href = $(this).find('a').attr('href');

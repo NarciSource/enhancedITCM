@@ -1,0 +1,99 @@
+/* bookmark */
+#menu a.first_a {
+    margin-right: 10px;
+}
+#menu li > .bookmark {
+    display: none;
+}
+#menu li:hover > .bookmark {
+    display: block;
+}
+
+.bookmark {
+    position: absolute;
+    right: 10px;
+    top: 10px;
+
+    display: block;
+}
+.bookmark input[type="checkbox"] {
+    display: none;
+}
+.bookmark span {
+    font-size: 20px;
+    line-height: 20px;
+
+    display: block;
+    height: 20px;
+    width: 20px;
+
+    cursor: pointer;
+    
+    background: url(http://itcm.co.kr/widgets/itcm_widgets/skins/side_menu/star_b.png) 0 0;
+}
+.bookmark input[type="checkbox"]:hover + span,
+.bookmark input[type="checkbox"]:checked + span {
+	background: url(http://itcm.co.kr/widgets/itcm_widgets/skins/side_menu/star.png) 0 0;
+}
+
+.fix_right .fix_banner {
+	position: absolute;
+}
+.menu_bookmark_remocon {
+	width: 160px;
+    padding-bottom: 10px;
+    margin-bottom: 10px;
+
+    border-bottom: 1px solid #ddd;
+}
+.menu_bookmark_remocon h2 {
+    font-size: 13px;
+    line-height: 20px;
+
+    position: relative;
+
+    height: 20px;
+    margin: 0;
+    margin-bottom: 3px;
+    padding: 0 0 0px 4px;
+
+    border-bottom: 0;
+
+    white-space: nowrap;
+}
+.menu_bookmark_remocon ul {
+    margin: 0;
+    padding: 0;
+
+    list-style: none;
+}
+.menu_bookmark_remocon li {
+    position: relative;
+
+    overflow: hidden;
+
+    padding: 3px 14px 4px 3px;
+
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+.menu_bookmark_remocon li:last-child {
+    border-bottom: 0;
+}
+.menu_bookmark_remocon li a {
+    font-size: 12px;
+}
+.menu_bookmark_remocon li .remove {
+    top: 7px;
+    right: 3px;
+
+    display: none;
+    position: absolute;
+}
+.menu_bookmark_remocon li .xi-close {
+    font-size: 11px;
+
+    display: block;
+    width: 11px;
+    height: 11px;
+}
