@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         enhancedITCM
 // @namespace    etcm
-// @version      0.1.11
+// @version      0.1.11.1
 // @description  EnhancedITCM is a user script that enhances the http://itcm.co.kr/
 // @author       narci <jwch11@gmail.com>
 // @match        *://itcm.co.kr/*
@@ -1157,6 +1157,7 @@ ETCM.prototype.addBookmark = function() {
                             on: {
                                 change: function () {
                                     bookmark.io($(this).prop('checked'), { href, text });
+                                    refresh();
                                 }
                             }
                         }),
@@ -1176,9 +1177,39 @@ ETCM.prototype.addBookmark = function() {
         }).appendTo('.right_banner');
     }
 
-    $('.menu_bookmark_remocon').find('ul').append(
-        [...bookmark].map(({ href, text }) => $('<li>', { html: [":: ", $('<a>', { href, text })] }))
+    $('.menu_bookmark_remocon').find('h2').append(
+        $('<i>', {
+            class: 'fa fa-plus',
+            click: () => {
+                bookmark.in({
+                    href: prompt("경로", "http://itcm.co.kr/g_file"),
+                    text: prompt("이름", "한글화정보")
+                });
+                refresh();
+            }
+        })
     );
+
+
+    function refresh() {
+        $('.menu_bookmark_remocon').find('ul').html(
+            [...bookmark].map(({ href, text }) =>
+                $('<li>', {
+                    html: [":: ",
+                        $('<a>', { href, text }),
+                        $('<i>', {
+                            class: 'fa fa-close',
+                            click: () => {
+                                bookmark.out({ href, text });
+                                refresh();
+                            }
+                        })
+                    ]
+                }))
+        );
+    };
+
+    refresh();
 }
 
 

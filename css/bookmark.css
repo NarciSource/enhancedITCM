@@ -46,6 +46,12 @@
 
     border-bottom: 1px solid #ddd;
 }
+.menu_bookmark_remocon i {
+    opacity: 0;
+}
+.menu_bookmark_remocon i:hover {
+    opacity: 1;
+}
 .menu_bookmark_remocon h2 {
     font-size: 13px;
     line-height: 20px;
