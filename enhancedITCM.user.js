@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         enhancedITCM
 // @namespace    etcm
-// @version      0.1.11.1
+// @version      0.1.11.2
 // @description  EnhancedITCM is a user script that enhances the http://itcm.co.kr/
 // @author       narci <jwch11@gmail.com>
 // @match        *://itcm.co.kr/*
@@ -261,7 +261,7 @@ function ETCM() {
         "upgradeProfile",
         //"upgradeAppInfoDetails",
         "upgradeGameTagbox",
-        "upgradCBTable",
+        "upgradeCBTable",
 
         "modifyArticle",
         "modifyShortlyVote",
@@ -608,7 +608,7 @@ ETCM.prototype.addHumbleChoiceTimer = function() {
 
 
 
-    const humbleChoiceEvent = time=> time.clone().tz('America/New_York').startOf('month').nextDay('금요일').hours(13).tz('Asia/Seoul'),
+    const humbleChoiceEvent = time=> time.clone().tz('America/New_York').startOf('month').nextDay('화요일').hours(13).tz('Asia/Seoul'),
           launchDate = upcoming(humbleChoiceEvent),
           autoPayDate = launchDate.clone().subtract(1,'week'),
           call_dashboards = lz_makeDashboard(launchDate, autoPayDate);
