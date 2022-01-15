@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         enhancedITCM
 // @namespace    etcm
-// @version      0.1.12.1
-// @description  EnhancedITCM is a user script that enhances the http://itcm.co.kr/
+// @version      0.1.12.2
+// @description  EnhancedITCM is a user script that enhances the https://itcm.co.kr/
 // @author       narci <jwch11@gmail.com>
 // @match        *://itcm.co.kr/*
 // @icon         https://raw.githubusercontent.com/NarciSource/enhancedITCM/master/img/icon.png
@@ -45,7 +45,7 @@
 // @connect      store.steampowered.com
 // @connect      steamcommunity.com
 // @connect      crowbar.steamstat.us
-// @run-at       document-start
+// @run-at       document-end
 // @license      MIT
 // ==/UserScript==
 
@@ -1895,14 +1895,11 @@ Array.prototype.coveredTo = function (subject) {
 }
 
 
-$(document).on('DOMContentLoaded', function () {
     /* start point */
     let etcm = new ETCM();
     etcm.run();
     console.info("EnhancedITCM running.");
     /*------------*/
-});
-
 
 
 })( jQuery, window, document);
