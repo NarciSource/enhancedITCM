@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         enhancedITCM
 // @namespace    etcm
-// @version      0.1.11.3
+// @version      0.1.12
 // @description  EnhancedITCM is a user script that enhances the http://itcm.co.kr/
 // @author       narci <jwch11@gmail.com>
 // @match        *://itcm.co.kr/*
@@ -1803,14 +1803,48 @@ ETCM.prototype.openSettings = async function() {
     }
 
 
+    function importSettingOptions($textarea) {
+        if ($textarea?.val()) {
+
+            Object.entries(
+                JSON.parse($textarea.val())
+
+            ).forEach(([key, value])=> saveToLocalStorage(key)(value));
+        }
+    }
+    function exportSettingOptions($textarea) {
+
+        $textarea.val(
+            JSON.stringify(
+                [...Object.keys(etcm.default_settings), "commands", "blacklist", "blacklist_mber", "bookmark", "scrapbook"]
+                    .reduce((acc, val) => ({ ...acc, [val]: loadFromLocalStorage(val) }), {})
+                ,null, 2)
+            );
+    }
+
+
 
     var $settings = $(await $.get(await GM.getResourceUrl("etcm-set-layout", "text/html")) );
     $settings.initialize = initialize;
     $settings.setEvent = setEvent;
+    $settings.importSettingOptions = importSettingOptions;
 
 
     $settings.find('.etcm-settings__header__version').text("Ver. "+ GM.info.script.version);
-    $settings.find('.etcm-settings__header__save').click(()=> location.reload());
+    $settings.find('.etcm-settings__header__imex').click(()=> {
+        $settings.find('.etcm-settings__body').hide();
+        $settings.find('.etcm-settings__imex').show();
+        exportSettingOptions($settings.find('.etcm-settings__imex > textarea'));
+    });
+    $settings.find('.etcm-settings__header__save').click(()=> {
+        try {
+            $settings.importSettingOptions($settings.find('.etcm-settings__imex > textarea'));
+            location.reload();
+        }
+        catch(e) {
+            alert(e);
+        }
+    });
     $settings.find('.etcm-settings__header__reset').click(()=> { 
         etcm.commands = ProxySet("commands", etcm.default_commands, true);
         $settings.initialize(etcm.commands);
