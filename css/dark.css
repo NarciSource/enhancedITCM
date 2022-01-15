@@ -227,8 +227,11 @@
 .etcm--dark .HBinputText {
     background: var(--etcm-dark-highlight) !important;
 }
-.etcm--dark .fa-heart {
-    color: hotpink;
+.etcm--dark .btn_voted,
+.etcm--dark .fa-heart.color,
+.etcm--dark .fa-heart.color ~ span {
+    color: hotpink !important;
+    border-color: hotpink !important;
 }
 
 

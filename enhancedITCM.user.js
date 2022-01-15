@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         enhancedITCM
 // @namespace    etcm
-// @version      0.1.11.2
+// @version      0.1.11.3
 // @description  EnhancedITCM is a user script that enhances the http://itcm.co.kr/
 // @author       narci <jwch11@gmail.com>
 // @match        *://itcm.co.kr/*
@@ -352,7 +352,7 @@ ETCM.prototype._initialize = function() {
 
 
     $('.wrap_profile').addClass('etcm-profile');
-    $('#scrollUp').addClass('etcm-scrollUp');
+    window.addEventListener ("load", ()=> $('#scrollUp').addClass('etcm-scrollUp'));
 }
 
 ETCM.prototype._initializeArticle = function($articles) {
@@ -1180,6 +1180,7 @@ ETCM.prototype.addBookmark = function() {
     $('.menu_bookmark_remocon').find('h2').append(
         $('<i>', {
             class: 'fa fa-plus',
+            css: {cursor: 'pointer'},
             click: () => {
                 bookmark.in({
                     href: prompt("경로", "http://itcm.co.kr/g_file"),
@@ -1199,6 +1200,7 @@ ETCM.prototype.addBookmark = function() {
                         $('<a>', { href, text }),
                         $('<i>', {
                             class: 'fa fa-close',
+                            css: {cursor: 'pointer'},
                             click: () => {
                                 bookmark.out({ href, text });
                                 refresh();
@@ -1246,7 +1248,7 @@ ETCM.prototype.addContextMenu = function () {
         .filter((_, item) => $(item).attr('href') && $(item).attr('href').includes("app="))
         .addClass('itcmGameUrl')
         .each((_, item) => {
-            const [match, id] = /app\=(\d+)/.exec(item.href);
+            const [match, id] = /app\=(-?\d+)/.exec(item.href);
 
             $(item).data({ div: "app", id, name: item.text });
         });
@@ -1314,29 +1316,20 @@ ETCM.prototype.refreshContent = function($articles) {
     $articles
         .each((_,article)=> {
             /* parse this article */
-            let category = $(article).find('.cate').text().trim(),
-                document_srl = $(article).data('document_srl'),
-                writer_id = $(article).find('.author').find('a').attr('class'),
-                title = $(article).find('.title').children('a.hx').title,
-                store;
-
-            if (window.location.href.includes("game_news")) {
-                $(article).children('td').eq(0).children().children().each(function() {
-                    if ($(this).children('img').nullChk()) {
-                        store= $(this).children('img').attr('title').toLowerCase();
-                    } else {
-                        store = $(this).text().toLowerCase().trim().replace("-","");
-                    }
-                });
-            }
+            let $article = $(article),
+                category = $article.find('.cate').text().trim(),
+                document_srl = $article.data('document_srl'),
+                writer_id = $article.find('.author').find('a').attr('class'),
+                title = $article.find('.title').children('a.hx').title,
+                store = $article.find('.store').find('img').isExist(o => o.attr('title')).else(o => o.prevObject.text()).toLowerCase().trim().replace("-","")
 
 
             /* If this article is a blacklist then shadow. */
             if (etcm.blacklist.has(document_srl) || etcm.blacklist_member.has(writer_id)) {
-                $(article).addClass('etcm-article--shadow');
+                $article.addClass('etcm-article--shadow');
             }
             else {
-                $(article).removeClass('etcm-article--shadow');
+                $article.removeClass('etcm-article--shadow');
             }
 
             /* Determine whether this article is visible or not. */
@@ -1360,9 +1353,9 @@ ETCM.prototype.refreshContent = function($articles) {
                     )
                 )
             ) {
-                $(article).show();
+                $article.show();
             } else {
-                $(article).hide();
+                $article.hide();
             }
         });
 };
@@ -1589,6 +1582,7 @@ ETCM.prototype.Upgrade.prototype.upgradeCBTable = function(profileinfo) {
 
 /* modify ui */
 ETCM.prototype.modifyArticle = function($articles) {
+    const etcm = this;
     $articles = $articles || this.$articles;
     $contents = this.$contents;
 
@@ -1644,6 +1638,7 @@ ETCM.prototype.modifyArticle = function($articles) {
             $(article).children('.steam_list_check')
         ]);
     });
+    etcm.refreshContent();
 };
 
 
@@ -1654,12 +1649,11 @@ ETCM.prototype.modifyShortlyVote = function($articles) {
     const entry = etcm.$contents.find('th').length,
           index = etcm.$contents.find('th').index( etcm.$contents.find('.voted_count') );
 
-   ($articles.find('.voted_count').nullChk()
+   ($articles.find('.voted_count').isExist()
    ||
    $articles.children(`:nth-child(${entry}n+${index + 1})`).addClass('vote_count'))
         .each((_, el)=> {
-
-            $(el).html($('<i>', { text: $(el).text() }))
+            $(el).html($('<i>', { html: $(el).html() }))
                  .hover(function() {
                     $(this).children().toggleClass('fa fa-heart') })
                  .click(function() {
@@ -1713,7 +1707,8 @@ ETCM.prototype.modifyOthers = function($articles) {
 
 
     (function fixTitleFading($hx) {
-        $hx.each((_, el)=> $(el).text($(el).attr('title')));
+        $hx.filter((_, el)=> $(el).attr('title'))
+           .each((_, el)=> $(el).text($(el).attr('title')));
     })($articles.find('.hx'));
 
 
@@ -1841,8 +1836,21 @@ $.fn.replaceTag = function (tag) {
     });
 };
 
-$.fn.nullChk = function() {
-    return this.length === 0 ? undefined : this;
+$.fn.isExist = function(arg) {
+    if (!arg) {
+        return this.length !== 0? this : false;
+    }
+    else {
+        if (this.length !== 0) {
+            var result = new Object(typeof arg === "function"? arg(this) : arg);
+            result.else = () => result;
+            return result;
+        }
+        else {
+            this.else = arg => new Object(typeof arg === "function"? arg(this) : arg);
+            return this;
+        }
+    }
 };
 
 Array.prototype.diff = function (subject, cmp) {
