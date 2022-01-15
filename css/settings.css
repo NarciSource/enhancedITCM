@@ -161,6 +161,8 @@
     display: none;
 }
 .etcm-settings__imex textarea {
+    font-family: Arial, Helvetica, sans-serif;
+
     width: calc(100% - 10px);
     height: 500px;
     padding: 5px;

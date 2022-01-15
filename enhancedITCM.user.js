@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         enhancedITCM
 // @namespace    etcm
-// @version      0.1.12
+// @version      0.1.12.1
 // @description  EnhancedITCM is a user script that enhances the http://itcm.co.kr/
 // @author       narci <jwch11@gmail.com>
 // @match        *://itcm.co.kr/*
@@ -1816,7 +1816,7 @@ ETCM.prototype.openSettings = async function() {
 
         $textarea.val(
             JSON.stringify(
-                [...Object.keys(etcm.default_settings), "commands", "blacklist", "blacklist_mber", "bookmark", "scrapbook"]
+                [...Object.keys(etcm.default_settings), "commands", "g_board_tab", "game_news_tab", "blacklist", "blacklist_mber", "bookmark", "scrapbook"]
                     .reduce((acc, val) => ({ ...acc, [val]: loadFromLocalStorage(val) }), {})
                 ,null, 2)
             );
