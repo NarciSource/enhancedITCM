@@ -6,6 +6,30 @@
 
 
 
+blockquote::before {
+    content: '\f10d';
+
+    font-family: FontAwesome;
+    font-size: large;
+
+    margin-left: -10px;
+}
+blockquote::after {
+    content: '\f10e';
+
+    font-family: FontAwesome;
+    font-size: large;
+
+    margin-left: 100%;
+}
+blockquote ~ p > a::before {
+    content: '\f0c1 ';
+
+    font-family: FontAwesome;
+}
+
+
+
 .logo img {
     width: 110px;
 }
