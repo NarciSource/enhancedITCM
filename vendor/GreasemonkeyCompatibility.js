@@ -75,7 +75,6 @@
         options = options || { url };
         if (typeof url === "object") {
             options = url;
-            url = undefined;
         }
         console.info(options.type || "GET", options.url);
 
@@ -83,26 +82,7 @@
         return new Promise((resolve, reject) => {
             GM.xmlHttpRequest(Object.assign({}, options, {
                 method: "GET",
-                onload: response => {
-                    const headerRegex = /([\w-]+): (.*)/gi,
-                        mimeRegex = /(^\w+)\/(\w+)/g;
-
-                    let headers = {}, match;
-                    while (match = headerRegex.exec(response.responseHeaders)) {
-                        headers[match[1].toLowerCase()] = match[2].toLowerCase();
-                    }
-
-                    const [mime, mime_type, mime_subtype] = mimeRegex.exec(headers["content-type"]);
-                    switch (mime_subtype) {
-                        case "xml":
-                            resolve(new DOMParser().parseFromString(response.responseText, mime));
-                            break;
-                        case "json":
-                            resolve(JSON.parse(response.responseText));
-                            break;
-                    }
-                    resolve(response.responseText);
-                },
+                onload: response => resolve(response.response),
                 onerror: error => reject(error)
             }));
 

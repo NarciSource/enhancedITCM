@@ -42,13 +42,23 @@ blockquote ~ p > a::before {
     display: block;
 
     margin-top: -10px;
-    padding-left: 30px;
 
     cursor: pointer;
     transform: translateY(-50%);
 }
 .etcm-sign:hover {
     color: #48698d !important;
+}
+
+.etcm-blink {
+    animation: blink-effect 2s step-end 3;
+    color: var(--etcm-red);
+}
+
+@keyframes blink-effect {
+    50% {
+        opacity: 0;
+    }
 }
 
 

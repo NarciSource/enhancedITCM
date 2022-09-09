@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         enhancedITCM
 // @namespace    etcm
-// @version      0.1.12.2
+// @version      0.1.12.4
 // @description  EnhancedITCM is a user script that enhances the https://itcm.co.kr/
 // @author       narci <jwch11@gmail.com>
 // @match        *://itcm.co.kr/*
@@ -232,6 +232,7 @@ function ProxyObject(obj, force) {
 const dynamicstore_url = "https://store.steampowered.com/dynamicstore/userdata/",
       steam_signin_url = "https://store.steampowered.com/login/",
       profile_url = "https://steamcommunity.com/my/ajaxaliases",
+      account_url = "https://store.steampowered.com/account/",
       steamstat_url = "https://crowbar.steamstat.us/Barney";
 
 
@@ -325,15 +326,21 @@ function ETCM() {
 
 /* Collect information about a user who is currently connected to Steam Web Page. */
 ETCM.prototype._loadProfileInfo = async function() {
-    let profileinfo = await GM.ajax({
-                            dataType: "json",
-                            url: dynamicstore_url,
-                        });
-    if (profileinfo === undefined || profileinfo.rgOwnedApps.length === 0) {
-        console.error("Steam account is strange...");
-    }
-    saveToHugeStorage("profileinfo")(profileinfo);
-    return profileinfo;
+
+    let profileinfo = 
+        await GM.ajax({
+            responseType: "json",
+            url: dynamicstore_url,
+            headers: { 'cache-control':'no-cache, no-store, max-age=0, must-revalidate' }
+        });
+
+    profileinfo.name =
+        $(await GM.ajax({
+            url: account_url,
+            headers: { 'cache-control':'no-cache, no-store, max-age=0, must-revalidate' }
+        })).find('#account_pulldown').text().trim();
+
+    return profileinfo?.rgOwnedApps?.length? profileinfo : null;
 };
 
 
@@ -384,35 +391,76 @@ ETCM.prototype.enhanceLogo = function() {
 
 
     (async function readSteamProfileCurrentlyConnected() {
-        const signin_name = (await GM.ajax(profile_url))[0].newname;
-        if (signin_name === undefined) {
-            $('.logo').append(
-                $('<a>', {
-                    class: 'etcm-sign',
-                    css: {color: 'red'},
-                    text: "sign in",
-                    href: steam_signin_url
-                })
-            );
-            deleteFromLocalStorage("profileinfo");
-        }
-        else {
+
+      const message = {
+            0: "connected to : ",
+            1: "change account",
+            2: "EnhancedITCM. 스팀사이트에 로그인하면 기능이 추가됩니다."
+        };
+
+        let isExist_profileinfo = etcm.profileinfo = 
+                JSON.parse(await loadFromHugeStorage("profileinfo") || null) 
+                ||
+                await etcm._loadProfileInfo().catch(_=> null);
+
+
+
+        if (isExist_profileinfo) {
+
+            saveToHugeStorage("profileinfo")(etcm.profileinfo);
+            etcm.upgrade.run(undefined, etcm.profileinfo);
+
+            message[0] += etcm.profileinfo.name;
+            
+
             $('.logo').append(
                 $('<a>', {
                     class: 'etcm-sign',
                     html: $.merge(
-                        $('<i>', { class: 'fa fa-refresh'}),
-                        $('<span>', { text: ` working : ${signin_name}`})
+                        $('<i>', {
+                            class: 'fa fa-sign-in',
+                            css: { 'padding-right': '3px' }
+                        }),
+                        $('<span>', {
+                            text: message[tg=0],
+                            hover: e => $(e.target).text(message[tg^=1]),
+                        })
                     ),
-                    click: async ()=> {
-                        etcm.profileinfo = await etcm._loadProfileInfo();
-                        etcm.upgrade.run(undefined, etcm.profileinfo);
-                    }
+                    click: openLoginWindow
                 })
             );
-            etcm.profileinfo = await loadFromHugeStorage("profileinfo");
-            etcm.profileinfo = etcm.profileinfo? JSON.parse( etcm.profileinfo ) : await etcm._loadProfileInfo();
-            etcm.upgrade.run(undefined, etcm.profileinfo);
+        }
+        else {
+
+            $alert = $('<i>', {
+                class: 'fa fa-question-circle etcm-blink',
+                title: message[2],
+                css: {
+                    fontSize: 'small',
+                    position: 'absolute', right: 0,
+                    cursor: 'pointer',
+                },
+                click: openLoginWindow
+            });
+
+            $('.logo').prepend( $alert.clone(true) );
+            $('.cb-table').prepend( $alert.clone(true) );
+            $('.app_info_details').prepend( $alert.clone(true) );
+            $('.steam_read_selected').prepend( $alert.clone(true) );
+        }
+
+
+        function openLoginWindow () {
+            let win = window.open(steam_signin_url + "?redir=account", "Login", "width=300, height=400");
+            let iv = setInterval(async ()=> {
+                    if (win.closed) {
+
+                        saveToHugeStorage("profileinfo")(await etcm._loadProfileInfo().catch(_=> null));
+
+                        clearInterval(iv);
+                        location.reload();
+                    }
+                }, 1000);
         }
     })();
 };
