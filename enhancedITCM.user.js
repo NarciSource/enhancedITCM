@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         enhancedITCM
 // @namespace    etcm
-// @version      0.1.12.4
+// @version      0.1.12.5
 // @description  EnhancedITCM is a user script that enhances the https://itcm.co.kr/
 // @author       narci <jwch11@gmail.com>
 // @match        *://itcm.co.kr/*
@@ -77,6 +77,16 @@ console.info(`
 ;(function ($, window, document, undefined) {
 
 this.$ = window.jQuery.noConflict(true);
+
+
+if (window.location.protocol === "https:") {
+    let meta = document.createElement('meta');
+
+    meta.httpEquiv = 'Content-Security-Policy';
+    meta.content = "upgrade-insecure-requests";
+
+    document.getElementsByTagName('head')[0].appendChild(meta);
+}
 
 
 if (typeof GM === "undefined") {
