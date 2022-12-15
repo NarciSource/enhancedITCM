@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         enhancedITCM
 // @namespace    etcm
-// @version      0.1.12.5
+// @version      0.1.13
 // @description  EnhancedITCM is a user script that enhances the https://itcm.co.kr/
 // @author       narci <jwch11@gmail.com>
 // @match        *://itcm.co.kr/*
@@ -21,14 +21,6 @@
 // @require      https://raw.githubusercontent.com/NarciSource/steamCb.js/master/src/tablesorter.js
 // @resource     etcm-logo https://raw.githubusercontent.com/NarciSource/enhancedITCM/master/img/logo.png
 // @resource     etcm-dark-logo https://raw.githubusercontent.com/NarciSource/enhancedITCM/master/img/logo-dark.png
-// @resource     etcm-dft-style https://raw.githubusercontent.com/NarciSource/enhancedITCM/master/css/default.css
-// @resource     etcm-drk-style https://raw.githubusercontent.com/NarciSource/enhancedITCM/master/css/dark.css
-// @resource     etcm-set-style https://raw.githubusercontent.com/NarciSource/enhancedITCM/master/css/settings.css
-// @resource     etcm-tgg-style https://raw.githubusercontent.com/NarciSource/enhancedITCM/master/css/toggleSwitch.css
-// @resource     etcm-bmk-style https://raw.githubusercontent.com/NarciSource/enhancedITCM/master/css/bookmark.css
-// @resource     etcm-tcr-style https://cdnjs.cloudflare.com/ajax/libs/timecircles/1.5.3/TimeCircles.min.css
-// @resource     etcm-flc-style https://github.com/objectivehtml/FlipClock/raw/master/compiled/flipclock.css
-// @resource     etcm-cmn-style https://cdnjs.cloudflare.com/ajax/libs/jquery-contextmenu/2.8.0/jquery.contextMenu.min.css
 // @resource     etcm-set-layout https://raw.githubusercontent.com/NarciSource/enhancedITCM/master/html/settings.html
 // @updateURL    https://raw.githubusercontent.com/NarciSource/enhancedITCM/master/enhancedITCM.meta.js
 // @downloadURL  https://raw.githubusercontent.com/NarciSource/enhancedITCM/master/enhancedITCM.user.js
@@ -45,7 +37,7 @@
 // @connect      store.steampowered.com
 // @connect      steamcommunity.com
 // @connect      crowbar.steamstat.us
-// @run-at       document-end
+// @run-at       document-start
 // @license      MIT
 // ==/UserScript==
 
@@ -79,31 +71,50 @@ console.info(`
 this.$ = window.jQuery.noConflict(true);
 
 
-if (window.location.protocol === "https:") {
-    let meta = document.createElement('meta');
-
-    meta.httpEquiv = 'Content-Security-Policy';
-    meta.content = "upgrade-insecure-requests";
-
-    document.getElementsByTagName('head')[0].appendChild(meta);
-}
-
 
 if (typeof GM === "undefined") {
     GM = this.GM || {};
 }
 
 
-GM.addStyle([
-    "etcm-dft-style",
-    "etcm-set-style",
-    "etcm-tgg-style",
-    "etcm-bmk-style",
-    "etcm-tcr-style",
-    "etcm-flc-style",
-    "etcm-cmn-style",
-    "etcm-drk-style",
-], "resource");
+;(function addStyle(urls) {
+
+    urls.forEach(url => {
+        let link = document.createElement('link');
+
+        link.setAttribute('rel', 'stylesheet');
+        link.setAttribute('type', 'text/css');
+        link.setAttribute('href', url);
+
+        if (head = document.head) {
+            document.head.append(link);
+        }
+        else {
+            let documentEl = document.documentElement;
+            documentEl.append(link);
+
+            let observer = new MutationObserver(() => {
+                if (document.head) {
+                    observer.disconnect();
+                    if (link.isConnected) {
+                        document.head.append(link);
+                    }
+                }
+            });
+            observer.observe(documentEl, {childList: true});
+        }
+    })
+})([
+    "https://narcisource.github.io/enhancedITCM/css/default.css",
+    "https://narcisource.github.io/enhancedITCM/css/dark.css",
+    "https://narcisource.github.io/enhancedITCM/css/settings.css",
+    "https://narcisource.github.io/enhancedITCM/css/toggleSwitch.css",
+    "https://narcisource.github.io/enhancedITCM/css/bookmark.css",
+    "https://cdnjs.cloudflare.com/ajax/libs/timecircles/1.5.3/TimeCircles.min.css",
+    "https://cdnjs.cloudflare.com/ajax/libs/flipclock/0.7.8/flipclock.css",
+    "https://cdnjs.cloudflare.com/ajax/libs/jquery-contextmenu/2.8.0/jquery.contextMenu.min.css",
+]);
+
 
 
 (function enhanceMoment(moment) {
@@ -314,14 +325,16 @@ function ETCM() {
     this.blacklist_member = ProxySet("blacklist_mber", [/*empty*/]);
     this.selectTabs = undefined;
 
-    this.$contents = $('table.bd_lst.bd_tb');
-    this.$articles = this.$contents.children('tbody').children('tr');
 
+    $('html').toggleClass('etcm--dark', $.parseJSON(this.settings["dark_mode"]));
 
 
     this.upgrade = new this.Upgrade(this);
     this.run = (condition, arg)=> {
         condition = condition || (()=>true);
+
+        this.$contents = $('table.bd_lst.bd_tb');
+        this.$articles = this.$contents.children('tbody').children('tr');
 
         Object.entries(Object.getPrototypeOf(this))
             .filter(([property, value])=> condition([property, value]) && this.commands.has(property) && typeof value === "function")
@@ -1644,7 +1657,6 @@ ETCM.prototype.modifyArticle = function($articles) {
     $articles = $articles || this.$articles;
     $contents = this.$contents;
 
-
     if (!$contents.hasClass('etcm-article-design')) {
         $contents.addClass('etcm-article-design');
         if (window.location.href.includes("game_news")) {
@@ -1953,11 +1965,25 @@ Array.prototype.coveredTo = function (subject) {
 }
 
 
+let etcm = new ETCM();
+$(document).on('DOMContentLoaded', function () {
+
+    /* https convenient use */
+    if (window.location.protocol === "https:") {
+        let meta = document.createElement('meta');
+    
+        meta.httpEquiv = 'Content-Security-Policy';
+        meta.content = "upgrade-insecure-requests";
+    
+        document.head.appendChild(meta);
+    }
+
+
     /* start point */
-    let etcm = new ETCM();
     etcm.run();
     console.info("EnhancedITCM running.");
     /*------------*/
+});
 
 
 })( jQuery, window, document);
