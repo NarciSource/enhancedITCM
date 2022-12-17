@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         enhancedITCM
 // @namespace    etcm
-// @version      0.1.13.1
+// @version      0.1.13.3
 // @description  EnhancedITCM is a user script that enhances the https://itcm.co.kr/
 // @author       narci <jwch11@gmail.com>
 // @match        *://itcm.co.kr/*
@@ -87,33 +87,28 @@ const meta = {
     }
 }
 
-document.addStyle = function (urls) {
+document.addStyle = (urls, observer= undefined) => {
 
-    urls.forEach(url => {
-        let link = document.createElement('link');
+    if (document.head) {
 
-        link.setAttribute('rel', 'stylesheet');
-        link.setAttribute('type', 'text/css');
-        link.setAttribute('href', url);
+        ;(Array.isArray(urls)? urls : [urls]).forEach(url => {
 
-        if (head = document.head) {
+            let link = document.createElement('link');
+
+            link.setAttribute('rel', 'stylesheet');
+            link.setAttribute('type', 'text/css');
+            link.setAttribute('href', url);
+
             document.head.append(link);
-        }
-        else {
-            let documentEl = document.documentElement;
-            documentEl.append(link);
+        });
 
-            let observer = new MutationObserver(() => {
-                if (document.head) {
-                    observer.disconnect();
-                    if (link.isConnected) {
-                        document.head.append(link);
-                    }
-                }
-            });
-            observer.observe(documentEl, {childList: true});
-        }
-    })
+        observer?.disconnect();
+    }
+    else if (observer == undefined) {
+
+        observer = new MutationObserver(()=> document.addStyle(urls, observer));
+        observer.observe(document.documentElement, { childList:true });
+    }
 }
 
 
@@ -405,10 +400,27 @@ ETCM.prototype._initializeArticle = function($articles) {
 }
 
 ETCM.prototype._preview = function() {
+    const etcm = this;
 
     document.addStyle( [ meta.css.default, meta.css.dark ] );
 
     $('html').toggleClass('etcm--dark', $.parseJSON(this.settings["dark_mode"]));
+
+    ;(function sizableBoardSofter(observer) {
+
+        if ($('.xe > .container')[0]) {
+
+            $('.xe').css({ width: etcm.settings["board_width"], margin: '0px auto' })
+            $('.xe_width').addClass('etcm-board-width');
+
+            observer?.disconnect();
+        }
+        else if (observer == undefined) {
+
+            observer = new MutationObserver(()=> sizableBoardSofter(observer));
+            observer.observe(document.documentElement, { childList:true, subtree : true });
+        }
+    })();
 }
 
 
