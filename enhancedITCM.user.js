@@ -67,15 +67,24 @@ console.info(`
 `);
 
 
-const css = {
-    default: "https://narcisource.github.io/enhancedITCM/css/default.css",
-    dark: "https://narcisource.github.io/enhancedITCM/css/dark.css",
-    settings: "https://narcisource.github.io/enhancedITCM/css/settings.css",
-    toggleSwitch: "https://narcisource.github.io/enhancedITCM/css/toggleSwitch.css",
-    bookmark: "https://narcisource.github.io/enhancedITCM/css/bookmark.css",
-    TimeCircles: "https://cdnjs.cloudflare.com/ajax/libs/timecircles/1.5.3/TimeCircles.min.css",
-    flipclock: "https://cdnjs.cloudflare.com/ajax/libs/flipclock/0.7.8/flipclock.css",
-    contextMenu: "https://cdnjs.cloudflare.com/ajax/libs/jquery-contextmenu/2.8.0/jquery.contextMenu.min.css",
+const meta = {
+    css : {
+        default: "https://narcisource.github.io/enhancedITCM/css/default.css",
+        dark: "https://narcisource.github.io/enhancedITCM/css/dark.css",
+        settings: "https://narcisource.github.io/enhancedITCM/css/settings.css",
+        toggleSwitch: "https://narcisource.github.io/enhancedITCM/css/toggleSwitch.css",
+        bookmark: "https://narcisource.github.io/enhancedITCM/css/bookmark.css",
+        TimeCircles: "https://cdnjs.cloudflare.com/ajax/libs/timecircles/1.5.3/TimeCircles.min.css",
+        flipclock: "https://cdnjs.cloudflare.com/ajax/libs/flipclock/0.7.8/flipclock.css",
+        contextMenu: "https://cdnjs.cloudflare.com/ajax/libs/jquery-contextmenu/2.8.0/jquery.contextMenu.min.css",
+    },
+
+    url : {
+        dynamicstore : "https://store.steampowered.com/dynamicstore/userdata/",
+        steam_signin : "https://store.steampowered.com/login/",
+        profile : "https://steamcommunity.com/my/ajaxaliases",
+        account : "https://store.steampowered.com/account/",
+    }
 }
 
 document.addStyle = function (urls) {
@@ -253,13 +262,6 @@ function ProxyObject(obj, force) {
 `
 
 
-const dynamicstore_url = "https://store.steampowered.com/dynamicstore/userdata/",
-      steam_signin_url = "https://store.steampowered.com/login/",
-      profile_url = "https://steamcommunity.com/my/ajaxaliases",
-      account_url = "https://store.steampowered.com/account/",
-      steamstat_url = "https://crowbar.steamstat.us/Barney";
-
-
 
 function ETCM() {
     this.default_commands = [
@@ -329,7 +331,7 @@ function ETCM() {
     this.selectTabs = undefined;
 
 
-    $('html').toggleClass('etcm--dark', $.parseJSON(this.settings["dark_mode"]));
+    this._preview();
 
 
     this.upgrade = new this.Upgrade(this);
@@ -356,13 +358,13 @@ ETCM.prototype._loadProfileInfo = async function() {
     let profileinfo = 
         await GM.ajax({
             responseType: "json",
-            url: dynamicstore_url,
+            url: meta.url.dynamicstore,
             headers: { 'cache-control':'no-cache, no-store, max-age=0, must-revalidate' }
         });
 
     profileinfo.name =
         $(await GM.ajax({
-            url: account_url,
+            url: meta.url.account,
             headers: { 'cache-control':'no-cache, no-store, max-age=0, must-revalidate' }
         })).find('#account_pulldown').text().trim();
 
@@ -400,6 +402,13 @@ ETCM.prototype._initializeArticle = function($articles) {
                 document_srl = /(?:\/g_board\/|\/game_news\/|document_srl=)(\d+)/.exec(href)[1];
             $(this).data({document_srl});
         });
+}
+
+ETCM.prototype._preview = function() {
+
+    document.addStyle( [ meta.css.default, meta.css.dark ] );
+
+    $('html').toggleClass('etcm--dark', $.parseJSON(this.settings["dark_mode"]));
 }
 
 
@@ -477,7 +486,7 @@ ETCM.prototype.enhanceLogo = function() {
 
 
         function openLoginWindow () {
-            let win = window.open(steam_signin_url + "?redir=account", "Login", "width=300, height=400");
+            let win = window.open(meta.url.steam_signin + "?redir=account", "Login", "width=300, height=400");
             let iv = setInterval(async ()=> {
                     if (win.closed) {
 
@@ -1802,7 +1811,7 @@ ETCM.prototype.modifyOthers = function($articles) {
 ETCM.prototype.openSettings = async function() {
     const etcm = this;
 
-    document.addStyle([ css.settings ]);
+    document.addStyle([ meta.css.settings ]);
 
     function initialize(commands) {
 
@@ -1970,13 +1979,11 @@ Array.prototype.coveredTo = function (subject) {
 }
 
 
-/* preview */
-document.addStyle([ css.default, css.dark ]);
 
 let etcm = new ETCM();
 document.addEventListener('DOMContentLoaded', function () {
 
-    document.addStyle([ css.default, css.dark, css.toggleSwitch, css.bookmark, css.TimeCircles, css.flipclock, css.contextMenu ]);
+    document.addStyle([ meta.css.default, meta.css.dark, meta.css.toggleSwitch, meta.css.bookmark, meta.css.TimeCircles, meta.css.flipclock, meta.css.contextMenu ]);
 
     /* https convenient use */
     if (window.location.protocol === "https:") {
