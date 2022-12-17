@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         enhancedITCM
 // @namespace    etcm
-// @version      0.1.13
+// @version      0.1.13.1
 // @description  EnhancedITCM is a user script that enhances the https://itcm.co.kr/
 // @author       narci <jwch11@gmail.com>
 // @match        *://itcm.co.kr/*
@@ -66,18 +66,19 @@ console.info(`
                                                                                                                                
 `);
 
-;(function ($, window, document, undefined) {
 
-this.$ = window.jQuery.noConflict(true);
-
-
-
-if (typeof GM === "undefined") {
-    GM = this.GM || {};
+const css = {
+    default: "https://narcisource.github.io/enhancedITCM/css/default.css",
+    dark: "https://narcisource.github.io/enhancedITCM/css/dark.css",
+    settings: "https://narcisource.github.io/enhancedITCM/css/settings.css",
+    toggleSwitch: "https://narcisource.github.io/enhancedITCM/css/toggleSwitch.css",
+    bookmark: "https://narcisource.github.io/enhancedITCM/css/bookmark.css",
+    TimeCircles: "https://cdnjs.cloudflare.com/ajax/libs/timecircles/1.5.3/TimeCircles.min.css",
+    flipclock: "https://cdnjs.cloudflare.com/ajax/libs/flipclock/0.7.8/flipclock.css",
+    contextMenu: "https://cdnjs.cloudflare.com/ajax/libs/jquery-contextmenu/2.8.0/jquery.contextMenu.min.css",
 }
 
-
-;(function addStyle(urls) {
+document.addStyle = function (urls) {
 
     urls.forEach(url => {
         let link = document.createElement('link');
@@ -104,17 +105,19 @@ if (typeof GM === "undefined") {
             observer.observe(documentEl, {childList: true});
         }
     })
-})([
-    "https://narcisource.github.io/enhancedITCM/css/default.css",
-    "https://narcisource.github.io/enhancedITCM/css/dark.css",
-    "https://narcisource.github.io/enhancedITCM/css/settings.css",
-    "https://narcisource.github.io/enhancedITCM/css/toggleSwitch.css",
-    "https://narcisource.github.io/enhancedITCM/css/bookmark.css",
-    "https://cdnjs.cloudflare.com/ajax/libs/timecircles/1.5.3/TimeCircles.min.css",
-    "https://cdnjs.cloudflare.com/ajax/libs/flipclock/0.7.8/flipclock.css",
-    "https://cdnjs.cloudflare.com/ajax/libs/jquery-contextmenu/2.8.0/jquery.contextMenu.min.css",
-]);
+}
 
+
+
+;(function ($, window, document, undefined) {
+
+this.$ = window.jQuery.noConflict(true);
+
+
+
+if (typeof GM === "undefined") {
+    GM = this.GM || {};
+}
 
 
 (function enhanceMoment(moment) {
@@ -1799,6 +1802,8 @@ ETCM.prototype.modifyOthers = function($articles) {
 ETCM.prototype.openSettings = async function() {
     const etcm = this;
 
+    document.addStyle([ css.settings ]);
+
     function initialize(commands) {
 
         (function setSwitchBasedOnPreviousRecord($switches) {
@@ -1965,8 +1970,13 @@ Array.prototype.coveredTo = function (subject) {
 }
 
 
+/* preview */
+document.addStyle([ css.default, css.dark ]);
+
 let etcm = new ETCM();
-$(document).on('DOMContentLoaded', function () {
+document.addEventListener('DOMContentLoaded', function () {
+
+    document.addStyle([ css.default, css.dark, css.toggleSwitch, css.bookmark, css.TimeCircles, css.flipclock, css.contextMenu ]);
 
     /* https convenient use */
     if (window.location.protocol === "https:") {
