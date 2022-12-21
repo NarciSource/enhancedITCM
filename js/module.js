@@ -38,6 +38,9 @@ var Module = {};
         }).insertAfter($('.wrap_login').find('li').last());
 
 
+        etcm.$contents = $('table.bd_lst.bd_tb');
+        etcm.$articles = etcm.$contents.children('tbody').children('tr');
+
         $('.wrap_profile').addClass('etcm-profile');
         window.addEventListener ("load", ()=> $('#scrollUp').addClass('etcm-scrollUp'));
     }

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         enhancedITCM
 // @namespace    etcm
-// @version      0.1.14
+// @version      0.1.14.1
 // @description  EnhancedITCM is a user script that enhances the https://itcm.co.kr/
 // @author       narci <jwch11@gmail.com>
 // @match        *://itcm.co.kr/*
@@ -147,9 +147,6 @@ function ETCM() {
     this.upgrade = new this.Upgrade(this);
     this.run = (condition, arg)=> {
         condition = condition || (()=>true);
-
-        this.$contents = $('table.bd_lst.bd_tb');
-        this.$articles = this.$contents.children('tbody').children('tr');
 
         Object.entries(Object.getPrototypeOf(this))
             .filter(([property, value])=> condition([property, value]) && this.commands.has(property) && typeof value === "function")
