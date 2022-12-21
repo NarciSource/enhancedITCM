@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         enhancedITCM
 // @namespace    etcm
-// @version      0.1.14.1
+// @version      0.1.14.2
 // @description  EnhancedITCM is a user script that enhances the https://itcm.co.kr/
 // @author       narci <jwch11@gmail.com>
 // @match        *://itcm.co.kr/*
@@ -75,6 +75,7 @@ if (typeof GM === "undefined") {
 
 function ETCM() {
     this.default_commands = [
+        "_inspectProtocol",
         "_initialize",
         "_initializeArticle",
 
@@ -164,9 +165,6 @@ ETCM.prototype = Module;
 let etcm = new ETCM();
 
 document.addEventListener('DOMContentLoaded', function () {
-
-    /* use in https conveniently */
-    upgradeInsecureRequests();
 
     /* inject stylesheet */
     document.addStyle([ meta.css.default, meta.css.dark, meta.css.toggleSwitch, meta.css.bookmark, meta.css.TimeCircles, meta.css.flipclock, meta.css.contextMenu ]);

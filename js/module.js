@@ -24,6 +24,21 @@ var Module = {};
     };
 
 
+    Module._inspectProtocol = function () {
+        /* -! deprecated */
+        if (location.protocol === "https:") {
+            /* use in https conveniently */
+            let meta = document.createElement('meta');
+            meta.httpEquiv = 'Content-Security-Policy';
+            meta.content = "upgrade-insecure-requests";        
+            document.head.appendChild(meta);
+        }
+
+        if (location.protocol === "http:") {
+            throw "HTTPS로의 접근을 권장합니다.";
+        }
+    }
+
     Module._initialize = function() {
       const etcm = this;
 
@@ -88,12 +103,17 @@ var Module = {};
 
     Module._alert = function (event) {
         function copyClipboard(value) {
-            const $text = document.createElement('textarea');
-            document.body.appendChild($text);
-            $text.value = value;
-            $text.select();
-            document.execCommand('Copy');
-            document.body.removeChild($text);
+            if (navigator.clipboard) {
+                navigator.clipboard.writeText(value);
+            }
+            else {
+                const $text = document.createElement('textarea');
+                document.body.appendChild($text);
+                $text.value = value;
+                $text.select();
+                document.execCommand('Copy');
+                document.body.removeChild($text);
+            }
         }
 
         $('<div>', {
@@ -111,13 +131,13 @@ var Module = {};
                                 paddingRight: '5px'
                             }
                         }),
-                        "EnhancedITCM에서 오류가 발생했습니다."
+                        typeof event == 'string'? event : "EnhancedITCM에서 오류가 발생했습니다."
                     ]
             }),
             title: "클릭하면 오류 내용이 복사됩니다.",
             click: function() {
                 copyClipboard(event);
-                alert("복사");
+                alert(`복사됨 : "${event}"`);
             }
         }).appendTo($('.top_header .account'))
     }

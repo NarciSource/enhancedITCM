@@ -1,16 +1,3 @@
-function upgradeInsecureRequests () {
-
-    if (window.location.protocol === "https:") {
-        let meta = document.createElement('meta');
-    
-        meta.httpEquiv = 'Content-Security-Policy';
-        meta.content = "upgrade-insecure-requests";
-    
-        document.head.appendChild(meta);
-    }
-}
-
-
 document.addStyle = (urls, observer= undefined) => {
 
     if (document.head) {
