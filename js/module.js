@@ -69,7 +69,7 @@ var Module = {};
                 var href = $(this).hasClass('notice')? 
                                 $(this).children('.title').children('a').get(0).href
                                 : $(this).children('.title').children('.hx').data('viewer'),
-                    document_srl = /(?:\/g_board\/|\/game_news\/|document_srl=)(\d+)/.exec(href)[1];
+                    document_srl = RegExp(`(?:${location.pathname}\/|document_srl=)(\\d+)`).exec(href)[1];
                 $(this).data({document_srl});
             });
     }
@@ -560,8 +560,8 @@ var Module = {};
       const etcm = this;
 
         (function handleGamenewsTabs() {
-            if (!( window.location.href.includes("game_news")
-                && $('.inner_content').children('div').eq(0).find('img').attr('src').includes("/store/") )) {
+            if (!window.location.href.includes("game_news")
+            ||  !$('.inner_content').children('div').first().not('.xe-widget-wrapper').isExist()) {
                 return;
             }
 
@@ -783,7 +783,7 @@ var Module = {};
         }
 
         /* side frame */
-      const $side = $('.etcm-side').length != 0 ? $('.etcm-side')
+      const $side = $('.etcm-side').isExist() ? $('.etcm-side')
             : $('<div>', {
                 class: 'etcm-side',
                 html: [
@@ -901,7 +901,7 @@ var Module = {};
         addSideBook({
             name: "scrapbook",
             title: "스크랩",
-            url: "http://itcm.co.kr/index.php?act=dispMemberScrappedDocument",
+            url: "/index.php?act=dispMemberScrappedDocument",
             tabIcon: 'xi-bookmark',
             parser: html=>
                 $(html).find('.table-striped').find('td.title').children('a')
@@ -917,7 +917,7 @@ var Module = {};
         addSideBook({
             name: "wishbook",
             title: "찜목록",
-            url: "http://itcm.co.kr/index.php?mid=game_news&_sort_index=check_wlist",
+            url: "/index.php?mid=game_news&_sort_index=check_wlist",
             tabIcon: 'xi-cart',
             parser: html=>
                 $(html).find('.bd_lst.bd_tb').children('tbody').children('tr').not('.notice').find('td.title').children('a:even')
@@ -934,7 +934,7 @@ var Module = {};
         addSideBook({
             name: "purchasebook",
             title: "구매목록",
-            url: "http://itcm.co.kr/index.php?mid=game_news&_sort_index=check_plist",
+            url: "/index.php?mid=game_news&_sort_index=check_plist",
             tabIcon: 'xi-wallet',
             parser: html=>
                 $(html).find('.bd_lst.bd_tb').children('tbody').children('tr').not('.notice').find('td.title').children('a:even')
@@ -978,7 +978,7 @@ var Module = {};
                 );
             });
 
-        if (bookmark.size && $('.menu_bookmark_remocon').length === 0) {
+        if (bookmark.size && !$('.menu_bookmark_remocon').isExist()) {
             $('<div>', {
                 class: 'menu_bookmark_remocon',
                 html: [
@@ -993,8 +993,8 @@ var Module = {};
                 class: 'fa fa-plus',
                 css: {cursor: 'pointer'},
                 click: () => {
-                    bookmark.in({
-                        href: prompt("경로", "http://itcm.co.kr/g_file"),
+                    bookmark.in({//sample
+                        href: prompt("경로", "https://itcm.co.kr/g_file"),
                         text: prompt("이름", "한글화정보")
                     });
                     refresh();
@@ -1050,7 +1050,7 @@ var Module = {};
             .filter((_, item) => $(item).attr('href') && $(item).attr('href').includes("steampowered.com/app/"))
             .addClass('steamUrl')
             .each((_, item) => {
-              const [match, div, id] = /steampowered\.com\/(\w+)\/(\d+)/.exec(item.href);
+              const [match, div, id] = /steampowered\.com\/(\w+)\/(\d+)/.exec(item.href) || [null, null, null];
 
                 $(item).data({ div, id, name: item.text });
             });
@@ -1059,7 +1059,7 @@ var Module = {};
             .filter((_, item) => $(item).attr('href') && $(item).attr('href').includes("app="))
             .addClass('itcmGameUrl')
             .each((_, item) => {
-              const [match, id] = /app\=(-?\d+)/.exec(item.href);
+              const [match, id] = /app\=(-?\d+)/.exec(item.href) || [null, null];
 
                 $(item).data({ div: "app", id, name: item.text });
             });
@@ -1094,10 +1094,10 @@ var Module = {};
                         break;
                     case "itcm":
                         if (div === "app")
-                            window.open(`http://itcm.co.kr/index.php?mid=g_board&app=${id}`,'_blank');
+                            window.open(`/index.php?mid=g_board&app=${id}`,'_blank');
                         break;
                     case "itcm_sale":
-                        window.open(`http://itcm.co.kr/?_filter=search&mid=game_news&search_keyword=${name}&search_target=title_content`,'_blank');
+                        window.open(`/?_filter=search&mid=game_news&search_keyword=${name}&search_target=title_content`,'_blank');
                         break;
                     case "run":
                         window.open(`steam://install/${id}`,'_self');
