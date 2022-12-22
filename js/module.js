@@ -1294,9 +1294,7 @@ var Module = {};
         }
 
         function parsing($app) {
-          const [match, div, id] = /steampowered\.com\/(\w+)\/(\d+)/.exec(
-                $app.find('.item_content .name').attr('href')
-            );
+          const [match, div, id] = /steampowered\.com\/(\w+)\/(\d+)/.exec($app.find('.item_content .name').attr('href'));
             return {div, id: Number(id)};
         }
 
@@ -1399,53 +1397,56 @@ var Module = {};
 
         if (!$contents.hasClass('etcm-article-design')) {
             $contents.addClass('etcm-article-design');
-            if (window.location.href.includes("game_news")) {
-                $contents.find('th').filter(':eq(0), :eq(6), :eq(7), :eq(8)').remove();
-                $contents.find('th.title').after($contents.find('th').last());
+
+            let $th = $contents.find('th'),
+                categories = ['cate', 'title', 'app_image', 'author_h', 'regdate', 'readed_count', 'voted_count', 'steam_list_check'];
+
+            if (location.href.includes("game_news")) {
+                categories.splice(0,0,'location');
+                categories.splice(3,0,'expire');
+                categories.splice(9,0,'steam_list_check');
+
+                $th.eq('.title').after($th.eq('.steam_list_check'));
             }
-            else if (window.location.href.includes("timeline")) {
-                $contents.find('th').filter(':eq(0), :eq(5), :eq(6), :eq(7)').remove();
+            if (location.href.includes("timeline")) {
+                categories.splice(0,0,'location');
             }
-            else {
-                $contents.find('th').filter(':eq(4), :eq(5), :eq(6)').remove();
-            }
+
+            console.log(categories)
+            categories.forEach((c, i) => $th.eq(i).addClass(c));
         }
 
 
         $articles.each((_,article) => {
-            if (window.location.href.includes("game_news")) {
-                $(article).children('.m_no').first().addClass('store');
-            }
-            $(article).children('.m_no').last().addClass('voted_count');
-            $(article).children('.m_no').last().prev().addClass('readed_count');
 
-            $(article).children('.author').find('.xe_point_level_icon').remove();
-            $(article).children('.author').find('a').contents().last()[0].textContent
-                = $(article).children('.author').find('img').attr('title');
+            let $article = $(article),
+                $store = location.href.includes("game_news")? $article.children('.m_no').first().addClass('store').replaceTag('div') : $(),
+                $mid = $article.find('.mid').replaceTag('div'),
+                $cate = $article.find('.cate').replaceTag('div'),
+                $time = $article.find('.time').replaceTag('span'),
+                $list_timer = $article.find('.list_timer').parent().replaceTag('td'),
+                $title = $article.find('.title').replaceTag('div'),
+                $replyNum = $article.find('.replyNum').detach(),
+                $readed_count = $article.children('.m_no').last().prev().replaceTag('span').addClass('readed_count'),
+                $voted_count = $article.children('.m_no').last().replaceTag('span').addClass('voted_count'),
+                $app_image = $article.find('.app_image').replaceTag('td'),
+                $author = $article.find('.author').detach(),
+                $steam_list_check = $article.children('.steam_list_check');
 
 
-            $(article).prepend([
-                $('<td>', {
-                    html: [
-                        $(article).children('.store').replaceTag('div'),
-                        $(article).children('.mid').replaceTag('div'),
-                        $(article).children('.cate').replaceTag('div')
-                    ]
+            $author.find('a').contents().last()[0].textContent = $author.find('img').not('.xe_point_level_icon').attr('title');
+
+            $article.html([
+                $('<td>', { class: 'sect', html:
+                    [ $store, $mid, $cate ]
                 }),
-                $('<td>', {
-                    class: 'post',
-                    html: [
-                        $(article).find('.time').replaceTag('span'),
-                        $(article).children('.title').replaceTag('div'),
-                        $('<span>', {
-                            class: 'replyNum',
-                            html: $(article).find('.replyNum').removeClass('replyNum').prepend("댓글: ")
-                        }),
-                        $(article).children('.readed_count').replaceTag('span').prepend("조회: "),
-                        $(article).children('.voted_count').replaceTag('span').prepend("추천: "),
-                    ]
+                $('<td>', { class: 'post', html:
+                    [ $time, $title, $replyNum, $readed_count, $voted_count ]
                 }),
-                $(article).children('.steam_list_check')
+                $steam_list_check,
+                $list_timer,
+                $app_image,
+                $author
             ]);
         });
         etcm.refreshContent();
@@ -1467,18 +1468,11 @@ var Module = {};
                     .hover(function() {
                         $(this).children().toggleClass('fa fa-heart') })
                     .click(function() {
-                        doCallModuleActionDocumentVote('document', 'procDocumentVoteUp', $(el).parent().data('document_srl'));
-
-                        function doCallModuleActionDocumentVote(module, action, target_srl, vars1) {
-                          const params = {'target_srl':target_srl,'cur_mid':current_mid, 'vars1':vars1};
-                            unsafeWindow.jQuery.exec_json(module+'.'+action, params, completeDocumentVote);
-                        }
-                        function completeDocumentVote(ret_obj) {
-                          const voted_count = ret_obj.voted_count;
-                            if(!isNaN(parseInt(voted_count))) {
-                                $(el).children().text(voted_count);
-                            }
-                        }
+                        unsafeWindow.jQuery.exec_json('document.procDocumentVoteUp', {
+                            target_srl: $(el).closest('.etcm-article').data('document_srl'),
+                            cur_mid: /mid=(\w+)/.exec(location.search)[1],
+                            vars1: undefined
+                        });
                     });
             });
     };

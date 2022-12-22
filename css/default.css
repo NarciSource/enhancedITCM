@@ -212,6 +212,13 @@ blockquote ~ p > a::before {
     width: 100%;
 }
 
+.etcm-article-design th.location,
+.etcm-article-design th.regdate,
+.etcm-article-design th.readed_count,
+.etcm-article-design th.voted_count {
+    display: none;
+}
+
 .etcm-article-design td {
     font-size: var(--etcm-font-normal);
 }
@@ -232,6 +239,16 @@ blockquote ~ p > a::before {
 }
 .etcm-article-design .list_timer span {
     font-size: inherit;
+}
+
+.etcm-article-design .replyNum::before {
+    content: "댓글: ";
+}
+.etcm-article-design .readed_count::before {
+    content: "조회: ";
+}
+.etcm-article-design .voted_count::before {
+    content: "추천: ";
 }
 
 
@@ -279,6 +296,9 @@ blockquote ~ p > a::before {
 
     flex-flow: column;
     align-items: center;
+}
+.etcm-article-design .xe_point_level_icon {
+    display: none;
 }
 
 
