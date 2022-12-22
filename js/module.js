@@ -58,6 +58,18 @@ var Module = {};
 
         $('.wrap_profile').addClass('etcm-profile');
         window.addEventListener ("load", ()=> $('#scrollUp').addClass('etcm-scrollUp'));
+
+        /* writing button */
+        $('body').append($('.btm_mn > .fr > a').isExist()?
+            $('<a>', {
+                class: 'etcm-writing',
+                title: "글 작성하기",
+                attr: {
+                    href: $('.btm_mn > .fr > a').attr('href')
+                },
+            })
+        :   $()
+        );
     }
 
     Module._initializeArticle = function($articles) {
