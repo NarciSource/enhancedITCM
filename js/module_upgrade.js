@@ -84,14 +84,17 @@ var Upgrade;
     }
 
     Module.upgradeProfile = async function(dynamicstore, profile) {
-        
-        let mini_profile = await GM.ajax({
-                responseType: "json",
-                url: `https://steamcommunity.com/miniprofile/${accountid}/json`,
-                headers: { 'cache-control':'no-cache, no-store, max-age=0, must-revalidate' }
-            });
 
         document.addStyle( [ meta.css.miniprofile ] );
+
+
+      const accountID = BigInt(profile.steamID64+"") - 76561197960265728n;
+
+        let mini_profile = await GM.ajax({
+                responseType: "json",
+                url: `https://steamcommunity.com/miniprofile/${accountID}/json`,
+                headers: { 'cache-control':'no-cache, no-store, max-age=0, must-revalidate' }
+            });
 
 
         $('.login_PlayoutA')

@@ -62,7 +62,8 @@ var Module = {};
                 var href = $(this).hasClass('notice')? 
                                 $(this).children('.title').children('a').get(0).href
                                 : $(this).children('.title').children('.hx').data('viewer'),
-                    document_srl = RegExp(`(?:${location.pathname}\/|document_srl=)(\\d+)`).exec(href)[1];
+                    mid = /mid=(\w+)/.exec(location.search)?.[1] || location.pathname.replace(/\/\d+/,""),
+                    document_srl = RegExp(`(?:${mid}\/|document_srl=)(\\d+)`).exec(href)[1];
                 $(this).data({document_srl});
             });
     }

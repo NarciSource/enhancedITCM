@@ -669,7 +669,7 @@ blockquote ~ p > a::before {
 }
 
 .etcm-scrollUp {
-    left: calc(50% + 500px);
+    left: calc(70vw + 42px);
 
     opacity: .7;
     background: transparent !important;
@@ -679,7 +679,7 @@ blockquote ~ p > a::before {
 .etcm-writing {
     position: fixed;
     z-index: 2147483647;
-    left: calc(50% + 460px);
+    left: 70vw;
     bottom: 20px;
 
     width: 30px;
