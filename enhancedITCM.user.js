@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         enhancedITCM
 // @namespace    etcm
-// @version      0.1.15.1
+// @version      0.1.15.2
 // @description  EnhancedITCM is a user script that enhances the https://itcm.co.kr/
 // @author       narci <jwch11@gmail.com>
 // @match        *://itcm.co.kr/*
@@ -23,6 +23,7 @@
 // @require      https://raw.githubusercontent.com/NarciSource/enhancedITCM/master/js/meta.js
 // @require      https://raw.githubusercontent.com/NarciSource/enhancedITCM/master/js/utility.js
 // @require      https://raw.githubusercontent.com/NarciSource/enhancedITCM/master/js/module.js
+// @require      https://raw.githubusercontent.com/NarciSource/enhancedITCM/master/js/module_upgrade.js
 // @resource     etcm-logo https://raw.githubusercontent.com/NarciSource/enhancedITCM/master/img/logo.png
 // @resource     etcm-dark-logo https://raw.githubusercontent.com/NarciSource/enhancedITCM/master/img/logo-dark.png
 // @resource     etcm-set-layout https://raw.githubusercontent.com/NarciSource/enhancedITCM/master/html/settings.html
@@ -159,12 +160,11 @@ function ETCM() {
             });
     };
 
-    this._loadProfileInfo().then(arg => {
-        this.upgrade.run(undefined, ...arg);
-    })
+    this.upgrade.run();
 };
 
 ETCM.prototype = Module;
+Module.Upgrade = Upgrade;
 
 
 
