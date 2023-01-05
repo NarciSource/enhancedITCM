@@ -105,6 +105,79 @@ blockquote ~ p > a::before {
 
 
 
+/* mini-profile */
+#etcm-mini-profile {
+    height: 130px;
+}
+#etcm-mini-profile .miniprofile_nameplatecontainer {
+    width: 300px;
+
+    outline: 2px outset gray;
+}
+#etcm-mini-profile .miniprofile_container {
+    width: 100%;
+
+    transform: scale(0.77);
+    transform-origin: left top;
+}
+#etcm-mini-profile .persona {
+    font-size: 30px;
+}
+#etcm-mini-profile .miniprofile_detailssection {
+    display: flex;
+    flex-direction: row;
+    overflow: auto;
+
+    width: 360px;
+    padding-bottom: 10px;
+}
+#etcm-mini-profile .miniprofile_gamesection {
+    background: none;
+    backdrop-filter: none;
+
+    min-height: 0;
+}
+#etcm-mini-profile .game_logo {
+    top: 0;
+    left: 0;
+}
+#etcm-mini-profile .miniprofile_game_details {
+    padding: 0px 0px 0px 100px;
+
+    align-self: auto;
+}
+
+.login_PlayoutA i.fa-star {
+    font-size: 30px;
+
+    position: absolute;
+    z-index: 10;
+    top: 30px;
+    right: 30px;
+
+    cursor: pointer;
+
+    color: var(--etcm-yellow);
+}
+
+@keyframes shake {
+    0% { -webkit-transform: translate(2px, 1px) rotate(0deg); } 
+    10% { -webkit-transform: translate(-1px, -2px) rotate(-1deg); }
+    20% { -webkit-transform: translate(-3px, 0px) rotate(1deg); }
+    30% { -webkit-transform: translate(0px, 2px) rotate(0deg); }
+    40% { -webkit-transform: translate(1px, -1px) rotate(1deg); }
+    50% { -webkit-transform: translate(-1px, 2px) rotate(-1deg); }
+    60% { -webkit-transform: translate(-3px, 1px) rotate(0deg); }
+    70% { -webkit-transform: translate(2px, 1px) rotate(-1deg); }
+    80% { -webkit-transform: translate(-1px, -1px) rotate(1deg); }
+    90% { -webkit-transform: translate(2px, 2px) rotate(0deg); }
+    100% { -webkit-transform: translate(1px, -2px) rotate(-1deg); }
+}
+.login_PlayoutA i.fa-star:hover {
+    animation: shake 1s;
+    animation-iteration-count: infinite;
+}
+
 /* resizable board */
 .etcm-board-width {
     min-width: 1070px !important;

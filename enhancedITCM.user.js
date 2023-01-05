@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         enhancedITCM
 // @namespace    etcm
-// @version      0.1.15.2
+// @version      0.1.15.3
 // @description  EnhancedITCM is a user script that enhances the https://itcm.co.kr/
 // @author       narci <jwch11@gmail.com>
 // @match        *://itcm.co.kr/*
@@ -9,6 +9,7 @@
 // @require      http://code.jquery.com/jquery-3.3.1.min.js
 // @require      http://code.jquery.com/ui/1.12.1/jquery-ui.min.js
 // @require      http://cdnjs.cloudflare.com/ajax/libs/ramda/0.25.0/ramda.min.js
+// @require      https://cdnjs.cloudflare.com/ajax/libs/vue/1.0.18/vue.min.js
 // @require      https://cdnjs.cloudflare.com/ajax/libs/fast-xml-parser/4.0.12/fxparser.min.js
 // @require      https://cdnjs.cloudflare.com/ajax/libs/jquery-contextmenu/2.8.0/jquery.contextMenu.min.js
 // @require      https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.31.1/js/jquery.tablesorter.min.js
@@ -27,6 +28,7 @@
 // @resource     etcm-logo https://raw.githubusercontent.com/NarciSource/enhancedITCM/master/img/logo.png
 // @resource     etcm-dark-logo https://raw.githubusercontent.com/NarciSource/enhancedITCM/master/img/logo-dark.png
 // @resource     etcm-set-layout https://raw.githubusercontent.com/NarciSource/enhancedITCM/master/html/settings.html
+// @resource     etcm-mpf-layout https://raw.githubusercontent.com/NarciSource/enhancedITCM/master/html/miniprofile.html
 // @updateURL    https://raw.githubusercontent.com/NarciSource/enhancedITCM/master/enhancedITCM.meta.js
 // @downloadURL  https://raw.githubusercontent.com/NarciSource/enhancedITCM/master/enhancedITCM.user.js
 // @grant        GM.getResourceUrl

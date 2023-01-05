@@ -93,69 +93,36 @@ var Upgrade;
 
         document.addStyle( [ meta.css.miniprofile ] );
 
-        $('<fieldset>', {
-            class:'back',
-            html: `
-            <div style="height:130px;">
-                <div class="miniprofile_nameplatecontainer" style="outline:2px outset gray;width:300px;">
-                    <video class="miniprofile_nameplate" playsinline autoplay muted loop>
-                        <source src="${mini_profile.profile_background['video/webm']}" type="video/webm">
-                        <source src="${mini_profile.profile_background['video/mp4']}" type="video/mp4">
-                    </video>
-                </div>
 
-                <div class="miniprofile_container" style="width:100%;transform:scale(0.77);transform-origin:left top;">
-                    <div class="miniprofile_playersection text_shadow">
-                        <div class="playersection_avatar_frame">
-                            <img src="${mini_profile.avatar_frame}">
-                        </div>
-                        <div class="playersection_avatar border_color_online">
-                            <img src="${profile.avatarMedium}" srcset="${profile.avatarMedium} 1x, ${profile.avatarFull} 2x">
-                        </div>
-                        <div class="player_content">
-                            <span class="persona online" style="font-size: 30px;">${mini_profile.persona_name}</span>
-                        </div>
-                    </div>
-                    <div class="miniprofile_detailssection miniprofile_backdropblur not_in_game miniprofile_backdrop" style="display:flex;flex-direction:row;width:360px;overflow:auto;padding-bottom:10px;">
-                        <div class="miniprofile_gamesection miniprofile_backdropblur miniprofile_backdrop" style="background:none;backdrop-filter:none;${profile.onlineState=="in-game"?"":"display:none;"}min-height:0;">
-                            <img class="game_logo" src="https://cdn.cloudflare.steamstatic.com/steam/apps/${/app\/(\d+)/.exec(profile.inGameInfo?.gameLink)?.[1]}/capsule_184x69.jpg" style="top:0;left:0">
-                            <div class="miniprofile_game_details" style="padding:0px 0px 0px 100px;align-self:auto;">
-                                <span class="miniprofile_game_name">${profile.inGameInfo?.gameName}</span>
-                            </div>
-                        </div>
-                        <div class="miniprofile_featuredcontainer">
-                            <div class="${mini_profile.level_class}">
-                                <span class="friendPlayerLevelNum">${mini_profile.level}</span>
-                            </div>
-                            <div class="description">
-                                <div class="name">Steam 레벨</div>
-                            </div>
-                        </div>
-                        <div class="miniprofile_featuredcontainer">
-                            <img src="${mini_profile.favorite_badge.icon}" class="badge_icon">
-                            <div class="description">
-                                <div class="name">${mini_profile.favorite_badge.name}</div>
-                                <div class="xp">${mini_profile.favorite_badge.xp} XP</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>`,
-            appendTo: $('.login_PlayoutA')
-        });
+        $('.login_PlayoutA')
+            .append(
+                $('<fieldset>', {
+                    id: 'etcm-mini-profile',
+                    class:'back',
+                    html: $(await $.get(await GM.getResourceUrl("etcm-mpf-layout", "text/html")) ),
+                }))
+            .append(
+                $('<i>', {
+                    class: 'fa fa-star',
+                    click: e => {
+                        $(e.target).animate({ rotate: '360deg' }, 1000, ()=> $(e.target).css('rotate','0deg'));
+                        $('.login_PlayoutA').flip('toggle');
+                    },
+                })
+            );
 
-        $('<i>', {
-            class: 'fa fa-star',
-            css: {
-                position: 'absolute', cursor: 'pointer',
-                top: '30px', right: '30px', zIndex: 10,
-                fontSize: '30px', color: 'var(--etcm-yellow)'
+        new Vue({
+            el: '#etcm-mini-profile',
+            data: {
+                profile, mini_profile,
+                is_in_game: profile.onlineState=="in-game"? "":"none"
             },
-            click: e => {
-                $(e.target).animate({ rotate: '360deg' }, 1000, ()=> $(e.target).css('rotate','0deg'));
-                $('.login_PlayoutA').flip('toggle');
-            },
-            appendTo: $('.login_PlayoutA')
+            computed: {
+                game_logo_url: ()=> {
+                    let appid = /app\/(\d+)/.exec(profile.inGameInfo?.gameLink)?.[1];
+                    return `https://cdn.cloudflare.steamstatic.com/steam/apps/${appid}/capsule_184x69.jpg`;
+                }
+            }
         });
 
         $('.login_PlayoutA').find('fieldset').eq(0).addClass('front');
