@@ -5,22 +5,20 @@ var Module = {};
 ;(function ($, window, document, undefined) {
 
     /* Collect information about a user who is currently connected to Steam Web Page. */
-    Module._loadProfileInfo = async function() {
+    Module._loadProfileInfo = async function(force) {
 
-        let profileinfo = 
-            await GM.ajax({
+        dynamicstore = (force? false : JSON.parse(await loadFromHugeStorage("dynamicstore") || null))
+            || await GM.ajax({
                 responseType: "json",
                 url: meta.url.dynamicstore,
                 headers: { 'cache-control':'no-cache, no-store, max-age=0, must-revalidate' }
             });
 
-        profileinfo.name =
-            $(await GM.ajax({
-                url: meta.url.account,
-                headers: { 'cache-control':'no-cache, no-store, max-age=0, must-revalidate' }
-            })).find('#account_pulldown').text().trim();
+        profile = new XMLParser().parse(await GM.ajax(meta.url.profile)).profile;
 
-        return profileinfo?.rgOwnedApps?.length? profileinfo : null;
+        saveToHugeStorage("dynamicstore")(dynamicstore);
+
+        return [dynamicstore, profile];
     };
 
 
@@ -156,89 +154,12 @@ var Module = {};
 
 
     Module.enhanceLogo = function() {
-      const etcm = this;
-
         (async function newLogo() {
             $('.logo').on('imgSwitch', async function(e) {
                 $(this).find('img')
                     .attr({ src: await GM.getResourceUrl(e.url || 'etcm-logo', "image/png") });
             })
             .trigger($.Event('imgSwitch'));
-        })();
-
-
-        (async function readSteamProfileCurrentlyConnected() {
-
-      const message = {
-                0: "connected to : ",
-                1: "change account",
-                2: "EnhancedITCM. 스팀사이트에 로그인하면 기능이 추가됩니다."
-            };
-
-            let isExist_profileinfo = etcm.profileinfo = 
-                    JSON.parse(await loadFromHugeStorage("profileinfo") || null) 
-                    ||
-                    await etcm._loadProfileInfo().catch(_=> null);
-
-
-
-            if (isExist_profileinfo) {
-
-                saveToHugeStorage("profileinfo")(etcm.profileinfo);
-                etcm.upgrade.run(undefined, etcm.profileinfo);
-
-                message[0] += etcm.profileinfo.name;
-                
-
-                $('.logo').append(
-                    $('<a>', {
-                        class: 'etcm-sign',
-                        html: $.merge(
-                            $('<i>', {
-                                class: 'fa fa-sign-in',
-                                css: { 'padding-right': '3px' }
-                            }),
-                            $('<span>', {
-                                text: message[tg=0],
-                                hover: e => $(e.target).text(message[tg^=1]),
-                            })
-                        ),
-                        click: openLoginWindow
-                    })
-                );
-            }
-            else {
-
-                $alert = $('<i>', {
-                    class: 'fa fa-question-circle etcm-blink',
-                    title: message[2],
-                    css: {
-                        fontSize: 'small',
-                        position: 'absolute', right: 0,
-                        cursor: 'pointer',
-                    },
-                    click: openLoginWindow
-                });
-
-                $('.logo').prepend( $alert.clone(true) );
-                $('.cb-table').prepend( $alert.clone(true) );
-                $('.app_info_details').prepend( $alert.clone(true) );
-                $('.steam_read_selected').prepend( $alert.clone(true) );
-            }
-
-
-            function openLoginWindow () {
-                let win = window.open(meta.url.steam_signin + "?redir=account", "Login", "width=300, height=400");
-                let iv = setInterval(async ()=> {
-                        if (win.closed) {
-
-                            saveToHugeStorage("profileinfo")(await etcm._loadProfileInfo().catch(_=> null));
-
-                            clearInterval(iv);
-                            location.reload();
-                        }
-                    }, 1000);
-            }
         })();
     };
 
@@ -1185,21 +1106,85 @@ var Module = {};
 
 
 
-    /* Procedures that require profileinfo. */
+    /* Procedures that require dynamicstore. */
     Module.Upgrade = function(target) {
-        this.run = (condition, arg)=> {
+        this.run = (condition, ...arg)=> {
             condition = condition || (()=>true);
 
             Object.entries(Object.getPrototypeOf(this))
                 .filter(([property, value])=> condition([property, value]) && target.commands.has(property) && typeof value === "function")
-                .forEach(([property, func])=> func.call(this, arg));
+                .forEach(([property, func])=> func.apply(this, arg));
         };
     };
 
-    Module.Upgrade.prototype.upgradeProfile = async function(profileinfo) {
+    Module.Upgrade.prototype.upgradeLogo = function(dynamicstore, profile) {
+      const message = {
+            0: "connected to : ",
+            1: "change account",
+            2: "EnhancedITCM. 스팀사이트에 로그인하면 기능이 추가됩니다."
+        };
 
-        let profile = new XMLParser().parse(await GM.ajax(meta.url.profile)).profile;
+        if (dynamicstore?.rgOwnedApps?.length) {
 
+            message[0] += profile.steamID;
+
+            $('.logo').append(
+                $('<a>', {
+                    class: 'etcm-sign',
+                    html: $.merge(
+                        $('<i>', {
+                            class: 'fa fa-sign-in',
+                            css: { 'padding-right': '3px' }
+                        }),
+                        $('<span>', {
+                            text: message[tg=0],
+                            hover: e => $(e.target).text(message[tg^=1]),
+                        })
+                    ),
+                    click: openLoginWindow
+                })
+            );
+        }
+        else {
+
+            $alert = $('<i>', {
+                class: 'fa fa-question-circle etcm-blink',
+                title: message[2],
+                css: {
+                    fontSize: 'small',
+                    position: 'absolute', right: 0,
+                    cursor: 'pointer',
+                },
+                click: openLoginWindow
+            });
+
+            $('.logo').prepend( $alert.clone(true) );
+            $('.cb-table').prepend( $alert.clone(true) );
+            $('.app_info_details').prepend( $alert.clone(true) );
+            $('.steam_read_selected').prepend( $alert.clone(true) );
+        }
+
+
+        function openLoginWindow () {
+            let win = window.open(meta.url.steam_signin + "?redir=account", "Login", "width=300, height=400");
+            let iv = setInterval(async ()=> {
+                    if (win.closed) {
+
+                        etcm._loadProfileInfo(true).then(arg => {
+                            this.upgrade.run(undefined, dynamicstore, ...arg);
+                        })
+
+                        clearInterval(iv);
+                        location.reload();
+                    }
+                }, 1000);
+        }
+    }
+
+    Module.Upgrade.prototype.upgradeProfile = async function(dynamicstore, profile) {
+
+        const accountid = 117191452;
+        
         let mini_profile = await GM.ajax({
                 responseType: "json",
                 url: `https://steamcommunity.com/miniprofile/${accountid}/json`,
@@ -1277,13 +1262,13 @@ var Module = {};
         $('.login_PlayoutA').flip({ trigger: 'manual' });
     };
 
-    Module.Upgrade.prototype.upgradeAppInfoDetails = function(profileinfo) {
+    Module.Upgrade.prototype.upgradeAppInfoDetails = function(dynamicstore) {
         $('.app_info_details').each( function() {
             let pathname = $(this).children('.wrap_info').find('.app_name').get(0).pathname,
                 [_, div, id] = /\/(\w+)\/(\d+)/.exec(pathname);
             id = Number(id);
 
-            if (profileinfo.rgOwnedApps.includes(id)) {
+            if (dynamicstore.rgOwnedApps.includes(id)) {
                 $(this).children('.h2_widget_sub').each(function() {
                     $(this).text( $(this).text() + " (보유중)" );
                 });
@@ -1291,7 +1276,7 @@ var Module = {};
         });
     };
 
-    Module.Upgrade.prototype.upgradeGameTagbox = function(profileinfo) {
+    Module.Upgrade.prototype.upgradeGameTagbox = function(dynamicstore) {
         /* add games to gametag using cb-table */
         let cbTable_games = $('.cb-table').children('tbody').children('tr')
             .map((_, tr) => $(tr).children('td').first()[0]).children('a')
@@ -1405,8 +1390,8 @@ var Module = {};
                 $apps.each((_,app)=> {
                   const {div, id} = parsing($(app));
 
-                    if ((div === "app" && profileinfo.rgOwnedApps.includes(id))
-                        || (div === "package" && profileinfo.rgOwnedPackages.includes(id))) {
+                    if ((div === "app" && dynamicstore.rgOwnedApps.includes(id))
+                        || (div === "package" && dynamicstore.rgOwnedPackages.includes(id))) {
                         $(app).addClass('mi_app').removeClass('no_mi_app')                          
                             .siblings('.mi_owned').after($(app));
                     }
@@ -1422,11 +1407,11 @@ var Module = {};
                 $apps.each((_,app)=> {
                   const {div, id} = parsing($(app));
 
-                    if (profileinfo.rgWishlist.includes(id)) {
+                    if (dynamicstore.rgWishlist.includes(id)) {
                         $(app).addClass('etcm-wishApp');
                     }
 
-                    if (Object.keys(profileinfo.rgIgnoredApps).includes(String(id))) {
+                    if (Object.keys(dynamicstore.rgIgnoredApps).includes(String(id))) {
                         $(app).addClass('etcm-ignoreApp');
                     }
                 });
@@ -1448,7 +1433,7 @@ var Module = {};
         });
     };
 
-    Module.Upgrade.prototype.upgradeCBTable = function(profileinfo) {
+    Module.Upgrade.prototype.upgradeCBTable = function(dynamicstore) {
         $('.cb-table > tbody > tr')
             .each(function () {
               const href = $(this).find('a').attr('href');
@@ -1456,14 +1441,14 @@ var Module = {};
                 id = Number(id);
 
 
-                if ((div === "app" && profileinfo.rgOwnedApps.includes(id))
-                    || (div === "package" && profileinfo.rgOwnedPackages.includes(id))) {
+                if ((div === "app" && dynamicstore.rgOwnedApps.includes(id))
+                ||  (div === "package" && dynamicstore.rgOwnedPackages.includes(id))) {
                     $(this)
                         .attr('title', "보유 게임")
                         .css('opacity', 0.3);
                 }
 
-                if (profileinfo.rgWishlist.includes(id)) {
+                if (dynamicstore.rgWishlist.includes(id)) {
                     $(this).children().first()
                         .append($('<i>', {
                             class: 'fa fa-shopping-cart',

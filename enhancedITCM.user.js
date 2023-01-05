@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         enhancedITCM
 // @namespace    etcm
-// @version      0.1.15
+// @version      0.1.15.1
 // @description  EnhancedITCM is a user script that enhances the https://itcm.co.kr/
 // @author       narci <jwch11@gmail.com>
 // @match        *://itcm.co.kr/*
@@ -97,6 +97,7 @@ function ETCM() {
         "addBookmark",
         "addContextMenu",
 
+        "upgradeLogo",
         "upgradeProfile",
         //"upgradeAppInfoDetails",
         "upgradeGameTagbox",
@@ -147,16 +148,20 @@ function ETCM() {
 
 
     this.upgrade = new this.Upgrade(this);
-    this.run = (condition, arg)=> {
+    this.run = (condition, ...arg)=> {
         condition = condition || (()=>true);
 
         Object.entries(Object.getPrototypeOf(this))
             .filter(([property, value])=> condition([property, value]) && this.commands.has(property) && typeof value === "function")
             .forEach(([property, func])=> {
-                try{ func.call(this, arg) }
+                try{ func.apply(this, arg) }
                 catch(e) { this._alert(e); console.error(e); }
             });
     };
+
+    this._loadProfileInfo().then(arg => {
+        this.upgrade.run(undefined, ...arg);
+    })
 };
 
 ETCM.prototype = Module;
