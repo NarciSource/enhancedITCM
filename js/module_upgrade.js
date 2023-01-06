@@ -31,7 +31,7 @@ var Upgrade;
 
         if (dynamicstore?.rgOwnedApps?.length) {
 
-            message[0] += profile.steamID;
+            message[0] += profile?.steamID;
 
             $('.logo').append(
                 $('<a>', {
@@ -88,48 +88,45 @@ var Upgrade;
         document.addStyle( [ meta.css.miniprofile ] );
 
 
-      const accountID = BigInt(profile.steamID64+"") - 76561197960265728n;
+      const magic = 76561197960265728n;
 
-        let mini_profile = await GM.ajax({
+        let accountID = profile?.steamID64? BigInt(profile?.steamID64+"") - magic : 0,
+
+            mini_profile = await GM.ajax({
                 responseType: "json",
                 url: `https://steamcommunity.com/miniprofile/${accountID}/json`,
                 headers: { 'cache-control':'no-cache, no-store, max-age=0, must-revalidate' }
             });
 
+        if (mini_profile) {
 
-        $('.login_PlayoutA')
-            .append(
-                $('<fieldset>', {
-                    id: 'etcm-mini-profile',
-                    class:'back',
-                    html: $(await $.get(await GM.getResourceUrl("etcm-mpf-layout", "text/html")) ),
-                }))
-            .append(
-                $('<i>', {
-                    class: 'fa fa-star',
-                    click: e => {
-                        $(e.target).animate({ rotate: '360deg' }, 1000, ()=> $(e.target).css('rotate','0deg'));
-                        $('.login_PlayoutA').flip('toggle');
-                    },
-                })
-            );
+            $('.login_PlayoutA')
+                .append(
+                    $('<fieldset>', {
+                        id: 'etcm-mini-profile',
+                        html: $(await $.get(await GM.getResourceUrl("etcm-mpf-layout", "text/html")) ),
+                    }))
+                .append(
+                    $('<i>', {
+                        class: 'fa fa-star',
+                        click: e => {
+                            $(e.target).animate({ rotate: '360deg' }, 1000, ()=> $(e.target).css('rotate','0deg'));
+                            $('.login_PlayoutA').flip('toggle');
+                            this.target.settings.show_miniprofile = !JSON.parse(this.target.settings.show_miniprofile||null);
+                        },
+                    })
+                );
 
-        new Vue({
-            el: '#etcm-mini-profile',
-            data: {
-                profile, mini_profile,
-                is_in_game: profile.onlineState=="in-game"? "":"none"
-            },
-            computed: {
-                game_logo_url: ()=> {
-                    let appid = /app\/(\d+)/.exec(profile.inGameInfo?.gameLink)?.[1];
-                    return `https://cdn.cloudflare.steamstatic.com/steam/apps/${appid}/capsule_184x69.jpg`;
-                }
-            }
-        });
+            new Vue({
+                el: '#etcm-mini-profile',
+                data: { profile, mini_profile }
+            });
 
-        $('.login_PlayoutA').find('fieldset').eq(0).addClass('front');
-        $('.login_PlayoutA').flip({ trigger: 'manual' });
+            $('.login_PlayoutA').find('fieldset')
+                .first().addClass('front')
+                .next().addClass('back');
+            $('.login_PlayoutA').flip({ trigger: 'manual' }).flip(JSON.parse(this.target.settings.show_miniprofile||null));
+        }
     };
 
     Module.upgradeAppInfoDetails = function(dynamicstore) {
@@ -325,6 +322,7 @@ var Upgrade;
 
     /* Procedures that require dynamicstore. */
     Upgrade = function(target) {
+        this.target = target;
         this._run = arg => {
             Object.entries(Object.getPrototypeOf(this))
                 .filter(([property, value])=> target.commands.has(property) && typeof value === "function")

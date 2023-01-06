@@ -246,7 +246,7 @@
 .etcm--dark hr.hrB,
 .etcm--dark .wrap_locNav h2 {
     border: none;
-    background: var(--etcm-dark-foreground);
+    background: transparent;
 }
 .etcm--dark .locNav,
 .etcm--dark .locNav li,
@@ -255,7 +255,7 @@
 }
 
 /* profile */
-.etcm--dark .login_PlayoutA.logon {
+.etcm--dark .login_PlayoutA.logon fieldset:first-of-type {
     border: none;
     background: linear-gradient( bottom left, #0B151E, #1B4761);
     background: -o-linear-gradient( bottom left, #0B151E, #1B4761);

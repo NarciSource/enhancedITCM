@@ -12,17 +12,21 @@
                 <img src="{{ mini_profile.avatar_frame }}">
             </div>
             <div class="playersection_avatar border_color_online">
-                <img src="{{ profile.avatarMedium }}" srcset="{{ profile.avatarMedium }} 1x, {{ profile.avatarFull }} 2x">
+                <a :href=" 'https://steamcommunity.com/profiles/'+profile.steamID64 ">
+                    <img src="{{ profile.avatarMedium }}" srcset="{{ profile.avatarMedium }} 1x, {{ profile.avatarFull }} 2x">
+                </a>
             </div>
             <div class="player_content">
-                <span class="persona online" :class="profile.onlineState">{{ mini_profile.persona_name }}</span>
+                <span class="persona" :class=" profile.onlineState ">{{ mini_profile.persona_name }}</span>
             </div>
         </div>
         <div class="miniprofile_detailssection miniprofile_backdropblur not_in_game miniprofile_backdrop">
-            <div class="miniprofile_gamesection miniprofile_backdropblur miniprofile_backdrop" :style="{display:is_in_game}">
-                <img class="game_logo" src="{{ game_logo_url }}">
+            <div class="miniprofile_gamesection miniprofile_backdropblur miniprofile_backdrop" v-if=" mini_profile.in_game ">
+                <a :href=" profile.inGameInfo.gameLink ">
+                    <img class="game_logo" src="{{ mini_profile.in_game.logo }}">
+                </a>
                 <div class="miniprofile_game_details">
-                    <span class="miniprofile_game_name">{{ profile.inGameInfo?.gameName }}</span>
+                    <span class="miniprofile_game_name" :title=" mini_profile.in_game.name ">{{ mini_profile.in_game.name }}</span>
                 </div>
             </div>
             <div class="miniprofile_featuredcontainer">

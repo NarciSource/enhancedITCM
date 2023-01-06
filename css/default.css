@@ -146,6 +146,12 @@ blockquote ~ p > a::before {
 
     align-self: auto;
 }
+#etcm-mini-profile .miniprofile_game_name {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    overflow: hidden;
+}
 
 .login_PlayoutA i.fa-star {
     font-size: 30px;
