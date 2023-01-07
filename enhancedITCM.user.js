@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         enhancedITCM
 // @namespace    etcm
-// @version      0.1.15.5
+// @version      0.1.15.6
 // @description  EnhancedITCM is a user script that enhances the https://itcm.co.kr/
 // @author       narci <jwch11@gmail.com>
 // @match        *://itcm.co.kr/*
@@ -27,8 +27,6 @@
 // @require      https://raw.githubusercontent.com/NarciSource/enhancedITCM/master/js/module_upgrade.js
 // @resource     etcm-logo https://raw.githubusercontent.com/NarciSource/enhancedITCM/master/img/logo.png
 // @resource     etcm-dark-logo https://raw.githubusercontent.com/NarciSource/enhancedITCM/master/img/logo-dark.png
-// @resource     etcm-set-layout https://raw.githubusercontent.com/NarciSource/enhancedITCM/master/html/settings.html
-// @resource     etcm-mpf-layout https://raw.githubusercontent.com/NarciSource/enhancedITCM/master/html/miniprofile.html
 // @updateURL    https://raw.githubusercontent.com/NarciSource/enhancedITCM/master/enhancedITCM.meta.js
 // @downloadURL  https://raw.githubusercontent.com/NarciSource/enhancedITCM/master/enhancedITCM.user.js
 // @grant        GM.getResourceUrl

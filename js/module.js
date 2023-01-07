@@ -1329,7 +1329,7 @@ var Module = {};
 
 
 
-        var $settings = $(await $.get(await GM.getResourceUrl("etcm-set-layout", "text/html")) );
+        var $settings = $(await $.get( meta.html.settings ));
         $settings.initialize = initialize;
         $settings.setEvent = setEvent;
         $settings.importSettingOptions = importSettingOptions;

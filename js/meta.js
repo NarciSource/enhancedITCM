@@ -12,9 +12,14 @@ const meta = {
         miniprofile: "https://community.cloudflare.steamstatic.com/public/shared/css/shared_global.css?l=koreana&_cdn=cloudflare",
     },
 
+    html: {
+        settings: "https://narcisource.github.io/enhancedITCM/html/settings.html",
+        miniprofile: "https://narcisource.github.io/enhancedITCM/html/miniprofile.html",
+    },
+
     url : {
         dynamicstore : "https://store.steampowered.com/dynamicstore/userdata/",
-        steam_signin : "https://store.steampowered.com/login/",
+        steam_signin : "https://steamcommunity.com/login/home/",
         ajaxaliases : "https://steamcommunity.com/my/ajaxaliases",
         account : "https://store.steampowered.com/account/",
         profile: "https://steamcommunity.com/my/?xml=1"

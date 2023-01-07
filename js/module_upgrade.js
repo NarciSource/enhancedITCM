@@ -104,7 +104,7 @@ var Upgrade;
                 .append(
                     $('<fieldset>', {
                         id: 'etcm-mini-profile',
-                        html: $(await $.get(await GM.getResourceUrl("etcm-mpf-layout", "text/html")) ),
+                        html: await $.get( meta.html.miniprofile ),
                     }))
                 .append(
                     $('<i>', {

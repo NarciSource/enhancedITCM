@@ -151,6 +151,8 @@ blockquote ~ p > a::before {
     -webkit-box-orient: vertical;
     -webkit-line-clamp: 2;
     overflow: hidden;
+
+    min-width: 50px;
 }
 
 .login_PlayoutA i.fa-star {
