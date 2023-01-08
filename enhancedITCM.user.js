@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         enhancedITCM
 // @namespace    etcm
-// @version      0.1.15.6
+// @version      0.1.15.7
 // @description  EnhancedITCM is a user script that enhances the https://itcm.co.kr/
 // @author       narci <jwch11@gmail.com>
 // @match        *://itcm.co.kr/*
@@ -20,7 +20,6 @@
 // @require      https://raw.githubusercontent.com/NarciSource/enhancedITCM/master/vendor/TimeCircles.js
 // @require      https://raw.githubusercontent.com/NarciSource/enhancedITCM/master/vendor/flipclock.js
 // @require      https://raw.githubusercontent.com/NarciSource/enhancedITCM/master/vendor/GreasemonkeyCompatibility.js
-// @require      https://raw.githubusercontent.com/NarciSource/steamCb.js/master/src/tablesorter.js
 // @require      https://raw.githubusercontent.com/NarciSource/enhancedITCM/master/js/meta.js
 // @require      https://raw.githubusercontent.com/NarciSource/enhancedITCM/master/js/utility.js
 // @require      https://raw.githubusercontent.com/NarciSource/enhancedITCM/master/js/module.js

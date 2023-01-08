@@ -294,15 +294,31 @@ var Upgrade;
     };
 
     Module.upgradeCBTable = function(dynamicstore) {
-        $('.cb-table > tbody > tr')
+        document.addStyle([ meta.css.tablesorter ]); 
+
+      const regx = /^[\w\s]+\((\d+)\%\)/;
+        let $cbTable = $('.cb-table');
+
+
+        $th = $cbTable.find('th');
+        ratings_idx = $th.index($th.filter((_, th) => th.innerText == "Ratings"));
+
+        $cbTable.tablesorter({
+            textSorter : {
+                [ratings_idx] : (a, b) => (regx.exec(a)?.[1] || 0) - (regx.exec(b)?.[1] || 0)
+            }
+        });
+
+
+        $cbTable.find('tbody tr')
             .each(function () {
               const href = $(this).find('a').attr('href');
-                let [match, div, id] = /steampowered\.com\/(\w+)\/(\d+)/.exec(href);
+                let [match, div, id] = /steampowered\.com\/(\w+)\/(\d+)/.exec(href||null) || [null];
                 id = Number(id);
 
 
-                if ((div === "app" && dynamicstore.rgOwnedApps.includes(id))
-                ||  (div === "package" && dynamicstore.rgOwnedPackages.includes(id))) {
+                if ((div === "app"      && dynamicstore.rgOwnedApps.includes(id))
+                ||  (div === "package"  && dynamicstore.rgOwnedPackages.includes(id))) {
                     $(this)
                         .attr('title', "보유 게임")
                         .css('opacity', 0.3);

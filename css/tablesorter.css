@@ -1,0 +1,36 @@
+.tablesorter-header {
+    position: relative;
+
+    cursor: pointer;
+}
+
+.tablesorter-header::before,
+.tablesorter-header::after {
+    font-family: 'FontAwesome';
+
+    position: absolute;
+    right: 0.75em;
+
+    opacity: 0.3;
+}
+
+.tablesorter-header::before {
+    content: '\f0de';
+    top: calc(50% - 0.75em);
+}
+
+.tablesorter-header::after {
+    content: '\f0dd';
+    bottom: calc(50% - 0.75em);
+}
+
+.tablesorter-headerAsc::before,
+.tablesorter-headerDesc::after {
+    margin: 3px 0;
+
+    opacity: 1;
+}
+.tablesorter-headerAsc::after,
+.tablesorter-headerDesc::before {
+    opacity: 0;
+}
