@@ -3,6 +3,7 @@ const meta = {
     css : {
         default: "https://narcisource.github.io/enhancedITCM/css/default.css",
         dark: "https://narcisource.github.io/enhancedITCM/css/dark.css",
+        side: "https://narcisource.github.io/enhancedITCM/css/side.css",
         settings: "https://narcisource.github.io/enhancedITCM/css/settings.css",
         toggleSwitch: "https://narcisource.github.io/enhancedITCM/css/toggleSwitch.css",
         bookmark: "https://narcisource.github.io/enhancedITCM/css/bookmark.css",
@@ -14,6 +15,7 @@ const meta = {
     },
 
     html: {
+        side:  "https://narcisource.github.io/enhancedITCM/html/side.html",
         settings: "https://narcisource.github.io/enhancedITCM/html/settings.html",
         miniprofile: "https://narcisource.github.io/enhancedITCM/html/miniprofile.html",
     },

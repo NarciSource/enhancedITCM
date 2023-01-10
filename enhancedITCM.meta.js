@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         enhancedITCM
 // @namespace    etcm
-// @version      0.1.15.7
+// @version      0.1.15.8
 // @description  EnhancedITCM is a user script that enhances the https://itcm.co.kr/
 // @author       narci <jwch11@gmail.com>
 // @match        *://itcm.co.kr/*
@@ -9,7 +9,7 @@
 // @require      http://code.jquery.com/jquery-3.3.1.min.js
 // @require      http://code.jquery.com/ui/1.12.1/jquery-ui.min.js
 // @require      http://cdnjs.cloudflare.com/ajax/libs/ramda/0.25.0/ramda.min.js
-// @require      https://cdnjs.cloudflare.com/ajax/libs/vue/1.0.18/vue.min.js
+// @require      https://unpkg.com/vue@3
 // @require      https://cdnjs.cloudflare.com/ajax/libs/fast-xml-parser/4.0.12/fxparser.min.js
 // @require      https://cdnjs.cloudflare.com/ajax/libs/jquery-contextmenu/2.8.0/jquery.contextMenu.min.js
 // @require      https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.31.1/js/jquery.tablesorter.min.js

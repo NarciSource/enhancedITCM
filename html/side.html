@@ -1,0 +1,41 @@
+<vue>
+    <div id="etcm-side">
+        <h2 class="etcm-side__title">개인 목록
+            <div>
+                <label class="fa" :class="isCompressed? 'fa-compress':'fa-expand'" :title="isCompressed? '축소':'확장'"
+                       @mouseover="isCompressed = !isCompressed" @mouseleave="isCompressed = !isCompressed">
+                    <input type="checkbox" v-model="isCompresseded">
+                </label>
+                <i class="fa fa-refresh" title="업데이트" @mouseover="rotate" @click="update(Object.keys(tabs))" />
+            </div>
+        </h2>
+        <div class="etcm-side__body">
+            <div class="tab_top">
+                <ul class="wrapTab clearBoth">
+                    <li class="tab_li" :class="{on: selected == name}" @mouseover="selected = name" v-for="(spec, name) in tabs">
+                        <a class="tab_a" :name="name" @click="update(name)" @dblclick="go(spec.url)">
+                            <i :class="spec.icon" />
+                            {{ spec.title }}
+                        </a>
+                    </li>
+                </ul>
+            </div>
+            <div class="tab_bottom">
+                <div :name="name" class="tab_div" :class="{wrapTab_on: selected == name}" v-for="(spec, name) in tabs">
+                    <ul class="etcm-side__book__list" :class="{'etcm-side__book__list--compress': isCompressed}">
+                        <list-item v-for="article in spec.articles" :article="article" />
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <template>
+        <li class="etcm-side__book__list__article">
+            <a :href="article.href">
+                <img src="/widgets/treasurej_popular/skins/DW_Portal/img/docu.gif">
+                <span>{{ article.text }}</span>
+            </a>
+        </li>
+    </template>
+</vue>

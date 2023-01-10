@@ -661,208 +661,108 @@ var Module = {};
 
 
     /* side menu */
-    async function addSideBook({name, title, url, tabIcon, parser}) {
-        async function loadListbook() {
-            let html = await GM.ajax( url );
-            return parser(html);
-        }
-
-        function decorateList(list) {
-            return Array.from(list).map(({text, href})=>
-                $('<li>', {
-                    class: 'etcm-side__book__list__article',
-                    html: $('<a>', {
-                        href,
-                        html: $.merge(
-                            $('<img>', {src: "/widgets/treasurej_popular/skins/DW_Portal/img/docu.gif"}),
-                            $('<span>', {text})
-                        )
-                    })
-                }));
-        }
-
-        function tabMenuToggle(thisBtn) {
-            var targetBox = $('#' + thisBtn.attr('name'));
-            var targetUl = thisBtn.parent('li').parent('ul');
-            var allBox = thisBtn.parent('li').parent('ul').parent('div').next('div').children('div');
-            var targetLi = thisBtn.parent('li').parent('ul').children('li');
-            var target_Li = thisBtn.parent('li');
-
-            if (!thisBtn.parent('li').hasClass('on')) {
-                targetLi.removeClass('on');
-                allBox.removeClass('wrapTab_on');
-                targetBox.addClass('wrapTab_on');
-                target_Li.addClass('on');
-            };
-            if (thisBtn.attr('href') === '#') {
-                return false;
-            };
-        }
-
-        /* side frame */
-      const $side = $('.etcm-side').isExist() ? $('.etcm-side')
-            : $('<div>', {
-                class: 'etcm-side',
-                html: [
-                    $('<h2>', {
-                        class: 'etcm-side__title',
-                        html: [
-                            $('<span>', { text: "개인 목록" }),
-                            $('<div>', {
-                                html: [
-                                    $('<label>', {
-                                        class: 'fa fa-compress',
-                                        title: "축소/확장",
-                                        html:
-                                            $('<input>', {
-                                                type: 'checkbox',
-                                                click: function () {
-                                                    $(this).parent().toggleClass('fa-expand');
-                                                    $(this).parent().toggleClass('fa-compress');
-                                                    $(this).closest('.etcm-side').find('.etcm-side__book__list')
-                                                        .toggleClass('etcm-side__book__list--collapse');
-                                                }
-                                            }),
-                                        hover: function () {
-                                            $(this).toggleClass('fa-expand');
-                                            $(this).toggleClass('fa-compress');
-                                        }
-                                    }),
-                                    $('<i>', {
-                                        class: 'fa fa-refresh',
-                                        title: "업데이트",
-                                        on: {
-                                            click: function() {
-                                                $(this).closest('.etcm-side').find('.tab_a').each((_, item) => $(item).click());
-                                            },
-                                            mouseenter: function () {
-                                                $(this).animate({ deg: 360 }, {
-                                                    duration: 600,
-                                                    step: function (now) { $(this).css({ transform: `rotate(${now}deg)` }) },
-                                                    complete: function () { $(this)[0].deg = 0 }
-                                                });
-                                            }
-                                        }
-                                    })
-                                ]
-                            })
-                        ]
-                    }),
-
-                    $('<div>', {
-                        class: 'etcm-side__body',
-                        html: [
-                            $('<div>', {
-                                class: 'tab_top',
-                                html: $('<ul>', {
-                                    class: 'wrapTab clearBoth'
-                                })
-                            }),
-                            $('<div>', {
-                                class: 'tab_bottom'
-                            })
-                        ]
-                    })
-                ]
-            });
-
-        $('.sub_wrap_widget').children().eq(0).after($side);
+    Module._addSideBook = async function() {
+        document.addStyle([ meta.css.side ]);
+        const etcm = this;
 
 
+        $('.sub_wrap_widget').children().eq(0).after(
+            $('#etcm-side').isExist() || $(html = await $.get( meta.html.side )).find('#etcm-side')
+        );
 
-        /* add tab menu */
-        $('<li>', {
-            class: 'tab_li',
-            html: $('<a>', {
-                class: 'tab_a',
-                name,
-                html: [
-                    $('<i>', { class: tabIcon }),
-                    title
-                ],
-                on: {
-                    click: async function update() {
-                        let listbook = ProxySet(name, []);
-                        listbook.clear();
-                        listbook.in(await loadListbook());
-
-                        $("#" + name).children('.etcm-side__book__list').children('li')
-                            .remove();
-                        $("#" + name).children('.etcm-side__book__list')
-                            .append(decorateList(listbook));
+        etcm.vSideBook = etcm.vSideBook || 
+            Vue.createApp({
+                data() {
+                    return {
+                        isCompressed: true,
+                        selected: "scrapbook",
+                        tabs: {},
+                    }
+                },
+                methods: {
+                    go(url) {
+                        window.open(url, '_self')
                     },
-                    dblclick: () => window.open(url, '_self'),
-                    mouseover: function () { tabMenuToggle($(this)) }
-                }
-            })
-        }).appendTo($side.find('.tab_top').children('ul'));
+                    rotate(e) {
+                        $(e.target).animate({ deg: 360 }, {
+                            duration: 600,
+                            step: function (now) { $(e.target).css({ transform: `rotate(${now}deg)` }) },
+                            complete: function () { $(e.target)[0].deg = 0 }
+                        });
+                    },
+                    update(names) {
+                        names = (typeof names === "string"? [names] : names);
+
+                        names.forEach(async name => {
+                            let spec = this.$data.tabs[name],
+                                listbook = ProxySet(name, []);
+
+                            listbook.clear();
+                            listbook.in(spec.parser(await GM.ajax( spec.url )));
+
+                            this.$data.tabs[name].articles = listbook;
+                        });
+                    }
+                },
+                components: {
+                    ListItem: {
+                        props: {
+                            article: Object
+                        },
+                        template: $(html).find('template').get(0)
+                    }
+                },
+            }).mount('#etcm-side');
 
 
-        /* add list */
-        $('<div>', {
-            id: name,
-            class: 'tab_div',
-            html: $('<ul>' , {
-                class: 'etcm-side__book__list etcm-side__book__list--collapse',
-                html: decorateList(ProxySet(name, []))
-            })
-        }).appendTo($side.find('.tab_bottom'));
 
+        etcm.vSideBook.$data.tabs = etcm.sideTabs;
+    }
 
-        /* init */
-        $side.find('.tab_top').children('ul').children('li').eq(0).addClass('on');
-        $side.find('.tab_div').eq(0).addClass('wrapTab_on');
-    };
+    Module.addScrapbook = function() {
+        let bookname = "scrapbook";
 
-    Module.addScrapbook = async function() {
-        addSideBook({
-            name: "scrapbook",
+        this.sideTabs[bookname] = {
             title: "스크랩",
             url: "/index.php?act=dispMemberScrappedDocument",
-            tabIcon: 'xi-bookmark',
-            parser: html=>
-                $(html).find('.table-striped').find('td.title').children('a')
-                    .map((_, article)=> {
-                        return {
-                            text: article.innerText,
-                            href: article.pathname
-                        };
-                    }).toArray()
-        });
+            icon: "xi-bookmark",
+            parser: html=> $(html).find('.table-striped').find('td.title').children('a')
+                        .map((_, article)=> ({
+                                text: article.innerText,
+                                href: article.pathname
+                        })).toArray(),
+            articles: ProxySet(bookname, [])
+        };
     };
-    Module.addWishbook = async function() {
-        addSideBook({
-            name: "wishbook",
+    Module.addWishbook = function() {
+        let bookname = "wishbook";
+
+        this.sideTabs[bookname] = {
             title: "찜목록",
             url: "/index.php?mid=game_news&_sort_index=check_wlist",
-            tabIcon: 'xi-cart',
-            parser: html=>
-                $(html).find('.bd_lst.bd_tb').children('tbody').children('tr').not('.notice').find('td.title').children('a:even')
-                    .map((_, article)=> {
-                      const href = article.search;
-                        return {
-                            text: article.innerText.trim(),
-                            href: /document_srl=(\d+)/.exec(href)[1]
-                        };
-                    }).toArray()
-        });
+            icon: "xi-cart",
+            parser: html=> $(html).find('.bd_lst.bd_tb').children('tbody').children('tr').not('.notice').find('td.title').children('a:even')
+                        .map((_, article)=> ({
+                                text: article.innerText.trim(),
+                                href: /document_srl=(\d+)/.exec(article.search)[1]
+                        })).toArray(),
+            articles: ProxySet(bookname, [])
+        };
     };
-    Module.addPurchasebook = async function() {
-        addSideBook({
-            name: "purchasebook",
+    Module.addPurchasebook = function() {
+        let bookname = "purchasebook";
+
+        this.sideTabs[bookname] = {
             title: "구매목록",
             url: "/index.php?mid=game_news&_sort_index=check_plist",
-            tabIcon: 'xi-wallet',
-            parser: html=>
-                $(html).find('.bd_lst.bd_tb').children('tbody').children('tr').not('.notice').find('td.title').children('a:even')
-                    .map((_, article)=> {
-                      const href = article.search;
-                        return {
-                            text: article.innerText.trim(),
-                            href: /document_srl=(\d+)/.exec(href)[1]
-                        };
-                    }).toArray()
-        });
+            icon: "xi-wallet",
+            parser: html=> $(html).find('.bd_lst.bd_tb').children('tbody').children('tr').not('.notice').find('td.title').children('a:even')
+                        .map((_, article)=> ({
+                                text: article.innerText.trim(),
+                                href: /document_srl=(\d+)/.exec(article.search)[1]
+                        })).toArray(),
+            articles: ProxySet(bookname, [])
+        };
     };
 
 

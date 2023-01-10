@@ -117,10 +117,13 @@ var Upgrade;
                     })
                 );
 
-            new Vue({
-                el: '#etcm-mini-profile',
-                data: { profile, mini_profile }
-            });
+
+            Vue.createApp({
+                data() {
+                    return { profile, mini_profile }
+                }
+            }).mount('#etcm-mini-profile');
+
 
             $('.login_PlayoutA').find('fieldset')
                 .first().addClass('front')
