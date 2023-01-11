@@ -64,7 +64,7 @@ blockquote ~ p > a::before {
 
 
 /* dark mode switch */
-.etcm-dark-mode-switch {
+#etcm-dark-mode-switch {
     margin: 7px 7px;
 
     --tgs-width: 40px;
@@ -72,23 +72,23 @@ blockquote ~ p > a::before {
     --tgs-margin: -30px;
     --tgs-color: var(--etcm-dark-highlight);
 }
-.etcm-dark-mode-switch > label > div {
+#etcm-dark-mode-switch > label > div {
     display: flex;
 
     width: 100%;
 
     justify-content: center;
 }
-.etcm-dark-mode-switch .xi-sun,
-.etcm-dark-mode-switch .xi-night {
+#etcm-dark-mode-switch .xi-sun,
+#etcm-dark-mode-switch .xi-night {
     font-size: 15px;
 
     color:  #bfbfbf;
 
     margin: 1.5px 0;
 }
-.etcm-dark-mode-switch .toggleSwitch__input:checked + .toggleSwitch__label .xi-sun,
-.etcm-dark-mode-switch .toggleSwitch__input:not(:checked) + .toggleSwitch__label .xi-night {
+#etcm-dark-mode-switch .toggleSwitch__label.on .xi-sun,
+#etcm-dark-mode-switch .toggleSwitch__label:not(.on) .xi-night {
     color: transparent;
 }
 

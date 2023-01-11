@@ -75,7 +75,7 @@ var Module = {};
 
         document.addStyle( [ meta.css.default, meta.css.dark ] );
 
-        $('html').toggleClass('etcm--dark', $.parseJSON(this.settings["dark_mode"]));
+        $('html').toggleClass('etcm--dark', $.parseJSON(this.settings.dark_mode));
 
         ;(function sizableBoardSofter(observer) {
 
@@ -203,37 +203,39 @@ var Module = {};
     Module.enhanceDarkMode = function() {
       const etcm = this;
         $('<div>', {
-            class: 'etcm-dark-mode-switch toggleSwitch',
-            html: [
-                $('<input>', {
-                    type: 'checkbox',
-                    id: 'etcm-dark-mode',
-                    class: 'toggleSwitch__input',
-                    checked: $.parseJSON(etcm.settings["dark_mode"]),
-                    change: async function () {
-                        etcm.settings["dark_mode"] = $(this).prop('checked');
+            id: 'etcm-dark-mode-switch',
+            class: 'toggleSwitch',
+            html: $('<label>', {
+                    class: 'toggleSwitch__label'+($.parseJSON(etcm.settings.dark_mode)? ' on' : ''),
+                    html: [
+                        $('<div>', {
+                            html: [ $('<i>', { class: 'xi-night' }),
+                                    $('<i>', { class: 'xi-sun' }) ]
+                        }),
+                        $('<input>', {
+                            type: 'checkbox',
+                            class: 'toggleSwitch__input',
+                            checked: $.parseJSON(etcm.settings.dark_mode),
+                        })
+                    ],
+                    change: function () {
+                        etcm.settings.dark_mode = !$(this).hasClass('on');
 
-                        $('html').toggleClass('etcm--dark', etcm.settings["dark_mode"]);
+                        $(this).toggleClass('on', etcm.settings.dark_mode);
+
+                        $('html').toggleClass('etcm--dark', etcm.settings.dark_mode);
 
                         $('.logo').trigger($.Event(
-                            'imgSwitch', { url: etcm.settings["dark_mode"] ? 'etcm-dark-logo' : undefined }));
+                            'imgSwitch', { url: etcm.settings.dark_mode ? 'etcm-dark-logo' : undefined }));
                     }
-                }),
-                $('<label>', {
-                    for: 'etcm-dark-mode',
-                    class: 'toggleSwitch__label',
-                    html: $('<div>', {
-                        html: [ $('<i>', { class: 'xi-night' }),
-                                $('<i>', { class: 'xi-sun' }) ]
-                    })
                 })
-            ]
         }).appendTo($('<li>')).parent().appendTo($('.wrap_login').children('div'));
 
-        $('html').toggleClass('etcm--dark', $.parseJSON(etcm.settings["dark_mode"]));
+
+        $('html').toggleClass('etcm--dark', $.parseJSON(etcm.settings.dark_mode));
 
         $('.logo').trigger($.Event(
-            'imgSwitch', { url: etcm.settings["dark_mode"] ? 'etcm-dark-logo' : undefined }));
+            'imgSwitch', { url: etcm.settings.dark_mode ? 'etcm-dark-logo' : undefined }));
     }
 
 
@@ -694,13 +696,13 @@ var Module = {};
                         names = (typeof names === "string"? [names] : names);
 
                         names.forEach(async name => {
-                            let spec = this.$data.tabs[name],
+                            let spec = this.tabs[name],
                                 listbook = ProxySet(name, []);
 
                             listbook.clear();
                             listbook.in(spec.parser(await GM.ajax( spec.url )));
 
-                            this.$data.tabs[name].articles = listbook;
+                            this.tabs[name].articles = listbook;
                         });
                     }
                 },
@@ -1135,7 +1137,7 @@ var Module = {};
         document.addStyle([ meta.css.settings ]);
 
         $('#body').append(
-            $('#etcm-settings').isExist() || $(html = await $.get( meta.html.side )).find('#etcm-settings')
+            $('#etcm-settings').isExist() || $(html = await $.get( meta.html.settings )).find('#etcm-settings')
         );
 
         etcm.vSetting = etcm.vSetting ||
@@ -1145,9 +1147,6 @@ var Module = {};
                         version: GM.info.script.version,
 
                         imex: false,
-                        text_area: JSON.stringify(
-                            [...Object.keys(etcm.default_settings), "commands", "g_board_tab", "game_news_tab", "blacklist", "blacklist_mber", "bookmark", "scrapbook"]
-                                .reduce((acc, val) => ({ ...acc, [val]: loadFromLocalStorage(val) }), {}), null, 2),
 
                         normal_operations: [
                             { command: "addHumbleChoiceTimer", title: "Humble Choice 타이머", },
@@ -1182,6 +1181,13 @@ var Module = {};
                     },
                     timer_period(value) {
                         etcm.settings.humble_choice_show_period = value;
+                    }
+                },
+                computed: {
+                    text_area() {
+                        return JSON.stringify(
+                            [...Object.keys(etcm.default_settings), "commands", "g_board_tab", "game_news_tab", "blacklist", "blacklist_mber", "bookmark", "scrapbook"]
+                                .reduce((acc, val) => ({ ...acc, [val]: loadFromLocalStorage(val) }), {}), null, 2)
                     }
                 },
                 methods: {

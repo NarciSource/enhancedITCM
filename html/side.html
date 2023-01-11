@@ -4,7 +4,7 @@
             <div>
                 <label class="fa" :class="isCompressed? 'fa-compress':'fa-expand'" :title="isCompressed? '축소':'확장'"
                        @mouseover="isCompressed = !isCompressed" @mouseleave="isCompressed = !isCompressed">
-                    <input type="checkbox" v-model="isCompresseded">
+                    <input type="checkbox" v-model="isCompressed">
                 </label>
                 <i class="fa fa-refresh" title="업데이트" @mouseover="rotate" @click="update(Object.keys(tabs))" />
             </div>
