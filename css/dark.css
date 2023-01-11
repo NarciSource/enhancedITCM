@@ -346,11 +346,10 @@
 
 
 /* settings */
-.etcm--dark .etcm-settings h3 {
+.etcm--dark #etcm-settings h3 {
     color: var(--etcm-dark-title);
 }
-.etcm--dark .etcm-settings__operation p,
-.etcm--dark .etcm-settings__ui p {
+.etcm--dark .etcm-settings {
     color: var(--etcm-dark-blue);
 }
 .etcm--dark .etcm-settings__header {    

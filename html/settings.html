@@ -1,131 +1,61 @@
-<div class="etcm-settings">
-
-    <div class="etcm-settings__header">
-        <div class="etcm-settings__header__line"></div>
-        <h1>Enhanced ITCM 설정</h1>
-        <button class="etcm-settings__header__save">저장</button>
-        <div class="etcm-settings__header__version">Ver. 0.1.xxx</div>
-        <i class="etcm-settings__header__imex fa fa-exchange"> 외부입력/출력</i>
-        <i class="etcm-settings__header__reset fa fa-refresh"> 초기화</i>
-    </div>
-
-
-    <div class="etcm-settings__body">
-        <div class="etcm-settings__list">
-            <h3>기능 모음</h3>
-            <div class="etcm-settings__operation toggleSwitch">
-                <p title="Its api has been discontinued. Looking for another way."><STRIKE>Steam server notice</STRIKE></p>
-                <input type="checkbox" id="etcm-settings--steam-server-notice" class="toggleSwitch__input" checked="" data-command="addSteamServerStatusMonitor" disabled>
-                <label for="etcm-settings--steam-server-notice" class="toggleSwitch__label" data-off="off" data-on="on"></label>
-            </div>
-            <div class="etcm-settings__operation toggleSwitch">
-                <p>Humble Choice 타이머</p>
-                <div class="option">
-                    <select class="option__timer-design">
-                        <option title="Causes resource problems. Trying to fix it." disabled>아날로그</option>
-                        <option>디지털</option>
-                    </select>
-                    <select class="option__show-period">
-                        <option value="1">24시간 전</option>
-                        <option value="7">7일 전</option>
-                        <option value="15">15일 전</option>
-                        <option value="35">항상</option>
-                    </select>
-                </div>
-                <input type="checkbox" id="etcm-settings--humble-choice-timer" class="toggleSwitch__input" checked="" data-command="addHumbleChoiceTimer">
-                <label for="etcm-settings--humble-choice-timer" class="toggleSwitch__label" data-off="off" data-on="on"></label>
-            </div>
-            <div class="etcm-settings__operation toggleSwitch">
-                <p>무한 스크롤</p>
-                <input type="checkbox" id="etcm-settings--infinite-scroll" class="toggleSwitch__input" checked="" data-command="enhanceInfiniteScroll">
-                <label for="etcm-settings--infinite-scroll" class="toggleSwitch__label" data-off="off" data-on="on"></label>
-            </div>
-            <div class="etcm-settings__operation toggleSwitch">
-                <p>필터 기능</p>
-                <input type="checkbox" id="etcm-settings--filter" class="toggleSwitch__input" checked="" data-command="addFilter">
-                <label for="etcm-settings--filter" class="toggleSwitch__label" data-off="off" data-on="on"></label>
-            </div>
-            <div class="etcm-settings__operation toggleSwitch">
-                <p>특정 글 블랙리스트</p>
-                <input type="checkbox" id="etcm-settings--article-blacklist" class="toggleSwitch__input" checked="" data-command="addArticleBlacklist">
-                <label for="etcm-settings--article-blacklist" class="toggleSwitch__label" data-off="off" data-on="on"></label>
-            </div>
-            <div class="etcm-settings__operation toggleSwitch">
-                <p>다른 회원 블랙리스트</p>
-                <input type="checkbox" id="etcm-settings--member-blacklist" class="toggleSwitch__input" checked="" data-command="addMemberBlacklist">
-                <label for="etcm-settings--member-blacklist" class="toggleSwitch__label" data-off="off" data-on="on"></label>
-            </div>
-            <div class="etcm-settings__operation toggleSwitch">
-                <p>개인목록에 찜목록</p>
-                <input type="checkbox" id="etcm-settings--wishbook" class="toggleSwitch__input" checked="" data-command="addWishbook">
-                <label for="etcm-settings--wishbook" class="toggleSwitch__label" data-off="off" data-on="on"></label>
-            </div>
-            <div class="etcm-settings__operation toggleSwitch">
-                <p>개인목록에 구입목록</p>
-                <input type="checkbox" id="etcm-settings--purchasebook" class="toggleSwitch__input" checked="" data-command="addPurchasebook">
-                <label for="etcm-settings--purchasebook" class="toggleSwitch__label" data-off="off" data-on="on"></label>
-            </div>
-            <div class="etcm-settings__operation toggleSwitch">
-                <p>개인목록에 스크랩</p>
-                <input type="checkbox" id="etcm-settings--scrapbook" class="toggleSwitch__input" checked="" data-command="addScrapbook">
-                <label for="etcm-settings--scrapbook" class="toggleSwitch__label" data-off="off" data-on="on"></label>
-            </div>
-            <div class="etcm-settings__operation toggleSwitch">
-                <p>게임 정보 박스 업그레이드</p>
-                <input type="checkbox" id="etcm-settings--game-tag-box" class="toggleSwitch__input" checked="" data-command="upgradeGameTagbox">
-                <label for="etcm-settings--game-tag-box" class="toggleSwitch__label" data-off="off" data-on="on"></label>
-            </div>
-            <div class="etcm-settings__operation toggleSwitch">
-                <p>CBTable 업그레이드</p>
-                <input type="checkbox" id="etcm-settings--upagrade-cbtable" class="toggleSwitch__input" checked="" data-command="upgradCBTable">
-                <label for="etcm-settings--upagrade-cbtable" class="toggleSwitch__label" data-off="off" data-on="on"></label>
-            </div>
-            <div class="etcm-settings__operation toggleSwitch">
-                <p>게임 링크 컨텍스트 메뉴</p>
-                <input type="checkbox" id="etcm-settings--context-menu" class="toggleSwitch__input" checked="" data-command="addContextMenu">
-                <label for="etcm-settings--context-menu" class="toggleSwitch__label" data-off="off" data-on="on"></label>
-            </div>
-            <div class="etcm-settings__operation toggleSwitch">
-                <p>게시판 크기 조절</p>
-                <input type="checkbox" id="etcm-settings--sizable-board" class="toggleSwitch__input" checked="" data-command="enhanceSizableBoard">
-                <label for="etcm-settings--sizable-board" class="toggleSwitch__label" data-off="off" data-on="on"></label>
-            </div>
+<vue>
+    <div id="etcm-settings">
+        <div class="etcm-settings__header">
+            <div class="etcm-settings__header__line" />
+            <h1>Enhanced ITCM 설정</h1>
+            <button class="etcm-settings__header__save" @click="save">저장</button>
+            <div class="etcm-settings__header__version">ver. {{ version }}</div>
+            <i class="etcm-settings__header__imex fa fa-exchange" @click="imex = !imex"> 외부입력/출력</i>
+            <i class="etcm-settings__header__reset fa fa-refresh" @click="reset"> 초기화</i>
         </div>
-
-        <div class="etcm-settings__showcase">
-            <h3>무한 스크롤 로딩바</h3>
-            <ul>
-                <li class="etcm-loading--puzzle" data-loading="puzzle"></li>
-                <li class="etcm-loading--wave" data-loading="wave"></li>
-                <li class="etcm-loading--squre" data-loading="squre"></li>
-                <li class="etcm-loading--three" data-loading="three"></li>
-                <li class="etcm-loading--magnify" data-loading="magnify"></li>
-                <li class="etcm-loading--text" data-loading="text"></li>
-            </ul>
+    
+        <div v-if="imex" class="etcm-settings__imex">
+            <h3>외부입력 / 출력</h3>
+            <textarea v-model="text_area"></textarea>
         </div>
-
-        <div class="etcm-settings__list">
-            <h3>UI 옵션</h3>
-            <div class="etcm-settings__ui toggleSwitch">
-                <p>게시판 글목록 디자인</p>
-                <input type="checkbox" id="etcm-settings--article-design" class="toggleSwitch__input" checked="" data-command="modifyArticle">
-                <label for="etcm-settings--article-design" class="toggleSwitch__label" data-off="off" data-on="on"></label>
+    
+        <div v-else="imex" class="etcm-settings__body">
+            <div>
+                <h3>기능 모음</h3>
+                <ul class="etcm-settings__operation normal">
+                    <operation-item v-for="operation in normal_operations" v-bind="{...operation, command_plan}">
+                        <select v-if="operation.command == 'addHumbleChoiceTimer'" class="option__show-period" v-model="timer_period">
+                            <option value="1">24시간 전</option>
+                            <option value="7">7일 전</option>
+                            <option value="15">15일 전</option>
+                            <option value="35">항상</option>
+                        </select>
+                    </operation-item>
+                </ul>
             </div>
-            <div class="etcm-settings__ui toggleSwitch">
-                <p>빠른 추천</p>
-                <input type="checkbox" id="etcm-settings--shortly-vote" class="toggleSwitch__input" checked="" data-command="modifyShortlyVote">
-                <label for="etcm-settings--shortly-vote" class="toggleSwitch__label" data-off="off" data-on="on"></label>
+    
+            <div>
+                <h3>무한 스크롤 로딩바</h3>
+                <ul class="etcm-settings__showcase">
+                    <li v-for="item in loading_items" :class="{on: item == loading_selected}">
+                        <label :title="item" :class="'etcm-loading--'+item">
+                            <input type="radio" v-model="loading_selected" :value="item">
+                        </label>
+                    </li>
+                </ul>
             </div>
-            <div class="etcm-settings__ui toggleSwitch">
-                <p>찜목록 디자인</p>
-                <input type="checkbox" id="etcm-settings--wish-check" class="toggleSwitch__input" checked="" data-command="modifyWishCheck">
-                <label for="etcm-settings--wish-check" class="toggleSwitch__label" data-off="off" data-on="on"></label>
+    
+            <div>
+                <h3>UI 모음</h3>
+                <ul class="etcm-settings__operation ui">
+                    <operation-item v-for="operation in ui_operations" v-bind="{...operation, command_plan}" />
+                </ul>
             </div>
         </div>
     </div>
 
-    <div class="etcm-settings__imex">
-        <h3>외부입력 / 출력</h3>
-        <textarea></textarea>
-    </div>
-</div>
+    <template>
+        <li class="toggleSwitch">
+            <p :title="detail">{{ title }}</p>
+            <slot></slot>
+            <label class="toggleSwitch__label" :class="{on: checked}" data-on="on" data-off="off">
+                <input type="checkbox" class="toggleSwitch__input" v-model="checked">
+            </label>
+        </li>
+    </template>
+</vue>

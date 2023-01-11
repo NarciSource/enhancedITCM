@@ -52,7 +52,7 @@
     background: white;
     box-shadow: 0 3px 3px rgba(0,0,0,.2),0 0 0 2px #ddd;
 }
-.toggleSwitch__input:checked + .toggleSwitch__label:before {
+.toggleSwitch__label.on:before {
     left: calc(100% - var(--tgs-height, 36px));
 
     box-shadow: 0 0 0 2px transparent,0 3px 3px rgba(0,0,0,.3);
@@ -76,7 +76,7 @@
 
     align-items: center;
 }
-.toggleSwitch__input:checked + .toggleSwitch__label:after {
+.toggleSwitch__label.on:after {
     left: calc(100% + 5px);
 
     width: 36px;
@@ -87,12 +87,12 @@
 }
 
 /*-- background --*/
-.toggleSwitch__input:checked + .toggleSwitch__label {
+.toggleSwitch__label.on {
     background: var(--tgs-color, rgba(19,191,17,1));
     box-shadow: inset 0 0 0 0 var(--tgs-color, rgba(19,191,17,1)),0 0 0 2px var(--tgs-color, rgba(19,191,17,1));
 }
 
 /*-- border --*/
-.toggleSwitch__input + .toggleSwitch__label {
+.toggleSwitch__label {
     box-shadow: inset 0 0 0 0 var(--tgs-color, rgba(19,191,17,1)),0 0 0 2px #ddd;
 }

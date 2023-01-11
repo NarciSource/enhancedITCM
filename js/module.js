@@ -1134,134 +1134,92 @@ var Module = {};
 
         document.addStyle([ meta.css.settings ]);
 
-        function initialize(commands) {
+        $('#body').append(
+            $('#etcm-settings').isExist() || $(html = await $.get( meta.html.side )).find('#etcm-settings')
+        );
 
-            (function setSwitchBasedOnPreviousRecord($switches) {
-                $switches.each(function() {
-                    $(this).prop('checked', commands.has( $(this).data('command') ));
-                });
-            })(this.find('.toggleSwitch__input'));
+        etcm.vSetting = etcm.vSetting ||
+            Vue.createApp({
+                data() {
+                    return {
+                        version: GM.info.script.version,
 
+                        imex: false,
+                        text_area: JSON.stringify(
+                            [...Object.keys(etcm.default_settings), "commands", "g_board_tab", "game_news_tab", "blacklist", "blacklist_mber", "bookmark", "scrapbook"]
+                                .reduce((acc, val) => ({ ...acc, [val]: loadFromLocalStorage(val) }), {}), null, 2),
 
-            (function setSubvalueOfHumbleChoiceTimerBasedOnPreviousRecord($humble_timer_checkbox) {
-                $humble_timer_checkbox
-                    .prev('.etcm-settings__operation > .option')
-                        .toggle( commands.has( $humble_timer_checkbox.data('command')) )
-                    .children()
-                        .first('.etcm-settings__operation .option__timer-design').val( etcm.settings["humble_choice_timer_design"])
-                        .next('.etcm-settings__operation .option__show-period').val( etcm.settings["humble_choice_show_period"] );
+                        normal_operations: [
+                            { command: "addHumbleChoiceTimer", title: "Humble Choice 타이머", },
+                            { command: "enhanceInfiniteScroll", title: "무한 스크롤", },
+                            { command: "addFilter", title: "필터 기능", },
+                            { command: "addArticleBlacklist", title: "특정 글 블랙리스트", },
+                            { command: "addMemberBlacklist", title: "다른 회원 블랙리스트", },
+                            { command: "addWishbook", title: "개인목록에 찜목록", },
+                            { command: "addPurchasebook", title: "개인목록에 구입목록", },
+                            { command: "addScrapbook", title: "개인목록에 스크랩", },
+                            { command: "upgradeGameTagbox", title: "게임 정보 박스 업그레이드", },
+                            { command: "upgradCBTable", title: "CBTable 업그레이드", },
+                            { command: "addContextMenu", title: "게임 링크 컨텍스트 메뉴", },
+                            { command: "enhanceSizableBoard", title: "게시판 크기 조절", },
+                        ],
+                        ui_operations: [
+                            { command: "modifyArticle", title: "게시판 글목록 디자인", },
+                            { command: "modifyShortlyVote", title: "빠른 추천", },
+                            { command: "modifyWishCheck", title: "찜목록 디자인", },
+                        ],
+                        timer_period: etcm.settings.humble_choice_show_period,
 
-            })(this.find('#etcm-settings--humble-choice-timer'));
+                        loading_selected: etcm.settings.loading_case,
+                        loading_items: ['puzzle', 'wave', 'squre', 'three', 'magnify', 'text' ],
 
+                        command_plan: etcm.commands
+                    }
+                },
+                watch: {
+                    loading_selected(value) {
+                        etcm.settings.loading_case = value;
+                    },
+                    timer_period(value) {
+                        etcm.settings.humble_choice_show_period = value;
+                    }
+                },
+                methods: {
+                    save() {
+                        Object.entries(JSON.parse(this.text_area||null))
+                            .forEach(([key, value])=> saveToLocalStorage(key)(value));
 
-            (function highlightLoadingCaseBasedOnPreviousRecord($loading_cases) {
-                $loading_cases
-                    .filter(function() {
-                        return $(this).data('loading') === etcm.settings.loading_case;
-                    })
-                    .each(function() {
-                        $(this).addClass('selected')
-                            .siblings('.selected')
-                                .removeClass('selected');
-                    });
-            })(this.find('.etcm-settings__showcase').find('li'));
-
-            return this;
-        }
-
-        function setEvent(commands) {
-            (function setEventSwitch($switches) {
-                $switches
-                    .change(function() {
-                        commands.io(this.checked, $(this).data('command'));
-                    });
-            })(this.find('.toggleSwitch__input'));
-
-
-            (function setEventSubvalueOFHumbleChoiceTimer($humble_timer_checkbox) {
-                $humble_timer_checkbox
-                    .change(function() {
-                        $(this).prev('.etcm-settings__operation > .option').toggle(this.checked);
-                    })
-                    .prev('.etcm-settings__operation > .option').children()
-                        .first('.etcm-settings__operation .option__timer-design').change(function() {
-                            etcm.settings["humble_choice_timer_design"] = $(this).val();
-                        })
-                        .next('.etcm-settings__operation .option__show-period').change(function() {
-                            etcm.settings["humble_choice_show_period"] = $(this).val();
-                        });
-            })(this.find('#etcm-settings--humble-choice-timer'));
-
-            
-            (function setEventLoadingCase($loading_cases) {
-                $loading_cases
-                    .click(function() {
-                        $(this) .addClass('selected')
-                            .siblings('.selected')
-                                .removeClass('selected');
-
-                        etcm.settings.loading_case = $(this).data('loading');
-                    });
-            })($settings.find('.etcm-settings__showcase').find('li'));
-
-            return this;
-        }
-
-
-        function importSettingOptions($textarea) {
-            if ($textarea?.val()) {
-
-                Object.entries(
-                    JSON.parse($textarea.val())
-
-                ).forEach(([key, value])=> saveToLocalStorage(key)(value));
-            }
-        }
-        function exportSettingOptions($textarea) {
-
-            $textarea.val(
-                JSON.stringify(
-                    [...Object.keys(etcm.default_settings), "commands", "g_board_tab", "game_news_tab", "blacklist", "blacklist_mber", "bookmark", "scrapbook"]
-                        .reduce((acc, val) => ({ ...acc, [val]: loadFromLocalStorage(val) }), {})
-                    ,null, 2)
-                );
-        }
+                        location.reload();
+                    },
+                    reset() {
+                        etcm.commands = ProxySet("commands", etcm.default_commands, true);
+                    }
+                },
+                components: {
+                    operationItem: {
+                        props: {
+                            command: String,
+                            title: String, detail: { type: String, default: ""},
+                            command_plan: Set,
+                        },
+                        computed: {
+                            checked: {
+                                get() {
+                                    return this.command_plan.has( this.command )
+                                },
+                                set(checked) {
+                                    this.command_plan.io(checked, this.command);
+                                }
+                            },
+                        },
+                        template: $(html).find('template').get(0)
+                    }
+                }
+            }).mount('#etcm-settings');
 
 
-
-        var $settings = $(await $.get( meta.html.settings ));
-        $settings.initialize = initialize;
-        $settings.setEvent = setEvent;
-        $settings.importSettingOptions = importSettingOptions;
-
-
-        $settings.find('.etcm-settings__header__version').text("Ver. "+ GM.info.script.version);
-        $settings.find('.etcm-settings__header__imex').click(()=> {
-            $settings.find('.etcm-settings__body').hide();
-            $settings.find('.etcm-settings__imex').show();
-            exportSettingOptions($settings.find('.etcm-settings__imex > textarea'));
-        });
-        $settings.find('.etcm-settings__header__save').click(()=> {
-            try {
-                $settings.importSettingOptions($settings.find('.etcm-settings__imex > textarea'));
-                location.reload();
-            }
-            catch(e) {
-                alert(e);
-            }
-        });
-        $settings.find('.etcm-settings__header__reset').click(()=> { 
-            etcm.commands = ProxySet("commands", etcm.default_commands, true);
-            $settings.initialize(etcm.commands);
-        });
-        $settings.appendTo(
-            $('#body').children().not('script').hide().parent());
-
-
-
-        $settings
-            .initialize(etcm.commands)
-            .setEvent(etcm.commands);
+        $('#body > .in_body').toggle();
+        $('#etcm-settings').toggle();
     };
 
 

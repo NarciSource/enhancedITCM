@@ -1,11 +1,6 @@
-.etcm-settings h3 {
-    font-size: 17px;
-
-    width: 100%;
-
-    color: #4b4b4b;
+#etcm-settings {
+    display: none;
 }
-
 
 .etcm-settings__header {
     font-family: Helvetica Neue,helvetica,arial,verdana,sans-serif;
@@ -100,22 +95,47 @@
 }
 
 
+.etcm-settings__imex textarea {
+    font-family: Arial, Helvetica, sans-serif;
+
+    width: calc(100% - 10px);
+    height: 500px;
+    padding: 5px;
+}
+.etcm-settings__imex h3,
+.etcm-settings__body h3 {
+    font-size: 17px;
+
+    width: 100%;
+
+    color: #4b4b4b;
+}
+
 
 .etcm-settings__body {
     display: flex;
 
     flex-wrap: wrap;
 }
-
-.etcm-settings__list {
+.etcm-settings__body div {
+    width: 100%;
+}
+.etcm-settings__body ul {
     display: flex;
 
-    width: 100%;
+    padding: 0;
 
     flex-wrap: wrap;
+    justify-content: center;
 }
-.etcm-settings__operation,
-.etcm-settings__ui {
+.etcm-settings__body li {
+    list-style: none;
+}
+.etcm-settings__body input {
+    display: none;
+}
+
+.etcm-settings__operation li {
     position: relative;
 
     display: flex;
@@ -123,19 +143,22 @@
 
     align-items: center;
 }
-.etcm-settings__operation p,
-.etcm-settings__ui p {
+.etcm-settings__operation > li p {
     font-size: 13px;
 
     margin: 0 30px 0 0;
 
     color: #4b4b4b;
 }
-.etcm-settings__operation .toggleSwitch__label,
-.etcm-settings__ui .toggleSwitch__label {
+.etcm-settings__operation > li label {
     margin-left: auto;
 }
-.etcm-settings__operation {
+.etcm-settings__operation > li select {
+    position: absolute;
+    bottom: -13px;
+}
+
+.etcm-settings__operation.normal > li {
     width: calc(50% - 60px);
     margin: 10px 30px;
 
@@ -143,11 +166,7 @@
     --tgs-height: 36px;
     --tgs-color: indianred;
 }
-.etcm-settings__operation > .option {
-    position: absolute;
-    bottom: -13px;
-}
-.etcm-settings__ui {
+.etcm-settings__operation.ui > li {
     width: calc(33.333% - 60px);
     margin: 10px 30px;
 
@@ -157,33 +176,8 @@
 }
 
 
-.etcm-settings__imex {
-    display: none;
-}
-.etcm-settings__imex textarea {
-    font-family: Arial, Helvetica, sans-serif;
-
-    width: calc(100% - 10px);
-    height: 500px;
-    padding: 5px;
-}
-
-
-.etcm-settings__showcase {
-    display: flex;
-    flex-direction: column;
-
-    width: 100%;
-}
-.etcm-settings__showcase ul {
-    padding: 0;
-
-    list-style: none;
-
-    text-align: center;
-}
-.etcm-settings__showcase li {
-    display: inline-block;
+.etcm-settings__showcase > li label {
+    display: block;
 
     width: 100px;
     height: 100px;
@@ -194,7 +188,7 @@
     opacity: .7;
     background-size: contain;
 }
-.etcm-settings__showcase .selected {
+.etcm-settings__showcase > li.on {
     opacity: 1 !important;
     border: 2px solid forestgreen;
 }
