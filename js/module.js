@@ -1147,6 +1147,7 @@ var Module = {};
                         version: GM.info.script.version,
 
                         imex: false,
+                        text_area: undefined,
 
                         normal_operations: [
                             { command: "addHumbleChoiceTimer", title: "Humble Choice 타이머", },
@@ -1181,24 +1182,28 @@ var Module = {};
                     },
                     timer_period(value) {
                         etcm.settings.humble_choice_show_period = value;
-                    }
-                },
-                computed: {
-                    text_area() {
-                        return JSON.stringify(
-                            [...Object.keys(etcm.default_settings), "commands", "g_board_tab", "game_news_tab", "blacklist", "blacklist_mber", "bookmark", "scrapbook"]
-                                .reduce((acc, val) => ({ ...acc, [val]: loadFromLocalStorage(val) }), {}), null, 2)
+                    },
+                    imex(value) {
+                        this.text_area = value
+                            ? JSON.stringify(
+                                [...Object.keys(etcm.default_settings),
+                                "commands", "g_board_tab", "game_news_tab", "blacklist", "blacklist_mber", "bookmark", "scrapbook"]
+                                    .reduce((acc, val) => ({ ...acc, [val]: loadFromLocalStorage(val) }), {}), null, 2)
+                            : null;
                     }
                 },
                 methods: {
                     save() {
-                        Object.entries(JSON.parse(this.text_area||null))
-                            .forEach(([key, value])=> saveToLocalStorage(key)(value));
-
-                        location.reload();
+                        try {
+                            Object.entries(JSON.parse(this.text_area))
+                                .forEach(([key, value])=> saveToLocalStorage(key)(value));
+                        }
+                        catch(e) {
+                            alert(e);
+                        }
                     },
                     reset() {
-                        etcm.commands = ProxySet("commands", etcm.default_commands, true);
+                        this.command_plan = etcm.commands = ProxySet("commands", etcm.default_commands, true);
                     }
                 },
                 components: {
