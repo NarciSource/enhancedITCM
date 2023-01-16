@@ -1,0 +1,56 @@
+<vue>
+    <div id="etcm-cTab--store">
+        <ul class="etcm-cTab--store">
+            <tab-list class="etcm-tab--store etcm-tab" v-for="{title, href, src} in tabs" v-bind="{title, selected_tabs }">
+                <a :href="href">
+                    <img :src="src">
+                </a>
+            </tab-list>
+        </ul>
+    </div>
+
+
+    <ul id="etcm-cTab--cate" class="cTab clear">
+        <li class="home etcm-tab">
+            <a :href="'/' + mid">전체</a>
+            <input type="checkbox" v-model="checked_all_tabs">
+        </li>
+
+        <tab-list class="etcm-tab" v-for="{title, href, src} in tabs" v-bind="{title, selected_tabs }">
+            <a :href="href">{{ title }}</a>
+        </tab-list>
+
+        <tab-exclusive-gboard v-if="mid == 'game_news'"></tab-exclusive-gboard>
+
+        <tab-list v-bind="{title: 'eye', selected_tabs }">
+            <a class="fa fa-eye-slash" title="See also blacklist"/>
+        </tab-list>
+    </ul>
+
+
+    <template id="etcm-tab-list">
+        <li :title="title">
+            <slot></slot>
+            <input type="checkbox" v-model="checked">
+        </li>
+    </template>
+
+
+    <template id="etcm-tab-xclusive-gboard">
+        <li class="etcm-tab on">
+            <a href="/game_news?_sort_index=timer_filter" style="color:#FF008B;">종료</a>
+            <input type="checkbox" v-model="checked_expired_tab">
+        </li>
+        <li style="float:right;">
+            <a href="/game_news?_sort_index=check_wlist">
+                <i class="fa fa-heart" aria-hidden="true" style="font-size: 11px; color: #FF9C9C;" />
+                찜 목록
+            </a>
+        </li>
+        <li style="float:right;">
+            <a href="/game_news?_sort_index=check_plist">
+                구입 목록
+            </a>
+        </li>
+    </template>
+</vue>

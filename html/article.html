@@ -1,0 +1,81 @@
+<vue>
+    <table id="etcm-article-board" class="bd_lst bd_tb_lst bd_tb etcm-article-design">
+        <caption class="blind">List of Articles</caption>
+        <thead class="bg_f_f9">
+            <tr>
+                <th v-for="[category, field_name] in fields" scope="col">
+                    <a :href="'/'+mid+'?category='+category">{{ field_name }}</a>
+                </th>
+            </tr>
+        </thead>
+        <tbody>
+            <template v-for="article in articles" :key="article.id">
+                <article-list v-bind="{...article, selected_tabs}"></article-list>
+            </template>
+        </tbody>
+    </table>
+
+
+    <template id="etcm-article-list">
+        <tr v-show="isShow" :class="{'etcm-article--shadow': is_blacklist_article || is_blacklist_member}">
+            <td class="sect">
+                <span v-if="store" class="store">
+                    <img :title="store.name" :src="store.src">
+                </span>
+                <span class="cate">{{ cate.name }}</span>
+            </td>
+
+            <td class="post">
+                <span class="time" :title="time.detail">{{ time.normal }}</span>
+                <div class="title">
+                    <a :href="title.href" class="hx">{{ title.name }}</a>
+                    <label class="fa fa-eye-slash" title="You're on my blacklist">
+                        <input v-show="false" type="checkbox" v-model="is_blacklist_article">
+                    </label>
+                </div>
+                <a :href="title.href+reply.href" class="replyNum" title="댓글">{{ reply.num }}</a>
+                <span class="m_no readed_count">{{ readed_count }}</span>
+                <span class="m_no voted_count">
+                    <em style="color:#f00;">{{ voted_count }}</em>
+                </span>
+            </td>
+            
+            <td v-if="steam_list_check" class="steam_list_check">
+                <form action="./" method="post" class="steam_wished clear">
+                    <input type="hidden" name="error_return_url" value="/index.php?mid=game_news&_sort_index=timer_filter">
+                    <input type="hidden" name="act" value="">
+                    <input type="hidden" name="mid" value="game_news">
+                    <input type="hidden" name="vid" value="">
+                    <label>
+                        <input type="checkbox" name="type" class="checked_p" data-doc_srl="10169510" value="p" style="display: none;">
+                        <i class="fa fa-credit-card" title="구입 목록에 추가"></i>
+                    </label>
+                    <label>
+                        <input type="checkbox" name="type" class="checked_w" data-doc_srl="10169510" value="w" style="display: none;">
+                        <i class="fa fa-shopping-cart" title="찜 목록에 추가"></i>
+                    </label>
+                </form>
+            </td>
+            
+            <td v-if="timer" class="timer">
+                <span class="list_timer">{{ timer }}</span>
+            </td>
+            
+            <td class="app_image">
+                <a v-if="game.id" :href="'/game_news?app='+game.id" class="itcmGameUrl">
+                    <img :src="game.src" :title="game.title" class="lazy header_image">
+                </a>
+            </td>
+
+            <td class="author">
+                <a href="#popup_menu_area" :class="'member_'+author.id" onclick="return false">
+                    <img v-if="author.src" :src="author.src">
+                    {{ author.name }}
+                </a>
+                <label class="fa fa-eye-slash" title="You're on my blacklist">
+                    <input v-show="false" type="checkbox" v-model="is_blacklist_member">
+                </label>
+            </td>
+        </tr>
+    </template>
+</vue>

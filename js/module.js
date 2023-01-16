@@ -171,9 +171,7 @@ var Module = {};
 
                         let condition = ([property, value])=> etcm.recursive_commands.includes(property);
                         etcm.run( condition, $loaded_articles );
-                        etcm.refreshContent( $loaded_articles );
-
-                        etcm.$articles = etcm.$contents.children('tbody').append( $loaded_articles ).children('tr');
+                        etcm._loadContent( $loaded_articles );
 
                         $('.bd_pg').replaceWith($loaded_html.find('.bd_pg'));
                         loading_bar.hide();
@@ -475,193 +473,6 @@ var Module = {};
     };
 
 
-    Module.addFilter = function() {
-      const etcm = this;
-
-        (function handleGamenewsTabs() {
-            if (!window.location.href.includes("game_news")
-            ||  !$('.inner_content').children('div').first().not('.xe-widget-wrapper').isExist()) {
-                return;
-            }
-
-            function addTab({store_name, img_src, width, height}) {
-                width = width || '29px';
-                height = height || '29px';
-
-                $('<li>', {
-                    appendTo: this,
-                    class: 'etcm-tab--store',
-                    title: store_name,
-                    html: $('<a>', {
-                        href: `/?mid=game_news&search_keyword=${store_name}&search_target=extra_vars2&_sort_index=timer_filter`,
-                        html: $.merge(
-                            $('<img>', {
-                                src: img_src,
-                                css: {width, height}
-                            }),
-                            $('<span>', {
-                                text: store_name.toLowerCase()
-                            }).hide()
-                        )
-                    })
-                });
-                return this;
-            }
-
-            function removeTab(store_name) {
-                this.find('span').filter((_,el)=> el.innerText === store_name)
-                    .closest('.etcm-tab--store').remove();
-                return this;
-            }
-
-            function insertTab($tabs) {
-                this.append(
-                    $.map($tabs, function(val) {
-                      const store_name = /[&|?]search_keyword=([^&]+)/.exec(decodeURI(val.search))[1];
-                        return $('<li>', {
-                            class: 'etcm-tab--store',
-                            title: store_name,
-                            html: $(val).append(
-                                    $('<span>', {
-                                        text: store_name.toLowerCase()
-                                    }).hide()
-                                )
-                        });
-                    })
-                );
-                return this;
-            }
-
-
-            let $div = $('.inner_content').children('div').eq(0),
-                $etcm_cTab_store = $('<ul>', {
-                        class: 'etcm-cTab--store',
-                        css: {display: 'flex'}
-                    });
-
-            $etcm_cTab_store.addTab = addTab;
-            $etcm_cTab_store.removeTab = removeTab;
-            $etcm_cTab_store.insertTab = insertTab;
-
-
-            $etcm_cTab_store
-                .insertTab($div.find('a'))
-                .addTab({store_name: "Chronogg", img_src: "https://www.chrono.gg/assets/images/branding/chrono-icon--dark.9b6946b4.png"})
-                .addTab({store_name: "WinGameStore", img_src: "https://www.wingamestore.com/images/s2/logo-icon.png"})
-                .addTab({store_name: "Nuuvem", img_src: "https://assets.nuuvem.com/assets/fe/images/nuuvem_logo-ab61ec645af3a6db7df0140d4792f31a.svg"})
-                .addTab({store_name: "MicrosoftStore", img_src: "https://c.s-microsoft.com/en-us/CMSImages/Microsoft_Corporate_Logo_43_42.jpg?version=77D1E093-019E-5C72-083F-4DF9BF1362F5"})
-                .addTab({store_name: "DailyIndieGame"})
-                .addTab({store_name: "OtakuBundle"})
-                .addTab({store_name: "GoGoBundle"})
-                .addTab({store_name: "기타"})
-                .removeTab("gamethor")
-                .appendTo($div);
-        })();
-
-
-
-        (function makeBlacklistTab() {
-            $('.cTab').append($('<li>', {
-                class: 'etcm-tab--hide',
-                html : $('<a>', {
-                    class: 'fa fa-eye-slash',
-                    html: $('<span>', { text: "black" }).hide()
-                })
-            }))
-        })();
-
-
-
-        (function remodelingTabs() {
-            let $tabs = $(/*empty*/);
-            if (window.location.href.includes("game_news")) {
-                $tabs = $('.cTab').children('li').slice(0,4).add('.etcm-tab--hide').add('.etcm-tab--store');
-                etcm.selectTabs = ProxySet("game_news_tab", $tabs.children('a').map((_,el)=>$(el).text().trim()) );
-            }
-            if (window.location.href.includes("g_board")) {
-                $tabs = $('.cTab').children('li');
-                etcm.selectTabs = ProxySet("g_board_tab", $tabs.children('a').map((_,el)=>$(el).text().trim()) );
-            }
-        
-            $tabs.each((_, li)=>{
-                let $tab = $(li).addClass('etcm-tab');
-        
-                $('<input>', {
-                    appendTo: $tab,
-                    type: 'checkbox',
-                    checked: function() {
-                      const checked = etcm.selectTabs.has($(this).prev().text().trim());
-                        $(this).parent().toggleClass('check', checked);
-                        return checked;
-                    },
-                    change: function() {
-                      const tab_current_text = $(this).prev().text().trim(),
-                            checked = $(this).is(':checked');
-        
-        
-                        $tab.toggleClass('check', checked);
-                        etcm.selectTabs.io(checked, tab_current_text);
-        
-        
-                        if ($tab.hasClass('home')) {
-                            $tabs.not('.home').children('input').prop('checked',checked).change();
-        
-                        } else {
-                            if (!checked) {
-                              const tab_home_text = $tabs.filter('.home').children('a').text();
-        
-                                $tabs.filter('.home').toggleClass('check', checked)
-                                    .children('input').prop('checked',checked);
-                                etcm.selectTabs.io(checked, tab_home_text);
-                            }
-                        }
-                        etcm.refreshContent();
-                    }
-                });
-            });
-        })();    
-    };
-
-    /* Show blacklist icon and manage list */
-    Module.addArticleBlacklist = function($articles) {
-      const etcm = this;
-        $articles = $articles || etcm.$articles;
-
-        $articles
-            .each((_, article)=> {
-                $(article).children('.title').append(
-                    $('<span>', {
-                        class: 'fa fa-eye-slash',
-                        click: function() {
-                            etcm.blacklist.switch( $(article).data('document_srl'));
-                            etcm.refreshContent();
-                        }
-                    })
-                );
-            });
-    };
-
-    Module.addMemberBlacklist = function($articles) {
-      const etcm = this;
-        $articles = $articles || etcm.$articles;
-
-        $articles
-            .each((_, article)=> {
-                $(article).children('.author').append(
-                    $('<span>', {
-                        class: 'fa fa-eye-slash',
-                        click: function() {
-                          const member_id = $(this).prev().children('a').attr('class');
-
-                            etcm.blacklist_member.switch(member_id);
-                            etcm.refreshContent();
-                        }
-                    })
-                );
-            });
-    };
-
-
     /* side menu */
     Module._addSideBook = async function() {
         document.addStyle([ meta.css.side ]);
@@ -937,123 +748,6 @@ var Module = {};
     }
 
 
-
-    /* refresh content */
-    Module.refreshContent = function($articles) {
-      const etcm = this;
-        $articles = $articles || etcm.$articles;
-
-        $articles
-            .each((_,article)=> {
-                /* parse this article */
-                let $article = $(article),
-                    category = $article.find('.cate').text().trim(),
-                    document_srl = $article.data('document_srl'),
-                    writer_id = $article.find('.author').find('a').attr('class'),
-                    title = $article.find('.title').children('a.hx').title,
-                    store = $article.find('.store').find('img').isExist(o => o.attr('title')).else(o => o.prevObject.text()).toLowerCase().trim().replace("-","")
-
-
-                /* If this article is a blacklist then shadow. */
-                if (etcm.blacklist.has(document_srl) || etcm.blacklist_member.has(writer_id)) {
-                    $article.addClass('etcm-article--shadow');
-                }
-                else {
-                    $article.removeClass('etcm-article--shadow');
-                }
-
-                /* Determine whether this article is visible or not. */
-                if (
-                    !etcm.selectTabs ||
-                    (
-                        (
-                            !category || etcm.selectTabs.has(category)
-                        )
-                        &&
-                        (
-                            !store || etcm.selectTabs.has(store)
-                        )
-                        &&
-                        (
-                            !document_srl || etcm.selectTabs.has("black")
-                            ||
-                            !(
-                                etcm.blacklist.has(document_srl) || etcm.blacklist_member.has(writer_id)
-                            )
-                        )
-                    )
-                ) {
-                    $article.show();
-                } else {
-                    $article.hide();
-                }
-            });
-    };
-
-
-    /* modify ui */
-    Module.modifyArticle = function($articles) {
-      const etcm = this;
-        $articles = $articles || this.$articles;
-        $contents = this.$contents;
-
-        if (!$contents.hasClass('etcm-article-design')) {
-            $contents.addClass('etcm-article-design');
-
-            let $th = $contents.find('th'),
-                categories = ['cate', 'title', 'app_image', 'author_h', 'regdate', 'readed_count', 'voted_count', 'steam_list_check'];
-
-            if (location.href.includes("game_news")) {
-                categories.splice(0,0,'location');
-                categories.splice(3,0,'expire');
-                categories.splice(9,0,'steam_list_check');
-
-                $th.eq('.title').after($th.eq('.steam_list_check'));
-            }
-            if (location.href.includes("timeline")) {
-                categories.splice(0,0,'location');
-            }
-
-            categories.forEach((c, i) => $th.eq(i).addClass(c));
-        }
-
-
-        $articles.each((_,article) => {
-
-            let $article = $(article),
-                $store = location.href.includes("game_news")? $article.children('.m_no').first().addClass('store').replaceTag('div') : $(),
-                $mid = $article.find('.mid').replaceTag('div'),
-                $cate = $article.find('.cate').replaceTag('div'),
-                $time = $article.find('.time').replaceTag('span'),
-                $list_timer = $article.find('.list_timer').parent().replaceTag('td'),
-                $title = $article.find('.title').replaceTag('div'),
-                $replyNum = $article.find('.replyNum').detach(),
-                $readed_count = $article.children('.m_no').last().prev().replaceTag('span').addClass('readed_count'),
-                $voted_count = $article.children('.m_no').last().replaceTag('span').addClass('voted_count'),
-                $app_image = $article.find('.app_image').replaceTag('td'),
-                $author = $article.find('.author').detach(),
-                $steam_list_check = $article.children('.steam_list_check');
-
-
-            $author.find('a').contents().last()[0].textContent = $author.find('img').not('.xe_point_level_icon').attr('title');
-
-            $article.html([
-                $('<td>', { class: 'sect', html:
-                    [ $store, $mid, $cate ]
-                }),
-                $('<td>', { class: 'post', html:
-                    [ $time, $title, $replyNum, $readed_count, $voted_count ]
-                }),
-                $steam_list_check,
-                $list_timer,
-                $app_image,
-                $author
-            ]);
-        });
-        etcm.refreshContent();
-    };
-
-
     Module.modifyShortlyVote = function($articles) {
       const etcm = this;
         $articles = $articles || etcm.$articles;
@@ -1079,54 +773,310 @@ var Module = {};
     };
 
 
-    Module.modifyWishCheck = function($articles) {
-      const etcm = this;
-        $articles = $articles || etcm.$articles;
 
-        $articles.find('.steam_list_check')
-            .find('label').children().hide()
-            .closest('label').filter(':even').append(
-                $('<i>', {
-                    class: 'fa fa-credit-card',
-                    title: "구입 목록에 추가"
-                })
-            ).next().append(
-                $('<i>', {
-                    class: 'fa fa-shopping-cart',
-                    title: "찜 목록에 추가"
-                })
-            );
-    };
+    Module._parseArticle = function(article) {
+        let fields = [...article.children];
 
-
-    Module.modifyOthers = function($articles) {
-      const etcm = this;
-        $articles = $articles || etcm.$articles;
-
-
-        (function fixAppImageFading($app_img) {
-            $app_img.find('img').each(function() {
-                $(this).attr('src', $(this).data('original') );
-            });
-        })($articles.find('.app_image'));
-
-
-        (function fixTitleFading($hx) {
-            $hx.filter((_, el)=> $(el).attr('title'))
-            .each((_, el)=> $(el).text($(el).attr('title')));
-        })($articles.find('.hx'));
-
-
-        if (window.location.href.includes("game_news")) {
-
-            (function fixStoreFilterTitle() {
-                $articles.each((_,el)=> {
-                  const $store = $(el).children().eq(0).children().children();
-                    $store.attr('title',$store.text().trim()).css({width:'45px',overflow:'hidden'});
-                });
-            })();
+        switch(this.mid) {
+            case "community_timeline":
+                var [board, cate, title,        game, ...rest] = fields;
+            break;
+            case "game_news":
+                var [store, cate, title, timer, game, ...rest] = fields;
+            break;
+            case "gift":
+                var [       cate, title, timer, game, ...rest] = fields;
+            break;
+            case "g_board":
+                var [       cate, title,        game, ...rest] = fields;
+            break;
+            default:
+                var [       cate, title,              ...rest] = fields;
         }
+        var [author, time, readed_count, voted_count, steam_list_check] = rest;
+
+        let id = RegExp(`(?:${this.mid}\/|document_srl=)(\\d+)`).exec(title.children[0].href)[1];
+
+        {
+          const store_srcs = $('#etcm-cTab--store li').toArray().reduce((acc, cur)=> ({...acc,
+                        [cur.title]: cur.querySelector('img').src }),{});
+            let name = store?.querySelector('img')?.title?.toLowerCase()||"-",
+                src = store_srcs[name];
+            store = store? {name, src} : store;
+
+            timer = timer? timer?.querySelector('span > span').innerText||" " : timer;
+        }
+
+        return {
+            id,
+            store,
+            cate: {
+                name: cate.innerText,
+                href: ""
+            },
+            title: {
+                name: title.children[0].title,
+                href: "/"+id
+            },
+            reply: {
+                num: title.children[1].innerText,
+                href: "#"+id+"_comment"
+            },
+            timer,
+            steam_list_check,
+            game: {
+                id: /app=(-?\d+)/.exec(game.querySelector('a')?.href)?.[1],
+                title: game.querySelector('.header_image')?.title,
+                src: game.querySelector('.header_image')?.dataset.original,
+            },
+            author: {
+                id: /member_(\d+)/.exec(author.querySelector('a').className)[1],
+                name: author.querySelectorAll('img')[1]?.title,
+                src: author.querySelectorAll('img')[1]?.src,
+            },
+            time: {
+                normal: time.innerText,
+                detail: time.title
+            },
+            readed_count: readed_count.innerText,
+            voted_count: voted_count.innerText,
+        };
+    }
+
+
+    /* load content */
+    Module._loadContent = function($articles) {
+      const etcm = this,
+            mid = /mid=(\w+)/.exec(location.search)?.[1] || location.pathname.replace(/\/\d+/,"").slice(1);
+
+        let article = $articles.toArray().map(etcm._parseArticle.bind({...etcm, mid}));
+
+        etcm.vueRefArticles.value = [...etcm.vueRefArticles.value, ...article];
+
+        $articles.remove()
     };
+
+
+    Module.addFilter = async function() {
+      const etcm = this,
+            mid = /mid=(\w+)/.exec(location.search)?.[1] || location.pathname.replace(/\/\d+/,"").slice(1);
+
+        let selected_tabs = etcm.selected_tabs = ProxySet(mid === "game_news"? "game_news_tab" : "g_board_tab"),
+
+            store_tabs = mid === "game_news"
+              ? [...$('.inner_content').children('div').first().find('a').toArray()
+                    .map(a => ({
+                        title: /search_keyword=(\w+)/.exec(a.href)[1],
+                        src: a.children[0].src
+                    }))
+                    .map(({title, src}) => ({
+                        title,
+                        src: ({
+                            steam: "https://cdn.cloudflare.steamstatic.com/store/about/icon-steamos.svg",
+                            origin: "https://media.contentapi.ea.com/content/dam/eacom/ko-kr/common/october-ea-ring.png"
+                        })[title] || src
+                    })),
+                 ...Object.entries({
+                        epic: "https://cdn2.unrealengine.com/eg-shield-logo-white-f8185c103d8d.svg",
+                        chronogg: "https://www.chrono.gg/assets/images/branding/chrono-icon--dark.9b6946b4.png",
+                        wingamestore: "https://www.wingamestore.com/images/s2/logo-icon.png" ,
+                        nuuvem: "https://assets.nuuvem.com/assets/fe/images/nuuvem_logo-ab61ec645af3a6db7df0140d4792f31a.svg",
+                        microsoftStore: "https://c.s-microsoft.com/en-us/CMSImages/Microsoft_Corporate_Logo_43_42.jpg?version=77D1E093-019E-5C72-083F-4DF9BF1362F5",
+                        "기타": null })
+                    .map(([title, src]) => ({title, src})),
+                ]
+                .map(({title, src}) => ({title, src, href: "/game_news\?search_target=extra_vars2&search_keyword="+title}))
+              : [],
+
+            cate_tabs = $('.cnb_n_list ul').first().find('li').toArray()
+                .slice(1, mid === "game_news"? 4 : undefined)
+                .map(li => ({
+                    href: mid+"/"+/category=(\d+)/.exec(li.children[0].href)[1],
+                    title: li.innerText
+                })),
+
+            full_tabs = [...cate_tabs, ...store_tabs].map(t=> t.title);
+
+
+        // insert dom
+        let html = await $.get( meta.html.tab );
+
+        if (mid === "game_news") {
+            $('.inner_content').children('div').first().remove();
+            $('.inner_content').prepend( $(html).find('#etcm-cTab--store') );
+        }
+        $('.bd_lst_wrp').prepend( $(html).find('#etcm-cTab--cate') );
+        $('.bd_lst_wrp > .cnb_n_list').remove();
+
+        // components
+        var tabList = {
+                props: {
+                    title: String,
+                    selected_tabs: Object
+                },
+                computed: {
+                    checked: {
+                        get() {
+                            return this.selected_tabs.has(this.title);
+                        },
+                        set(checked) {
+                            this.selected_tabs.io(checked, this.title);
+                        }
+                    }
+                },
+                template: $(html).find('#etcm-tab-list').get(0)
+            },
+            tabExclusiveGboard = {
+                data() {
+                    return {
+                        checked_expired_tab: location.search.includes("timer_filter")
+                    }
+                },
+                watch: {
+                    checked_expired_tab(value) {
+                        location.href = "/game_news" + (value? "" : "?_sort_index=timer_filter");
+                    }
+                },
+                template: $(html).find('#etcm-tab-xclusive-gboard').get(0)
+            };
+
+        // store
+        Vue.createApp({
+            data() {
+                return {
+                    tabs: store_tabs,
+                    selected_tabs,
+                }
+            },
+            components: { tabList }
+        }).mount("#etcm-cTab--store");
+
+        // cate
+        Vue.createApp({
+            data() {
+                return {
+                    tabs: cate_tabs,
+                    selected_tabs,
+                    mid,
+                }
+            },
+            computed: {
+                checked_all_tabs: {
+                    get() {
+                        return this.selected_tabs.size === full_tabs.length;
+                    },
+                    set(value) {
+                        this.selected_tabs.io(value, full_tabs);
+                    }
+                }
+            },
+            components: { tabList, tabExclusiveGboard }
+        }).mount("#etcm-cTab--cate");
+    };
+
+
+    Module.designArticle = async function() {
+        const etcm = this,
+              mid = /mid=(\w+)/.exec(location.search)?.[1] || location.pathname.replace(/\/\d+/,"").slice(1);
+
+        switch(mid) {
+            case "game_news":
+                var fields = ['cate', 'title', 'check', 'timer', 'app', 'author_h'];
+            break;
+            case "gift":
+                var fields = ['cate', 'title',          'timer', 'app', 'author_h'];
+            break;
+            case "community_timeline":
+            case "g_board":
+            case "b_board":
+                var fields = ['cate', 'title',                   'app', 'author_h'];
+            break;
+            default:
+                var fields = ['cate', 'title',                          'author_h'];
+        }
+        fields = fields.map(c =>
+            [c, { cate: "분류", title: "제목", check: "체크", timer: "종료 시각", app: "게임", author_h: "글쓴이" }[c]]);
+
+        let articles = etcm.vueRefArticles = Vue.ref([]),
+            selected_tabs = etcm.selected_tabs;
+
+
+        // insert dom
+        let html = await $.get( meta.html.article );
+
+        $('.bd_lst_wrp table').hide().before( $(html).find('#etcm-article-board') );
+
+        // component
+        var articleList = {
+                props: {
+                    id: String,
+                    store: Object, cate: Object, title: Object, timer: String, game: Object, author: Object,
+                    reply: Object, author: Object, time: Object, readed_count: String, voted_count: String,
+                    steam_list_check: Object,
+                    selected_tabs: Object,
+                },
+                data() {
+                    return {
+                        black: false,
+                        blacklist_member: etcm.blacklist_member,
+                        blacklist: etcm.blacklist
+                    }
+                },
+                computed: {
+                    is_blacklist_article: {
+                        get() {
+                            return this.blacklist.has(this.id);
+                        },
+                        set(value) {
+                            this.blacklist.io(value, this.id);
+                        }
+                    },
+                    is_blacklist_member: {
+                        get() {
+                            return this.blacklist_member.has(this.author?.id);
+                        },
+                        set(value) {
+                            this.blacklist_member.io(value, this.author.id);
+                        }
+                    },
+                    isShow() {
+                        return !this.selected_tabs ||
+                        (
+                            (
+                                !this.cate || this.selected_tabs.has(this.cate.name)
+                            )
+                            &&
+                            (
+                                !this.store || this.selected_tabs.has(this.store.name)
+                            )
+                            &&
+                            (
+                                this.selected_tabs.has("eye")
+                                ||
+                                (
+                                    !this.blacklist.has(this.id) && !this.blacklist_member.has(this.author?.id)
+                                )
+                            )
+                        );
+                    }
+                },
+                template: $(html).find('#etcm-article-list').get(0)
+            };
+
+        // article board
+        Vue.createApp({
+            data() {
+                return {
+                    mid,
+                    fields, articles,
+                    selected_tabs,
+                }
+            },
+            components: { articleList },
+        }).mount('#etcm-article-board');
+
+        etcm._loadContent(etcm.$articles);
+    }
 
 
 
@@ -1153,8 +1103,6 @@ var Module = {};
                             { command: "addHumbleChoiceTimer", title: "Humble Choice 타이머", },
                             { command: "enhanceInfiniteScroll", title: "무한 스크롤", },
                             { command: "addFilter", title: "필터 기능", },
-                            { command: "addArticleBlacklist", title: "특정 글 블랙리스트", },
-                            { command: "addMemberBlacklist", title: "다른 회원 블랙리스트", },
                             { command: "addWishbook", title: "개인목록에 찜목록", },
                             { command: "addPurchasebook", title: "개인목록에 구입목록", },
                             { command: "addScrapbook", title: "개인목록에 스크랩", },

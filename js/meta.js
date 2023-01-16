@@ -18,6 +18,8 @@ const meta = {
         side:  "https://narcisource.github.io/enhancedITCM/html/side.html",
         settings: "https://narcisource.github.io/enhancedITCM/html/settings.html",
         miniprofile: "https://narcisource.github.io/enhancedITCM/html/miniprofile.html",
+        tab: "https://narcisource.github.io/enhancedITCM/html/tab.html",
+        article: "https://narcisource.github.io/enhancedITCM/html/article.html",
     },
 
     url : {
