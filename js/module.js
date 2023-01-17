@@ -35,7 +35,6 @@ var Module = {};
 
 
         etcm.$contents = $('table.bd_lst.bd_tb');
-        etcm.$articles = etcm.$contents.children('tbody').children('tr');
 
         $('.wrap_profile').addClass('etcm-profile');
         window.addEventListener ("load", ()=> $('#scrollUp').addClass('etcm-scrollUp'));
@@ -52,22 +51,6 @@ var Module = {};
         :   $()
         );
     }
-
-    Module._initializeArticle = function($articles) {
-        $articles = $articles || this.$articles;
-
-        $articles
-            .addClass('etcm-article')
-            .each(function() {
-                var href = $(this).hasClass('notice')? 
-                                $(this).children('.title').children('a').get(0).href
-                                : $(this).children('.title').children('.hx').data('viewer'),
-                    mid = /mid=(\w+)/.exec(location.search)?.[1] || location.pathname.replace(/\/\d+/,""),
-                    document_srl = RegExp(`(?:${mid}\/|document_srl=)(\\d+)`).exec(href)[1];
-                $(this).data({document_srl});
-            });
-    }
-
 
 
     Module._preview = function () {
@@ -749,8 +732,9 @@ var Module = {};
 
 
     Module.modifyShortlyVote = function($articles) {
+        return;
       const etcm = this;
-        $articles = $articles || etcm.$articles;
+        $articles = $articles;
 
       const entry = etcm.$contents.find('th').length,
             index = etcm.$contents.find('th').index( etcm.$contents.find('.voted_count') );
@@ -804,7 +788,10 @@ var Module = {};
                 src = store_srcs[name];
             store = store? {name, src} : store;
 
-            timer = timer? timer?.querySelector('span > span').innerText||" " : timer;
+            timer = timer
+                ? timer.querySelector('span')?.style.display!=="none"
+                    ? timer.querySelector('span > span')?.innerText||" " : " " 
+                : timer;
         }
 
         return {
@@ -861,7 +848,7 @@ var Module = {};
       const etcm = this,
             mid = /mid=(\w+)/.exec(location.search)?.[1] || location.pathname.replace(/\/\d+/,"").slice(1);
 
-        let selected_tabs = etcm.selected_tabs = ProxySet(mid === "game_news"? "game_news_tab" : "g_board_tab"),
+        let selected_tabs = etcm.selected_tabs = ProxySet(mid+ "_tab"),
 
             store_tabs = mid === "game_news"
               ? [...$('.inner_content').children('div').first().find('a').toArray()
@@ -887,8 +874,7 @@ var Module = {};
                 ]
                 .map(({title, src}) => ({title, src, href: "/game_news\?search_target=extra_vars2&search_keyword="+title}))
               : [],
-
-            cate_tabs = $('.cnb_n_list ul').first().find('li').toArray()
+            cate_tabs = $('.cTab li').toArray()
                 .slice(1, mid === "game_news"? 4 : undefined)
                 .map(li => ({
                     href: mid+"/"+/category=(\d+)/.exec(li.children[0].href)[1],
@@ -927,14 +913,14 @@ var Module = {};
                 template: $(html).find('#etcm-tab-list').get(0)
             },
             tabExclusiveGboard = {
-                data() {
-                    return {
-                        checked_expired_tab: location.search.includes("timer_filter")
-                    }
-                },
-                watch: {
-                    checked_expired_tab(value) {
-                        location.href = "/game_news" + (value? "" : "?_sort_index=timer_filter");
+                computed: {
+                    checked_expired_tab: {
+                        get() {
+                            return !location.search.includes("timer_filter");
+                        },
+                        set(value) {
+                            location.href = "/game_news" + (value? "" : "?_sort_index=timer_filter");
+                        }
                     }
                 },
                 template: $(html).find('#etcm-tab-exclusive-gboard').get(0)
@@ -1002,9 +988,10 @@ var Module = {};
 
 
         // insert dom
-        let html = await $.get( meta.html.article );
+        let html = await $.get( meta.html.article ),
+            $target = $('table.bd_lst.bd_tb_lst.bd_tb');
 
-        $('.bd_lst_wrp table').hide().before( $(html).find('#etcm-article-board') );
+        $target.before( $(html).find('#etcm-article-board') );
 
         // component
         var articleList = {
@@ -1075,7 +1062,8 @@ var Module = {};
             components: { articleList },
         }).mount('#etcm-article-board');
 
-        etcm._loadContent(etcm.$articles);
+        etcm._loadContent($target.find('tbody tr'));
+        $target.remove();
     }
 
 
