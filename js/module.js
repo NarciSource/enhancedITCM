@@ -937,7 +937,7 @@ var Module = {};
                         location.href = "/game_news" + (value? "" : "?_sort_index=timer_filter");
                     }
                 },
-                template: $(html).find('#etcm-tab-xclusive-gboard').get(0)
+                template: $(html).find('#etcm-tab-exclusive-gboard').get(0)
             };
 
         // store

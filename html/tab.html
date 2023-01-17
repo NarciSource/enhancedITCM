@@ -1,22 +1,20 @@
 <vue>
-    <div id="etcm-cTab--store">
-        <ul class="etcm-cTab--store">
-            <tab-list class="etcm-tab--store etcm-tab" v-for="{title, href, src} in tabs" v-bind="{title, selected_tabs }">
-                <a :href="href">
-                    <img :src="src">
-                </a>
-            </tab-list>
-        </ul>
-    </div>
+    <ul id="etcm-cTab--store" class="etcm-cTab etcm-cTab--store">
+        <tab-list v-for="{title, href, src} in tabs" v-bind="{title, selected_tabs }">
+            <a :href="href">
+                <img :src="src">
+            </a>
+        </tab-list>
+    </ul>
 
 
-    <ul id="etcm-cTab--cate" class="cTab clear">
-        <li class="home etcm-tab">
+    <ul id="etcm-cTab--cate" class="etcm-cTab etcm-cTab--cate cTab clear">
+        <li :class="{shadow: !checked_all_tabs}">
             <a :href="'/' + mid">전체</a>
             <input type="checkbox" v-model="checked_all_tabs">
         </li>
 
-        <tab-list class="etcm-tab" v-for="{title, href, src} in tabs" v-bind="{title, selected_tabs }">
+        <tab-list v-for="{title, href, src} in tabs" v-bind="{title, selected_tabs }">
             <a :href="href">{{ title }}</a>
         </tab-list>
 
@@ -29,15 +27,15 @@
 
 
     <template id="etcm-tab-list">
-        <li :title="title">
+        <li :title="title" :class="{shadow: !checked}">
             <slot></slot>
-            <input type="checkbox" v-model="checked">
+            <input type="checkbox" checked v-model="checked">
         </li>
     </template>
 
 
-    <template id="etcm-tab-xclusive-gboard">
-        <li class="etcm-tab on">
+    <template id="etcm-tab-exclusive-gboard">
+        <li :class="{shadow: !checked_expired_tab}">
             <a href="/game_news?_sort_index=timer_filter" style="color:#FF008B;">종료</a>
             <input type="checkbox" v-model="checked_expired_tab">
         </li>

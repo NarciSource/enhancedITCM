@@ -1,5 +1,5 @@
 <vue>
-    <table id="etcm-article-board" class="bd_lst bd_tb_lst bd_tb etcm-article-design">
+    <table id="etcm-article-board" class="bd_lst bd_tb_lst bd_tb">
         <caption class="blind">List of Articles</caption>
         <thead class="bg_f_f9">
             <tr>
@@ -17,20 +17,20 @@
 
 
     <template id="etcm-article-list">
-        <tr v-show="isShow" :class="{'etcm-article--shadow': is_blacklist_article || is_blacklist_member}">
+        <tr v-show="isShow" :class="{'shadow': is_blacklist_article || is_blacklist_member}">
             <td class="sect">
-                <span v-if="store" class="store">
+                <div v-if="store" class="store">
                     <img :title="store.name" :src="store.src">
-                </span>
-                <span class="cate">{{ cate.name }}</span>
+                </div>
+                <p class="cate">{{ cate.name }}</p>
             </td>
 
             <td class="post">
                 <span class="time" :title="time.detail">{{ time.normal }}</span>
                 <div class="title">
                     <a :href="title.href" class="hx">{{ title.name }}</a>
-                    <label class="fa fa-eye-slash" title="You're on my blacklist">
-                        <input v-show="false" type="checkbox" v-model="is_blacklist_article">
+                    <label class="fa fa-eye-slash" title="on my blacklist">
+                        <input type="checkbox" v-model="is_blacklist_article">
                     </label>
                 </div>
                 <a :href="title.href+reply.href" class="replyNum" title="댓글">{{ reply.num }}</a>
@@ -72,8 +72,8 @@
                     <img v-if="author.src" :src="author.src">
                     {{ author.name }}
                 </a>
-                <label class="fa fa-eye-slash" title="You're on my blacklist">
-                    <input v-show="false" type="checkbox" v-model="is_blacklist_member">
+                <label class="fa fa-eye-slash" title="on my blacklist">
+                    <input type="checkbox" v-model="is_blacklist_member">
                 </label>
             </td>
         </tr>

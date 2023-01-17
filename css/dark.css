@@ -138,7 +138,7 @@
 .etcm--dark .cTab a {
     border: none !important;
 }
-.etcm--dark .etcm-tab,
+.etcm--dark .etcm-cTab li,
 .etcm--dark .bd .cTab > li {
     border: 1px solid var(--etcm-dark-border) !important;
     background: transparent;

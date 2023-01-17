@@ -229,26 +229,23 @@ blockquote ~ p > a::before {
 
 
 /* tab */
-.etcm-tab {
+.etcm-cTab li {
     display: flex;
 
     border: 1px solid #ddd !important;
 
     align-items: center;
-
-    opacity: .3;
 }
-.etcm-tab > input {
+.etcm-cTab li > input {
     display: none;
 }
-.etcm-tab:hover > input {
+.etcm-cTab li:hover > input {
     display: block;
 }
-.etcm-tab--hide {
-    padding: 0 7px;
-}
-.etcm-tab.check {
-    opacity: 1;
+.etcm-cTab li.shadow {
+    text-shadow: none;
+
+    opacity: .3;
 }
 
 
@@ -265,7 +262,7 @@ blockquote ~ p > a::before {
     flex-wrap: wrap;
     align-items: center;
 }
-.etcm-tab--store {
+.etcm-cTab--store li {
     flex-direction: column;
 
     width: 45px;
@@ -275,102 +272,109 @@ blockquote ~ p > a::before {
     border-radius: 5px;
 }
 
-.etcm-tab--store img {
+.etcm-cTab--store li img {
     width: 29px;
     height: 29px;
 }
-.etcm-tab--store > input:hover {
+.etcm-cTab--store li > input:hover {
     display: block;
 }
 
 
 
-/*- etcm-article-design --*/
-.etcm-article-design {
+/*- etcm-article-board --*/
+#etcm-article-board {
     --etcm-font-normal: 16px;
     --etcm-font-small: calc(var(--etcm-font-normal) * 0.6);
     
     width: 100%;
 }
 
-.etcm-article-design th.location,
-.etcm-article-design th.regdate,
-.etcm-article-design th.readed_count,
-.etcm-article-design th.voted_count {
+#etcm-article-board th.location,
+#etcm-article-board th.regdate,
+#etcm-article-board th.readed_count,
+#etcm-article-board th.voted_count {
     display: none;
 }
 
-.etcm-article-design td {
+#etcm-article-board td {
     font-size: var(--etcm-font-normal);
 }
-.etcm-article-design .cate,
-.etcm-article-design .time,
-.etcm-article-design .replyNum,
-.etcm-article-design .readed_count,
-.etcm-article-design .voted_count,
-.etcm-article-design .author,
-.etcm-article-design .list_timer {
+#etcm-article-board .cate,
+#etcm-article-board .time,
+#etcm-article-board .replyNum,
+#etcm-article-board .readed_count,
+#etcm-article-board .voted_count,
+#etcm-article-board .author,
+#etcm-article-board .list_timer {
     font-size: var(--etcm-font-small);
 }
-.etcm-article-design .author img {
+#etcm-article-board .author img {
     font-size: var(--etcm-font-normal);
 }
-.etcm-article-design .replyNum {
+#etcm-article-board .replyNum {
     font-weight: initial
 }
-.etcm-article-design .list_timer span {
+#etcm-article-board .list_timer span {
     font-size: inherit;
 }
 
-.etcm-article-design .replyNum::before {
+#etcm-article-board .replyNum::before {
     content: "댓글: ";
 }
-.etcm-article-design .readed_count::before {
+#etcm-article-board .readed_count::before {
     content: "조회: ";
 }
-.etcm-article-design .voted_count::before {
+#etcm-article-board .voted_count::before {
     content: "추천: ";
 }
 
 
-.etcm-article-design .etcm-article {
+#etcm-article-board tbody tr {
     height: 70px;
 }
-.etcm-article-design td:not(.title) {
+#etcm-article-board td:not(.title) {
     width: 50px !important;
     padding: 0;
 }
-.etcm-article-design .store {
-    margin: 0.5em 0;
+#etcm-article-board .store {
+    padding-top: 15px;
+    padding-bottom: 5px;
 }
-.etcm-article-design td.post > *:not(.title) {
+#etcm-article-board .cate {
+    margin: 2px;
+}
+#etcm-article-board .post > *:not(.title) {
     margin: 0 0.3em;
 }
-.etcm-article-design .title {
+#etcm-article-board .title {
     white-space: normal;
     word-break: break-word;
 }
-.etcm-article-design .etcm-article .post {
+#etcm-article-board .post {
     text-align: left;
 }
-.etcm-article-design .store img {
+#etcm-article-board .store img {
     width: 1.6em !important;
 }
-.etcm-article-design .app_image img.header_image {
+#etcm-article-board .app_image img.header_image {
     width: calc(2.5em*2.13) !important;
     height: 2.5em !important;
 }
-.etcm-article-design span.app_image {
+#etcm-article-board .app_image {
     height: auto !important;
     margin: 0 5px;
 }
-.etcm-article-design .author img {
+#etcm-article-board .author img {
     width: 2em !important;
     height: 2em !important;
+    margin-right: 2px;
+    padding: 1px;
 
+    border: 1px solid #ccc;
     border-radius: 50px;
 }
-.etcm-article-design .author a {
+#etcm-article-board .author a {
     display: flex;
 
     color: gray;
@@ -378,33 +382,29 @@ blockquote ~ p > a::before {
     flex-flow: column;
     align-items: center;
 }
-.etcm-article-design .xe_point_level_icon {
+#etcm-article-board .xe_point_level_icon {
     display: none;
 }
 
 
 /* article blacklist */
-.etcm-article--shadow {
+#etcm-article-board .shadow {
+    text-shadow: none;
+
     opacity: .2;
 }
-.etcm-article--empty {
-    height: 30px;
-
-    opacity: .5;
-}
-.etcm-article--empty > td {
-    position: absolute;
-    left: 40%;
-}
-.etcm-article .title,
-.etcm-article .author {
+#etcm-article-board tr .title,
+#etcm-article-board tr .author {
     position: relative;
 }
-.etcm-article .title:hover .fa-eye-slash,
-.etcm-article .author:hover .fa-eye-slash {
+#etcm-article-board tr .title:hover .fa-eye-slash,
+#etcm-article-board tr .author:hover .fa-eye-slash {
     display: block;
 }
-.etcm-article .fa-eye-slash {
+#etcm-article-board .fa-eye-slash input {
+    display: none;
+}
+#etcm-article-board tr .fa-eye-slash {
     font-size: 1.5em !important;
 
     position: absolute;
@@ -418,26 +418,26 @@ blockquote ~ p > a::before {
 }
 
 /* article vote column */
-.etcm-article .voted_count {
+#etcm-article-board tr .voted_count {
     cursor: pointer;
 }
-.etcm-article .voted_count:hover {
+#etcm-article-board tr .voted_count:hover {
     color: hotpink;
 }
 /* article check column*/
-.etcm-article .steam_list_check {
+#etcm-article-board tr .steam_list_check {
     width: auto;
 }
-.etcm-article .steam_list_check .fa {
+#etcm-article-board tr .steam_list_check .fa {
     font-size: 1.2em;
 
     padding: 0 5px;
 
     opacity: .4;
 }
-.etcm-article .steam_list_check .fa:hover,
-.etcm-article.check_p .fa-credit-card,
-.etcm-article.check_w .fa-shopping-cart {
+#etcm-article-board tr .steam_list_check .fa:hover,
+#etcm-article-board.check_p tr .fa-credit-card,
+#etcm-article-board.check_w tr .fa-shopping-cart {
     opacity: 1 !important;
     color: cadetblue;
 }
