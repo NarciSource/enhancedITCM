@@ -23,7 +23,7 @@
             <div class="tab_bottom">
                 <div :name="name" class="tab_div" :class="{wrapTab_on: selected == name}" v-for="(spec, name) in tabs">
                     <ul class="etcm-side__book__list" :class="{'etcm-side__book__list--compress': isCompressed}">
-                        <list-item v-for="article in spec.articles" :article="article" />
+                        <list-item v-for="(text, href) in spec.articles" v-bind="{href, text}" />
                     </ul>
                 </div>
             </div>
@@ -32,9 +32,9 @@
 
     <template>
         <li class="etcm-side__book__list__article">
-            <a :href="article.href">
+            <a :href="href">
                 <img src="/widgets/treasurej_popular/skins/DW_Portal/img/docu.gif">
-                <span>{{ article.text }}</span>
+                <span>{{ text }}</span>
             </a>
         </li>
     </template>

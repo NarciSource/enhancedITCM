@@ -76,50 +76,39 @@ unsafeWindow.Vue = window.Vue = Vue;
 
 
 function ETCM() {
-    this.default_commands = [
-        "_inspectProtocol",
-        "_initialize",
-        "_initializeArticle",
+    this.default_commands = {
+        _inspectProtocol: true,
+        _initialize: true,
+        _initializeArticle: true,
 
-        "enhanceLogo",
-        "enhanceInfiniteScroll",
-        "enhanceSizableBoard",
-        "enhanceDarkMode",
+        enhanceLogo: true,
+        enhanceInfiniteScroll: true,
+        enhanceSizableBoard: true,
+        enhanceDarkMode: true,
 
-        "addFilter",
-        //"addSteamServerStatusMonitor",
-        "addHumbleChoiceTimer",
-        "addShortcutSide",
-        "addArticleBlacklist",
-        //"addMemberBlacklist",
-        "_addSideBook", "addScrapbook", //"addWishbook", "addPurchasebook",
-        "addBookmark",
-        "addContextMenu",
+        addFilter: true,
+        designArticle: true,
 
-        "upgradeLogo",
-        "upgradeProfile",
-        //"upgradeAppInfoDetails",
-        "upgradeGameTagbox",
-        "upgradeCBTable",
+        addSteamServerStatusMonitor: false,
+        addHumbleChoiceTimer: true,
+        addShortcutSide: true,
+        _addSideBook: true, addScrapbook: true, addWishbook: false, addPurchasebook: false,
+        addBookmark: true,
+        addContextMenu: true,
 
-        "modifyArticle",
-        "modifyShortlyVote",
-        "modifyWishCheck",
-        "modifyOthers",
+        upgradeLogo: true,
+        upgradeProfile: true,
+        upgradeAppInfoDetails: false,
+        upgradeGameTagbox: true,
+        upgradeCBTable: true,
 
-        "refreshContent",
-    ];
-    this.recursive_commands = [
-        "_initializeArticle",
+        modifyOthers: true,
+    };
+    this.recursive_commands = {
+        _initializeArticle: true,
 
-        "addMemberBlacklist",
-        "addArticleBlacklist",
-
-        "modifyArticle",
-        "modifyShortlyVote",
-        "modifyWishCheck",
-        "modifyOthers"
-    ];
+        modifyOthers: true
+    };
     this.default_settings = {
         humble_choice_show_period: 35, //always
         humble_choice_timer_design: "Analog",
@@ -138,8 +127,7 @@ function ETCM() {
 
     mid = /mid=(\w+)/.exec(location.search)?.[1] || location.pathname.replace(/\/\d+/,"").slice(1);
 
-    this.sideTabs={};
-    this.commands = ProxySet("commands", this.default_commands, set_force);
+    this.commands = ref_StorageObject("commands", this.default_commands);
     this.settings = ProxyObject(this.default_settings, set_force);
 
     this.blacklist = ProxySet("blacklist", [/*empty*/]);
@@ -155,7 +143,7 @@ function ETCM() {
         condition = condition || (()=>true);
 
         Object.entries(Object.getPrototypeOf(this))
-            .filter(([property, value])=> condition([property, value]) && this.commands.has(property) && typeof value === "function")
+            .filter(([property, value])=> condition([property, value]) && this.commands[property] && typeof value === "function")
             .forEach(([property, func])=> {
                 try{ func.apply(this, arg) }
                 catch(e) { this._alert(e); console.error(e); }

@@ -152,7 +152,7 @@ var Module = {};
                             $loaded_articles = $loaded_content.children('tr').not('.notice');
 
 
-                        let condition = ([property, value])=> etcm.recursive_commands.includes(property);
+                        let condition = ([property, value])=> etcm.recursive_commands[property];
                         etcm.run( condition, $loaded_articles );
                         etcm._loadContent( $loaded_articles );
 
@@ -459,7 +459,8 @@ var Module = {};
     /* side menu */
     Module._addSideBook = async function() {
         document.addStyle([ meta.css.side ]);
-        const etcm = this;
+      const etcm = this;
+        let tabs = etcm.vueRefTabs = Vue.ref({});
 
 
         $('.sub_wrap_widget').children().eq(0).after(
@@ -472,7 +473,7 @@ var Module = {};
                     return {
                         isCompressed: true,
                         selected: "scrapbook",
-                        tabs: {},
+                        tabs,
                     }
                 },
                 methods: {
@@ -491,79 +492,72 @@ var Module = {};
 
                         names.forEach(async name => {
                             let spec = this.tabs[name],
-                                listbook = ProxySet(name, []);
+                                parsed = spec.parser(await GM.ajax( spec.url ));
 
-                            listbook.clear();
-                            listbook.in(spec.parser(await GM.ajax( spec.url )));
-
-                            this.tabs[name].articles = listbook;
+                            this.tabs[name].articles = ref_StorageObject(name, parsed);
                         });
                     }
                 },
                 components: {
                     ListItem: {
                         props: {
-                            article: Object
+                            href: String, text: String
                         },
                         template: $(html).find('template').get(0)
                     }
                 },
             }).mount('#etcm-side');
-
-
-
-        etcm.vSideBook.$data.tabs = etcm.sideTabs;
     }
 
     Module.addScrapbook = function() {
         let bookname = "scrapbook";
 
-        this.sideTabs[bookname] = {
+        this.vueRefTabs.value[bookname] = {
             title: "스크랩",
             url: "/index.php?act=dispMemberScrappedDocument",
             icon: "xi-bookmark",
             parser: html=> $(html).find('.table-striped').find('td.title').children('a')
-                        .map((_, article)=> ({
-                                text: article.innerText,
-                                href: article.pathname
-                        })).toArray(),
-            articles: ProxySet(bookname, [])
+                        .toArray()
+                        .reduce((acc, article)=> ({...acc,
+                            [article.pathname]: article.innerText
+                        }), {}),
+            articles: ref_StorageObject(bookname)
         };
     };
     Module.addWishbook = function() {
         let bookname = "wishbook";
 
-        this.sideTabs[bookname] = {
+        this.vueRefTabs.value[bookname] = {
             title: "찜목록",
             url: "/index.php?mid=game_news&_sort_index=check_wlist",
             icon: "xi-cart",
             parser: html=> $(html).find('.bd_lst.bd_tb').children('tbody').children('tr').not('.notice').find('td.title').children('a:even')
-                        .map((_, article)=> ({
-                                text: article.innerText.trim(),
-                                href: /document_srl=(\d+)/.exec(article.search)[1]
-                        })).toArray(),
-            articles: ProxySet(bookname, [])
+                        .toArray()
+                        .reduce((acc, article)=> ({...acc,
+                            [/document_srl=(\d+)/.exec(article.search)[1]]: article.innerText.trim()
+                        }), {}),
+            articles: ref_StorageObject(bookname)
         };
     };
     Module.addPurchasebook = function() {
         let bookname = "purchasebook";
 
-        this.sideTabs[bookname] = {
+        this.vueRefTabs.value[bookname] = {
             title: "구매목록",
             url: "/index.php?mid=game_news&_sort_index=check_plist",
             icon: "xi-wallet",
             parser: html=> $(html).find('.bd_lst.bd_tb').children('tbody').children('tr').not('.notice').find('td.title').children('a:even')
-                        .map((_, article)=> ({
-                                text: article.innerText.trim(),
-                                href: /document_srl=(\d+)/.exec(article.search)[1]
-                        })).toArray(),
-            articles: ProxySet(bookname, [])
+                        .toArray()
+                        .reduce((arr, article)=> ({
+                            [/document_srl=(\d+)/.exec(article.search)[1]]: article.innerText.trim()
+                        }), {}),
+            articles: ref_StorageObject(bookname)
         };
     };
 
 
     Module.addBookmark = function() {
-        let bookmark = ProxySet("bookmark", []);
+        let bookmark = ref_StorageObject("bookmark");
 
         $('#menu').find('li')
             .each((_, item) => {
@@ -577,10 +571,11 @@ var Module = {};
                         html: [
                             $('<input>', {
                                 type: 'checkbox',
-                                checked: bookmark.has({ href, text }),
+                                checked: bookmark[text],
                                 on: {
                                     change: function () {
-                                        bookmark.io($(this).prop('checked'), { href, text });
+                                        let checked = $(this).prop('checked');
+                                        bookmark[text] = checked? href : false;
                                         refresh();
                                     }
                                 }
@@ -591,7 +586,7 @@ var Module = {};
                 );
             });
 
-        if (bookmark.size && !$('.menu_bookmark_remocon').isExist()) {
+        if (!$('.menu_bookmark_remocon').isExist()) {
             $('<div>', {
                 class: 'menu_bookmark_remocon',
                 html: [
@@ -606,10 +601,9 @@ var Module = {};
                 class: 'fa fa-plus',
                 css: {cursor: 'pointer'},
                 click: () => {
-                    bookmark.in({//sample
-                        href: prompt("경로", "https://itcm.co.kr/g_file"),
-                        text: prompt("이름", "한글화정보")
-                    });
+                    let href = prompt("경로", "https://itcm.co.kr/g_file"), //sample
+                        text = prompt("이름", "한글화정보");
+                    bookmark[text] = href;
                     refresh();
                 }
             })
@@ -618,20 +612,22 @@ var Module = {};
 
         function refresh() {
             $('.menu_bookmark_remocon').find('ul').html(
-                [...bookmark].map(({ href, text }) =>
-                    $('<li>', {
-                        html: [":: ",
-                            $('<a>', { href, text }),
-                            $('<i>', {
-                                class: 'fa fa-close',
-                                css: {cursor: 'pointer'},
-                                click: () => {
-                                    bookmark.out({ href, text });
-                                    refresh();
-                                }
-                            })
-                        ]
-                    }))
+                Object.entries(bookmark)
+                    .filter(([ text, href ]) => href)
+                    .map(([ text, href ]) =>
+                        $('<li>', {
+                            html: [":: ",
+                                $('<a>', { href, text }),
+                                $('<i>', {
+                                    class: 'fa fa-close',
+                                    css: {cursor: 'pointer'},
+                                    click: () => {
+                                        bookmark[text] = false;
+                                        refresh();
+                                    }
+                                })
+                            ]
+                        }))
             );
         };
 
@@ -767,7 +763,7 @@ var Module = {};
                     ? timer.querySelector('span > span')?.innerText||" " : " " 
                 : timer;
 
-            let [purchased, wished] = steam_list_check?.querySelectorAll('label');
+            let [purchased, wished] = steam_list_check?.querySelectorAll('label') || [null, null];
             purchased?.classList?.add('fa', 'fa-credit-card');
             purchased?.setAttribute('title', "구매 추가");
             wished?.classList?.add('fa', 'fa-shopping-cart');
@@ -863,7 +859,7 @@ var Module = {};
 
             full_tabs = [...cate_tabs, ...store_tabs].map(t=> t.title);
 
-        full_tabs.forEach(tab => selected_tabs[tab] = selected_tabs[tab] === undefined? true : selected_tabs[tab]);
+        selected_tabs[full_tabs] = true;
 
         // insert dom
         let html = await $.get( meta.html.tab );
@@ -1134,7 +1130,7 @@ var Module = {};
                         }
                     },
                     reset() {
-                        this.command_plan = etcm.commands = ProxySet("commands", etcm.default_commands, true);
+                        this.command_plan = etcm.commands = ref_StorageObject("commands", etcm.default_commands);
                     }
                 },
                 components: {
@@ -1142,15 +1138,15 @@ var Module = {};
                         props: {
                             command: String,
                             title: String, detail: { type: String, default: ""},
-                            command_plan: Set,
+                            command_plan: Object,
                         },
                         computed: {
                             checked: {
                                 get() {
-                                    return this.command_plan.has( this.command )
+                                    return this.command_plan[this.command]
                                 },
                                 set(checked) {
-                                    this.command_plan.io(checked, this.command);
+                                    this.command_plan[this.command] = checked;
                                 }
                             },
                         },

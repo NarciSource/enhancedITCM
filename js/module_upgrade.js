@@ -344,7 +344,7 @@ var Upgrade;
         this.target = target;
         this._run = arg => {
             Object.entries(Object.getPrototypeOf(this))
-                .filter(([property, value])=> target.commands.has(property) && typeof value === "function")
+                .filter(([property, value])=> target.commands[property] && typeof value === "function")
                 .forEach(([property, func])=> func.apply(this, arg));
         };
 
