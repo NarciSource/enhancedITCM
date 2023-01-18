@@ -731,32 +731,6 @@ var Module = {};
     }
 
 
-    Module.modifyShortlyVote = function($articles) {
-        return;
-      const etcm = this;
-        $articles = $articles;
-
-      const entry = etcm.$contents.find('th').length,
-            index = etcm.$contents.find('th').index( etcm.$contents.find('.voted_count') );
-
-    ($articles.find('.voted_count').isExist()
-    ||
-    $articles.children(`:nth-child(${entry}n+${index + 1})`).addClass('vote_count'))
-            .each((_, el)=> {
-                $(el).html($('<i>', { html: $(el).html() }))
-                    .hover(function() {
-                        $(this).children().toggleClass('fa fa-heart') })
-                    .click(function() {
-                        unsafeWindow.jQuery.exec_json('document.procDocumentVoteUp', {
-                            target_srl: $(el).closest('.etcm-article').data('document_srl'),
-                            cur_mid: /mid=(\w+)/.exec(location.search)[1],
-                            vars1: undefined
-                        });
-                    });
-            });
-    };
-
-
 
     Module._parseArticle = function(article) {
         let fields = [...article.children];
@@ -792,6 +766,12 @@ var Module = {};
                 ? timer.querySelector('span')?.style.display!=="none"
                     ? timer.querySelector('span > span')?.innerText||" " : " " 
                 : timer;
+
+            let [purchased, wished] = steam_list_check?.querySelectorAll('label');
+            purchased?.classList?.add('fa', 'fa-credit-card');
+            purchased?.setAttribute('title', "구매 추가");
+            wished?.classList?.add('fa', 'fa-shopping-cart');
+            wished?.setAttribute('title', "찜 추가");
         }
 
         return {
@@ -1004,9 +984,9 @@ var Module = {};
                 },
                 data() {
                     return {
-                        black: false,
                         blacklist_member: etcm.blacklist_member,
-                        blacklist: etcm.blacklist
+                        blacklist: etcm.blacklist,
+                        voted_hover: false,
                     }
                 },
                 computed: {
@@ -1046,6 +1026,22 @@ var Module = {};
                             )
                         );
                     }
+                },
+                methods: {
+                    voted_click() {
+                        try {
+                            unsafeWindow.jQuery.exec_json('document.procDocumentVoteUp', {
+                                target_srl: this.id,
+                                cur_mid: mid,
+                                vars1: undefined
+                            });
+                        } catch(e) {
+                            etcm._alert(e)
+                        }
+                    }
+                },
+                mounted() {
+                    this.$el.querySelector('.steam_list_check')?.replaceWith(this.steam_list_check);
                 },
                 template: $(html).find('#etcm-article-list').get(0)
             };
@@ -1100,9 +1096,7 @@ var Module = {};
                             { command: "enhanceSizableBoard", title: "게시판 크기 조절", },
                         ],
                         ui_operations: [
-                            { command: "modifyArticle", title: "게시판 글목록 디자인", },
-                            { command: "modifyShortlyVote", title: "빠른 추천", },
-                            { command: "modifyWishCheck", title: "찜목록 디자인", },
+                            { command: "designArticle", title: "게시판 글목록 디자인", },
                         ],
                         timer_period: etcm.settings.humble_choice_show_period,
 

@@ -35,27 +35,12 @@
                 </div>
                 <a :href="title.href+reply.href" class="replyNum" title="댓글">{{ reply.num }}</a>
                 <span class="m_no readed_count">{{ readed_count }}</span>
-                <span class="m_no voted_count">
-                    <em style="color:#f00;">{{ voted_count }}</em>
+                <span class="m_no voted_count" @mouseover="voted_hover = true" @mouseout="voted_hover = false" @click="voted_click">
+                    <i :class="{'fa fa-heart': voted_hover }">{{ voted_count }}</i>
                 </span>
             </td>
             
-            <td v-if="steam_list_check" class="steam_list_check">
-                <form action="./" method="post" class="steam_wished clear">
-                    <input type="hidden" name="error_return_url" value="/index.php?mid=game_news&_sort_index=timer_filter">
-                    <input type="hidden" name="act" value="">
-                    <input type="hidden" name="mid" value="game_news">
-                    <input type="hidden" name="vid" value="">
-                    <label>
-                        <input type="checkbox" name="type" class="checked_p" data-doc_srl="10169510" value="p" style="display: none;">
-                        <i class="fa fa-credit-card" title="구입 목록에 추가"></i>
-                    </label>
-                    <label>
-                        <input type="checkbox" name="type" class="checked_w" data-doc_srl="10169510" value="w" style="display: none;">
-                        <i class="fa fa-shopping-cart" title="찜 목록에 추가"></i>
-                    </label>
-                </form>
-            </td>
+            <td v-if="steam_list_check" class="steam_list_check"></td>
             
             <td v-if="timer" class="timer">
                 <span class="list_timer">{{ timer }}</span>

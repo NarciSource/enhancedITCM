@@ -435,6 +435,10 @@ blockquote ~ p > a::before {
 
     opacity: .4;
 }
+#etcm-article-board tr .steam_list_check input,
+#etcm-article-board tr .steam_list_check span {
+    display: none;
+}
 #etcm-article-board tr .steam_list_check .fa:hover,
 #etcm-article-board.check_p tr .fa-credit-card,
 #etcm-article-board.check_w tr .fa-shopping-cart {
