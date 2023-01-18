@@ -136,13 +136,15 @@ function ETCM() {
         var set_force = true;
     }
 
+    mid = /mid=(\w+)/.exec(location.search)?.[1] || location.pathname.replace(/\/\d+/,"").slice(1);
+
     this.sideTabs={};
     this.commands = ProxySet("commands", this.default_commands, set_force);
     this.settings = ProxyObject(this.default_settings, set_force);
 
     this.blacklist = ProxySet("blacklist", [/*empty*/]);
     this.blacklist_member = ProxySet("blacklist_mber", [/*empty*/]);
-    this.selectTabs = undefined;
+    this.selected_tabs = ref_StorageObject(mid+ "_tab");
 
 
     this._preview();

@@ -34,7 +34,23 @@ var saveToLocalStorage = saveTo(localStorage),
     loadFromHugeStorage = loadFrom(GM),
     deleteFromGMStorage = deleteFrom(GM); 
 
+function ref_StorageObject(key) { // reflect
+  const save = saveToLocalStorage(key);
+    let storaged = JSON.parse(loadFromLocalStorage(key)||null);
 
+    if (storaged?.constructor !== Object) {
+        save(storaged = {});
+    }
+
+    return new Proxy(storaged, {
+        set(target, prop, value, receiver) {
+            if (success = Reflect.set(target, prop, value, receiver)) {
+                save(target);
+            }
+            return success;
+        }
+    });
+}
 
 function ProxySet(key, value, force) {
     class ProxySet extends Set {

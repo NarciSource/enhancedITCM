@@ -828,7 +828,7 @@ var Module = {};
       const etcm = this,
             mid = /mid=(\w+)/.exec(location.search)?.[1] || location.pathname.replace(/\/\d+/,"").slice(1);
 
-        let selected_tabs = etcm.selected_tabs = ProxySet(mid+ "_tab"),
+        let selected_tabs = etcm.selected_tabs,
 
             store_tabs = mid === "game_news"
               ? [...$('.inner_content').children('div').first().find('a').toArray()
@@ -863,6 +863,7 @@ var Module = {};
 
             full_tabs = [...cate_tabs, ...store_tabs].map(t=> t.title);
 
+        full_tabs.forEach(tab => selected_tabs[tab] = selected_tabs[tab] === undefined? true : selected_tabs[tab]);
 
         // insert dom
         let html = await $.get( meta.html.tab );
@@ -883,10 +884,10 @@ var Module = {};
                 computed: {
                     checked: {
                         get() {
-                            return this.selected_tabs.has(this.title);
+                            return this.selected_tabs[this.title];
                         },
                         set(checked) {
-                            this.selected_tabs.io(checked, this.title);
+                            this.selected_tabs[this.title] = checked;
                         }
                     }
                 },
@@ -929,10 +930,10 @@ var Module = {};
             computed: {
                 checked_all_tabs: {
                     get() {
-                        return this.selected_tabs.size === full_tabs.length;
+                        return !full_tabs.some(tab => !this.selected_tabs[tab]);
                     },
                     set(value) {
-                        this.selected_tabs.io(value, full_tabs);
+                        full_tabs.forEach(tab => this.selected_tabs[tab] = value);
                     }
                 }
             },
@@ -1010,15 +1011,15 @@ var Module = {};
                         return !this.selected_tabs ||
                         (
                             (
-                                !this.cate || this.selected_tabs.has(this.cate.name)
+                                !this.cate || this.selected_tabs[this.cate.name]
                             )
                             &&
                             (
-                                !this.store || this.selected_tabs.has(this.store.name)
+                                !this.store || this.selected_tabs[this.store.name]
                             )
                             &&
                             (
-                                this.selected_tabs.has("eye")
+                                this.selected_tabs["eye"]
                                 ||
                                 (
                                     !this.blacklist.has(this.id) && !this.blacklist_member.has(this.author?.id)
