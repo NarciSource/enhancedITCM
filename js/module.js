@@ -721,7 +721,7 @@ var Module = {};
         }
         var [author, time, readed_count, voted_count, steam_list_check] = rest;
 
-        let id = RegExp(`(?:${this.mid}\/|document_srl=)(\\d+)`).exec(title.children[0].href)[1];
+        let id = RegExp(`(?:${this.mid}\/|document_srl=)(\\d+)`).exec(title.children[0].href)[1]*1;
 
         {
           const store_srcs = $('#etcm-cTab--store li').toArray().reduce((acc, cur)=> ({...acc,
@@ -734,12 +734,6 @@ var Module = {};
                 ? timer.querySelector('span')?.style.display!=="none"
                     ? timer.querySelector('span > span')?.innerText||" " : " " 
                 : timer;
-
-            let [purchased, wished] = steam_list_check?.querySelectorAll('label') || [null, null];
-            purchased?.classList?.add('fa', 'fa-credit-card');
-            purchased?.setAttribute('title', "구매 추가");
-            wished?.classList?.add('fa', 'fa-shopping-cart');
-            wished?.setAttribute('title', "찜 추가");
         }
 
         return {
@@ -758,7 +752,6 @@ var Module = {};
                 href: "#"+id+"_comment"
             },
             timer,
-            steam_list_check,
             game: {
                 id: /app=(-?\d+)/.exec(game.querySelector('a')?.href)?.[1],
                 title: game.querySelector('.header_image')?.title,
@@ -780,13 +773,38 @@ var Module = {};
 
 
     /* load content */
-    Module._loadContent = function($articles) {
+    Module._loadContent = async function($articles) {
       const etcm = this,
             mid = /mid=(\w+)/.exec(location.search)?.[1] || location.pathname.replace(/\/\d+/,"").slice(1);
 
-        let article = $articles.toArray().map(etcm._parseArticle.bind({...etcm, mid}));
+        let articles = $articles.toArray().map(etcm._parseArticle.bind({...etcm, mid})),
+            doc_list = articles.map(article => article.id);
 
-        etcm.vueRefArticles.value = [...etcm.vueRefArticles.value, ...article];
+
+        /* SteamListcheckLoad */
+        if (mid === "game_news"){
+            check_list = await new Promise((resolve, reject)=> {
+
+                unsafeWindow.exec_json("steam.dispSteamListcheckLoadAajx",
+                    cloneInto({ doc_list }, unsafeWindow),
+                    exportFunction(ret_obj => {
+                        ret_obj = ret_obj.check_list.reduce((prev, { document_srl, type }) => {
+
+                            prev[document_srl] = prev[document_srl] || [];
+                            prev[document_srl].push(type);
+
+                            return prev;
+                        }, {})
+
+                        resolve(ret_obj);                        
+                    }, unsafeWindow)
+                );
+            });
+
+            articles.forEach(article => article.type = check_list?.[article.id] || []);
+        }
+
+        etcm.vueRefArticles.value = [...etcm.vueRefArticles.value, ...articles];
 
         $articles.remove()
     };
@@ -944,22 +962,39 @@ var Module = {};
 
         $target.before( $(html).find('#etcm-article-board') );
 
+
         // component
         var articleList = {
                 props: {
-                    id: String,
+                    id: Number,
                     store: Object, cate: Object, title: Object, timer: String, game: Object, author: Object,
-                    reply: Object, author: Object, time: Object, readed_count: String, voted_count: String,
-                    steam_list_check: Object,
+                    reply: Object, author: Object, time: Object, readed_count: String, voted_count: String, type: Array,
                     selected_tabs: Object,
                 },
                 data() {
                     return {
                         blacklist_member, blacklist_article,
                         voted_hover: false,
+                        checked_type: this.type,
+                    }
+                },
+                watch: {
+                    checked_type(val, old) {
+                        let checked = val.length > old.length,
+                            [v1, v2] = checked? [val, old] : [old, val],
+                            type = v1.filter(v => !v2.includes(v))[0];
+
+                        this.postCheck(type, checked.toString());
                     }
                 },
                 computed: {
+                    list_class() {
+                        return {
+                            shadow: this.is_blacklist_article || this.is_blacklist_member,
+                            check_p: this.checked_type?.includes('p'),
+                            check_w: this.checked_type?.includes('w'),
+                        };
+                    },
                     is_blacklist_article: {
                         get() {
                             return this.blacklist_article[this.author.id]? true : false;
@@ -1005,23 +1040,22 @@ var Module = {};
                                 )
                             )
                         );
-                    }
+                    },
+                    postCheck(type, checked) {
+                        unsafeWindow.exec_json("steam.dispSteamListCheckAjax", cloneInto({
+                            doc_srl : this.id,
+                            type,
+                            checked,
+                        }, unsafeWindow));
+                    },
                 },
                 methods: {
                     voted_click() {
-                        try {
-                            unsafeWindow.jQuery.exec_json('document.procDocumentVoteUp', {
-                                target_srl: this.id,
-                                cur_mid: mid,
-                                vars1: undefined
-                            });
-                        } catch(e) {
-                            etcm._alert(e)
-                        }
+                        unsafeWindow.exec_json('document.procDocumentVoteUp', cloneInto({
+                            target_srl: this.id,
+                            cur_mid: mid,
+                        }, unsafeWindow));
                     }
-                },
-                mounted() {
-                    this.$el.querySelector('.steam_list_check')?.replaceWith(this.steam_list_check);
                 },
                 template: $(html).find('#etcm-article-list').get(0)
             };
@@ -1038,7 +1072,6 @@ var Module = {};
             components: { articleList },
         }).mount('#etcm-article-board');
 
-        
         // load articles
         etcm._loadContent($target.find('tbody tr'));
         $target.remove();

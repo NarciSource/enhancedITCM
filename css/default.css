@@ -425,21 +425,21 @@ blockquote ~ p > a::before {
     color: hotpink;
 }
 /* article check column*/
-#etcm-article-board tr .steam_list_check {
+#etcm-article-board tr .type {
     width: auto;
 }
-#etcm-article-board tr .steam_list_check .fa {
+#etcm-article-board tr .type .fa {
     font-size: 1.2em;
 
     padding: 0 5px;
 
     opacity: .4;
 }
-#etcm-article-board tr .steam_list_check input,
-#etcm-article-board tr .steam_list_check span {
+#etcm-article-board tr .type input,
+#etcm-article-board tr .type span {
     display: none;
 }
-#etcm-article-board tr .steam_list_check .fa:hover,
+#etcm-article-board tr .type .fa:hover,
 #etcm-article-board.check_p tr .fa-credit-card,
 #etcm-article-board.check_w tr .fa-shopping-cart {
     opacity: 1 !important;

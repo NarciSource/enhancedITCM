@@ -17,7 +17,7 @@
 
 
     <template id="etcm-article-list">
-        <tr v-show="isShow" :class="{'shadow': is_blacklist_article || is_blacklist_member}">
+        <tr v-show="isShow" :class="list_class">
             <td class="sect">
                 <div v-if="store" class="store">
                     <img :title="store.name" :src="store.src">
@@ -40,7 +40,14 @@
                 </span>
             </td>
             
-            <td v-if="steam_list_check" class="steam_list_check"></td>
+            <td v-if="type" class="type">
+                <label class="fa fa-credit-card" title="구입 목록에 추가">
+                    <input type="checkbox" value="p" v-model="checked_type">
+                </label>
+                <label class="fa fa-shopping-cart" title="찜 목록에 추가">
+                    <input type="checkbox" value="w" v-model="checked_type">
+                </label>
+            </td>
             
             <td v-if="timer" class="timer">
                 <span class="list_timer">{{ timer }}</span>
