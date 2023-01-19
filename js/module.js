@@ -556,8 +556,8 @@ var Module = {};
     };
 
 
-    Module.addBookmark = function() {
-        let bookmark = ref_StorageObject("bookmark");
+    Module.addBookmark = async function() {
+        let books = Vue.ref(ref_StorageObject("bookmark"));
 
         $('#menu').find('li')
             .each((_, item) => {
@@ -571,12 +571,10 @@ var Module = {};
                         html: [
                             $('<input>', {
                                 type: 'checkbox',
-                                checked: bookmark[text],
+                                checked: books.value[text],
                                 on: {
                                     change: function () {
-                                        let checked = $(this).prop('checked');
-                                        bookmark[text] = checked? href : false;
-                                        refresh();
+                                        books.value[text] = $(this).prop('checked')? href : null;
                                     }
                                 }
                             }),
@@ -586,52 +584,26 @@ var Module = {};
                 );
             });
 
-        if (!$('.menu_bookmark_remocon').isExist()) {
-            $('<div>', {
-                class: 'menu_bookmark_remocon',
-                html: [
-                    $('<h2>', { text: "즐겨찾기" }),
-                    $('<ul>')
-                ]
-            }).appendTo('.right_banner');
-        }
+        html = await $.get( meta.html.bookmark );
 
-        $('.menu_bookmark_remocon').find('h2').append(
-            $('<i>', {
-                class: 'fa fa-plus',
-                css: {cursor: 'pointer'},
-                click: () => {
+        $('.menu_bookmark_remocon').remove();
+        $('.right_banner').append($(html));
+
+        Vue.createApp({
+            data() {
+                return { books }
+            },
+            methods: {
+                plus() {
                     let href = prompt("경로", "https://itcm.co.kr/g_file"), //sample
                         text = prompt("이름", "한글화정보");
-                    bookmark[text] = href;
-                    refresh();
+                    this.books[text] = href;
+                },
+                close(text) {
+                    this.books[text] = null;
                 }
-            })
-        );
-
-
-        function refresh() {
-            $('.menu_bookmark_remocon').find('ul').html(
-                Object.entries(bookmark)
-                    .filter(([ text, href ]) => href)
-                    .map(([ text, href ]) =>
-                        $('<li>', {
-                            html: [":: ",
-                                $('<a>', { href, text }),
-                                $('<i>', {
-                                    class: 'fa fa-close',
-                                    css: {cursor: 'pointer'},
-                                    click: () => {
-                                        bookmark[text] = false;
-                                        refresh();
-                                    }
-                                })
-                            ]
-                        }))
-            );
-        };
-
-        refresh();
+            }
+        }).mount('.menu_bookmark_remocon');
     }
 
 

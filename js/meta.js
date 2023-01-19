@@ -16,6 +16,7 @@ const meta = {
 
     html: {
         side:  "https://narcisource.github.io/enhancedITCM/html/side.html",
+        bookmark:  "https://narcisource.github.io/enhancedITCM/html/bookmark.html",
         settings: "https://narcisource.github.io/enhancedITCM/html/settings.html",
         miniprofile: "https://narcisource.github.io/enhancedITCM/html/miniprofile.html",
         tab: "https://narcisource.github.io/enhancedITCM/html/tab.html",

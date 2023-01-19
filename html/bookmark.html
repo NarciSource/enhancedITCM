@@ -1,0 +1,13 @@
+<div class="menu_bookmark_remocon">
+    <h2>
+        즐겨찾기<i class="fa fa-plus" @click="plus" />
+    </h2>
+    <ul>
+        <template v-for="(href, text) in books">
+            <li v-show="href">
+                <a :href="href">{{ text }}</a>
+                <i class="fa fa-close" title="삭제" @click="close(text)"></i>
+            </li>
+        </template>
+    </ul>
+</div>
