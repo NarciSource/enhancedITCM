@@ -120,19 +120,16 @@ function ETCM() {
 
 
 
-    if (loadFromLocalStorage("etcm-version") !== GM.info.script.version) { //update
+    if (loadFromLocalStorage("etcm-version") < GM.info.script.version) { //update
         saveToLocalStorage("etcm-version")(GM.info.script.version);
         var set_force = true;
     }
 
     mid = /mid=(\w+)/.exec(location.search)?.[1] || location.pathname.replace(/\/\d+/,"").slice(1);
 
-    this.commands = ref_StorageObject("commands", this.default_commands);
-    this.settings = ProxyObject(this.default_settings, set_force);
-
-    this.blacklist = ProxySet("blacklist", [/*empty*/]);
-    this.blacklist_member = ProxySet("blacklist_mber", [/*empty*/]);
+    this.commands =      ref_StorageObject("commands", this.default_commands);
     this.selected_tabs = ref_StorageObject(mid+ "_tab");
+    this.settings =      ref_StorageNested(this.default_settings, set_force);
 
 
     this._preview();

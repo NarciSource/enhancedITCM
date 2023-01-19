@@ -933,6 +933,8 @@ var Module = {};
             [c, { cate: "분류", title: "제목", check: "체크", timer: "종료 시각", app: "게임", author_h: "글쓴이" }[c]]);
 
         let articles = etcm.vueRefArticles = Vue.ref([]),
+            blacklist_member = ref_StorageObject("blacklist_member"),
+            blacklist_article = ref_StorageObject("blacklist_article"),
             selected_tabs = etcm.selected_tabs;
 
 
@@ -953,26 +955,35 @@ var Module = {};
                 },
                 data() {
                     return {
-                        blacklist_member: etcm.blacklist_member,
-                        blacklist: etcm.blacklist,
+                        blacklist_member, blacklist_article,
                         voted_hover: false,
                     }
                 },
                 computed: {
                     is_blacklist_article: {
                         get() {
-                            return this.blacklist.has(this.id);
+                            return this.blacklist_article[this.author.id]? true : false;
                         },
-                        set(value) {
-                            this.blacklist.io(value, this.id);
+                        set(checked) {
+                            if (checked) {
+                                this.blacklist_article[this.author.id] = "black";
+                            }
+                            else {
+                                delete this.blacklist_article[this.author.id];
+                            }
                         }
                     },
                     is_blacklist_member: {
                         get() {
-                            return this.blacklist_member.has(this.author?.id);
+                            return this.blacklist_member[this.author.id]? true : false;
                         },
-                        set(value) {
-                            this.blacklist_member.io(value, this.author.id);
+                        set(checked) {
+                            if (checked) {
+                                this.blacklist_member[this.author.id] = "black";
+                            }
+                            else {
+                                delete this.blacklist_member[this.author.id];
+                            }
                         }
                     },
                     isShow() {
@@ -990,7 +1001,7 @@ var Module = {};
                                 this.selected_tabs["eye"]
                                 ||
                                 (
-                                    !this.blacklist.has(this.id) && !this.blacklist_member.has(this.author?.id)
+                                    !this.is_blacklist_article && !this.is_blacklist_member
                                 )
                             )
                         );
@@ -1027,6 +1038,8 @@ var Module = {};
             components: { articleList },
         }).mount('#etcm-article-board');
 
+        
+        // load articles
         etcm._loadContent($target.find('tbody tr'));
         $target.remove();
     }

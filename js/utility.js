@@ -52,71 +52,18 @@ function ref_StorageObject(key, initial) { // reflect
             }
 
             return success;
+        },
+        deleteProperty(target, prop) {
+            if (prop in target) {
+                delete target[prop];
+                save(target);
+            }
+            return true;
         }
     });
 }
 
-function ProxySet(key, value, force) {
-    class ProxySet extends Set {
-        constructor(key, value, force) {
-            super((force || !loadFromLocalStorage(key))? value : JSON.parse(loadFromLocalStorage(key)));
-            
-            this._saveIntoStorage = ()=> saveToLocalStorage(key)(Array.from(this));
-
-            this._saveIntoStorage();
-
-            return this;
-        }
-
-        has(arg) {
-            if (typeof arg === "object") {
-                let subject = JSON.stringify(arg);
-                arg = [...this].find(each => JSON.stringify(each) === subject) || arg;
-            }
-            return Set.prototype.has.call(this, arg);
-        }
-        delete(arg) {
-            if (typeof arg === "object") {
-                let subject = JSON.stringify(arg);
-                arg = [...this].find(each => JSON.stringify(each) === subject) || arg;
-            }
-            return Set.prototype.delete.call(this, arg);
-        }
-        in(arg) {
-            if (Array.isArray(arg)) {
-                arg.forEach(each=> this.add(each));
-            } else {
-                this.add(arg);
-            }
-            this._saveIntoStorage();
-            return this;
-        }
-        out(arg) {
-            if (Array.isArray(arg)) {
-                arg.forEach(each=> this.delete(each));
-            } else {
-                this.delete(arg);
-            }
-            this._saveIntoStorage();
-            return this;
-        }
-        io(bool, arg) {
-            bool? this.in(arg) : this.out(arg);
-            return this;
-        }
-        switch(arg) {
-            this.has(arg)? this.out(arg) : this.in(arg);
-            return this;
-        }
-        filter(func) {
-            return new ProxySet(undefined, Array.from(this).filter(func));
-        }
-    }
-
-    return new ProxySet(key, value, force);
-}
-
-function ProxyObject(obj, force) {
+function ref_StorageNested(obj, force) {
     Object.entries(obj).forEach(([key, val])=> {
         if (force || !loadFromLocalStorage(key)) saveToLocalStorage(key)(val);
         else obj[key] = loadFromLocalStorage(key);
