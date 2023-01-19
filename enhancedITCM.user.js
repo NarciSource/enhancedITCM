@@ -127,10 +127,11 @@ function ETCM() {
 
     mid = /mid=(\w+)/.exec(location.search)?.[1] || location.pathname.replace(/\/\d+/,"").slice(1);
 
-    this.commands =      ref_StorageObject("commands", this.default_commands);
-    this.selected_tabs = ref_StorageObject(mid+ "_tab");
     this.settings =      ref_StorageNested(this.default_settings, set_force);
-
+    this.commands =      ref_StorageObject("commands", { initial: this.default_commands });
+    this.selected_tabs = ref_StorageObject(mid+ "_tab", { getHandler: (target, prop, value) => 
+                                    target[prop] === undefined && (prop !== "value" && prop[0] !== "_") || target[prop]} );
+                                                        //value and underbar exceptions are to prevent collisions in vue's reflect proxy.
 
     this._preview();
 

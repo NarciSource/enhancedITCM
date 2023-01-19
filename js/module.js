@@ -1025,11 +1025,9 @@ var Module = {};
                         return !this.selected_tabs ||
                         (
                             (
-                                !this.cate || this.selected_tabs[this.cate.name]
-                            )
-                            &&
-                            (
-                                !this.store || this.selected_tabs[this.store.name]
+                                this.selected_tabs[this.cate?.name]
+                                &&
+                                this.selected_tabs[this.store?.name]
                             )
                             &&
                             (
@@ -1148,7 +1146,7 @@ var Module = {};
                         }
                     },
                     reset() {
-                        this.command_plan = etcm.commands = ref_StorageObject("commands", etcm.default_commands);
+                        this.command_plan = etcm.commands = ref_StorageObject("commands", { initial: etcm.default_commands });
                     }
                 },
                 components: {
