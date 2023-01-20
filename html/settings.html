@@ -11,15 +11,15 @@
     
         <div v-if="imex" class="etcm-settings__imex">
             <h3>외부입력 / 출력</h3>
-            <textarea v-model="text_area"></textarea>
+            <textarea v-model="textArea"></textarea>
         </div>
     
         <div v-else="imex" class="etcm-settings__body">
             <div>
                 <h3>기능 모음</h3>
                 <ul class="etcm-settings__operation normal">
-                    <operation-item v-for="operation in normal_operations" v-bind="{...operation, command_plan}">
-                        <select v-if="operation.command == 'addHumbleChoiceTimer'" class="option__show-period" v-model="timer_period">
+                    <operation-item v-for="operation in normalOperations" v-bind="{...operation, customCommands}">
+                        <select v-if="operation.command == 'addHumbleChoiceTimer'" class="option__show-period" v-model="timerPeriod">
                             <option value="1">24시간 전</option>
                             <option value="7">7일 전</option>
                             <option value="15">15일 전</option>
@@ -32,9 +32,9 @@
             <div>
                 <h3>무한 스크롤 로딩바</h3>
                 <ul class="etcm-settings__showcase">
-                    <li v-for="item in loading_items" :class="{on: item == loading_selected}">
+                    <li v-for="item in loadingItems" :class="{on: item == selectedLoadingItem}">
                         <label :title="item" :class="'etcm-loading--'+item">
-                            <input type="radio" v-model="loading_selected" :value="item">
+                            <input type="radio" v-model="selectedLoadingItem" :value="item">
                         </label>
                     </li>
                 </ul>
@@ -43,7 +43,7 @@
             <div>
                 <h3>UI 모음</h3>
                 <ul class="etcm-settings__operation ui">
-                    <operation-item v-for="operation in ui_operations" v-bind="{...operation, command_plan}" />
+                    <operation-item v-for="operation in uiOperations" v-bind="{...operation, customCommands}" />
                 </ul>
             </div>
         </div>

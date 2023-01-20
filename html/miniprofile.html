@@ -1,47 +1,47 @@
 <div id="etcm-mini-profile">
     <div class="miniprofile_nameplatecontainer">
         <video class="miniprofile_nameplate" playsinline autoplay muted loop>
-            <source :src="mini_profile.profile_background['video/webm']" type="video/webm">
-            <source :src="mini_profile.profile_background['video/mp4']" type="video/mp4">
+            <source :src="profile_background['video/webm']" type="video/webm">
+            <source :src="profile_background['video/mp4']" type="video/mp4">
         </video>
     </div>
 
     <div class="miniprofile_container">
         <div class="miniprofile_playersection text_shadow">
             <div class="playersection_avatar_frame">
-                <img :src="mini_profile.avatar_frame">
+                <img :src="avatar_frame">
             </div>
             <div class="playersection_avatar border_color_online">
-                <a :href="'https://steamcommunity.com/profiles/'+profile.steamID64">
-                    <img :src="profile.avatarMedium" :srcset="profile.avatarMedium+'1x, '+profile.avatarFull+' 2x'">
+                <a :href="'https://steamcommunity.com/profiles/'+steamID64">
+                    <img :src="avatarMedium" :srcset="avatarMedium+'1x, '+avatarFull+' 2x'">
                 </a>
             </div>
             <div class="player_content">
-                <span class="persona" :class="profile.onlineState">{{ mini_profile.persona_name }}</span>
+                <span class="persona" :class="onlineState">{{ persona_name }}</span>
             </div>
         </div>
         <div class="miniprofile_detailssection miniprofile_backdropblur not_in_game miniprofile_backdrop">
-            <div class="miniprofile_gamesection miniprofile_backdropblur miniprofile_backdrop" v-if="mini_profile.in_game">
-                <a :href="profile.inGameInfo.gameLink" :title="mini_profile.in_game.name">
-                    <img class="game_logo" :src="mini_profile.in_game.logo">
+            <div class="miniprofile_gamesection miniprofile_backdropblur miniprofile_backdrop" v-if="in_game">
+                <a :href="inGameInfo.gameLink" :title="in_game.name">
+                    <img class="game_logo" :src="in_game.logo">
                     <div class="miniprofile_game_details">
-                        <span class="miniprofile_game_name">{{ mini_profile.in_game.name }}</span>
+                        <span class="miniprofile_game_name">{{ in_game.name }}</span>
                     </div>
                 </a>
             </div>
             <div class="miniprofile_featuredcontainer">
-                <div :class="mini_profile.level_class">
-                    <span class="friendPlayerLevelNum">{{ mini_profile.level }}</span>
+                <div :class="level_class">
+                    <span class="friendPlayerLevelNum">{{ level }}</span>
                 </div>
                 <div class="description">
                     <div class="name">Steam 레벨</div>
                 </div>
             </div>
             <div class="miniprofile_featuredcontainer">
-                <img :src="mini_profile.favorite_badge.icon" class="badge_icon">
+                <img :src="favorite_badge.icon" class="badge_icon">
                 <div class="description">
-                    <div class="name">{{ mini_profile.favorite_badge.name }}</div>
-                    <div class="xp">{{ mini_profile.favorite_badge.xp }} XP</div>
+                    <div class="name">{{ favorite_badge.name }}</div>
+                    <div class="xp">{{ favorite_badge.xp }} XP</div>
                 </div>
             </div>
         </div>

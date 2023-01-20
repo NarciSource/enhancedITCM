@@ -3,21 +3,21 @@
         <caption class="blind">List of Articles</caption>
         <thead class="bg_f_f9">
             <tr>
-                <th v-for="[category, field_name] in fields" scope="col">
-                    <a :href="'/'+mid+'?category='+category">{{ field_name }}</a>
+                <th v-for="[category, fieldName] in fields" scope="col">
+                    <a :href="'/'+mid+'?category='+category">{{ fieldName }}</a>
                 </th>
             </tr>
         </thead>
         <tbody>
             <template v-for="article in articles" :key="article.id">
-                <article-list v-bind="{...article, selected_tabs}"></article-list>
+                <article-list v-bind="{...article, selectedTabs}"></article-list>
             </template>
         </tbody>
     </table>
 
 
     <template id="etcm-article-list">
-        <tr v-show="isShow" :class="list_class">
+        <tr v-show="isShow" :class="articleClasses">
             <td class="sect">
                 <div v-if="store" class="store">
                     <img :title="store.name" :src="store.src">
@@ -29,23 +29,23 @@
                 <span class="time" :title="time.detail">{{ time.normal }}</span>
                 <div class="title">
                     <a :href="title.href" class="hx">{{ title.name }}</a>
-                    <label class="fa fa-eye-slash" title="on my blacklist">
-                        <input type="checkbox" v-model="is_blacklist_article">
+                    <label class="fa fa-eye-slash" title="on my blind list">
+                        <input type="checkbox" :value="isBlindArticle" @change="toggle(blindArticles, id, 'blind')">
                     </label>
                 </div>
                 <a :href="title.href+reply.href" class="replyNum" title="댓글">{{ reply.num }}</a>
                 <span class="m_no readed_count">{{ readed_count }}</span>
-                <span class="m_no voted_count" @mouseover="voted_hover = true" @mouseout="voted_hover = false" @click="voted_click">
-                    <i :class="{'fa fa-heart': voted_hover }">{{ voted_count }}</i>
+                <span class="m_no voted_count" @mouseover="isHoverVote = true" @mouseout="isHoverVote = false" @click="submitVote">
+                    <i :class="{'fa fa-heart': isHoverVote }">{{ voted_count }}</i>
                 </span>
             </td>
             
             <td v-if="type" class="type">
                 <label class="fa fa-credit-card" title="구입 목록에 추가">
-                    <input type="checkbox" value="p" v-model="checked_type">
+                    <input type="checkbox" value="p" v-model="checkedType">
                 </label>
                 <label class="fa fa-shopping-cart" title="찜 목록에 추가">
-                    <input type="checkbox" value="w" v-model="checked_type">
+                    <input type="checkbox" value="w" v-model="checkedType">
                 </label>
             </td>
             
@@ -64,8 +64,8 @@
                     <img v-if="author.src" :src="author.src">
                     {{ author.name }}
                 </a>
-                <label class="fa fa-eye-slash" title="on my blacklist">
-                    <input type="checkbox" v-model="is_blacklist_member">
+                <label class="fa fa-eye-slash" title="on my blind list">
+                    <input type="checkbox" :value="isBlindMember" @change="toggle(blindMembers, author.id, 'blind')">
                 </label>
             </td>
         </tr>

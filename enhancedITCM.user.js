@@ -74,6 +74,8 @@ if (typeof GM === "undefined") {
 }
 unsafeWindow.Vue = window.Vue = Vue;
 
+location.mid = /mid=(\w+)/.exec(location.search)?.[1] || location.pathname.replace(/\/\d+/,"").slice(1);
+
 
 function ETCM() {
     this.default_commands = {
@@ -86,7 +88,7 @@ function ETCM() {
         enhanceSizableBoard: true,
         enhanceDarkMode: true,
 
-        addFilter: true,
+        designTab: true,
         designArticle: true,
 
         addSteamServerStatusMonitor: false,
@@ -125,13 +127,10 @@ function ETCM() {
         var set_force = true;
     }
 
-    mid = /mid=(\w+)/.exec(location.search)?.[1] || location.pathname.replace(/\/\d+/,"").slice(1);
-
-    this.settings =      ref_StorageNested(this.default_settings, set_force);
-    this.commands =      ref_StorageObject("commands", { initial: this.default_commands });
-    this.selected_tabs = ref_StorageObject(mid+ "_tab", { getHandler: (target, prop, value) => 
-                                    target[prop] === undefined && (prop !== "value" && prop[0] !== "_") || target[prop]} );
-                                                        //value and underbar exceptions are to prevent collisions in vue's reflect proxy.
+    this.settings =     refStorageNested(this.default_settings, set_force);
+    this.commands =     refStorageObject("commands", { initial: set_force? this.default_commands : null });
+    this.selectedTabs = refStorageObject(location.mid+ "_tab", { getHandler: (target, prop, value) => 
+                                    target[prop] === undefined? true : target[prop]} );
 
     this._preview();
 

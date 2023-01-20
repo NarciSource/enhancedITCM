@@ -82,8 +82,7 @@ var Module = {};
         function copyClipboard(value) {
             if (navigator.clipboard) {
                 navigator.clipboard.writeText(value);
-            }
-            else {
+            } else {
                 const $text = document.createElement('textarea');
                 document.body.appendChild($text);
                 $text.value = value;
@@ -413,10 +412,10 @@ var Module = {};
         function makeShortcut(fa_icon, text, href) {
             return $('<li>', {
                         class: 'etcm-shortcut',
-                        html: $.merge(
+                        html: [
                                 $('<i>', { class: 'fa ' + fa_icon }),
                                 $('<a>', { text, href })
-                            )
+                            ]
             });
         }
 
@@ -459,6 +458,7 @@ var Module = {};
     /* side menu */
     Module._addSideBook = async function() {
         document.addStyle([ meta.css.side ]);
+
       const etcm = this;
         let tabs = etcm.vueRefTabs = Vue.ref({});
 
@@ -494,7 +494,7 @@ var Module = {};
                             let spec = this.tabs[name],
                                 parsed = spec.parser(await GM.ajax( spec.url ));
 
-                            this.tabs[name].articles = ref_StorageObject(name, parsed);
+                            this.tabs[name].articles = refStorageObject(name, { initial: parsed });
                         });
                     }
                 },
@@ -521,7 +521,7 @@ var Module = {};
                         .reduce((acc, article)=> ({...acc,
                             [article.pathname]: article.innerText
                         }), {}),
-            articles: ref_StorageObject(bookname)
+            articles: refStorageObject(bookname)
         };
     };
     Module.addWishbook = function() {
@@ -536,7 +536,7 @@ var Module = {};
                         .reduce((acc, article)=> ({...acc,
                             [/document_srl=(\d+)/.exec(article.search)[1]]: article.innerText.trim()
                         }), {}),
-            articles: ref_StorageObject(bookname)
+            articles: refStorageObject(bookname)
         };
     };
     Module.addPurchasebook = function() {
@@ -551,13 +551,13 @@ var Module = {};
                         .reduce((arr, article)=> ({
                             [/document_srl=(\d+)/.exec(article.search)[1]]: article.innerText.trim()
                         }), {}),
-            articles: ref_StorageObject(bookname)
+            articles: refStorageObject(bookname)
         };
     };
 
 
     Module.addBookmark = async function() {
-        let books = Vue.ref(ref_StorageObject("bookmark"));
+        let books = Vue.ref(refStorageObject("bookmark"));
 
         $('#menu').find('li')
             .each((_, item) => {
@@ -574,7 +574,11 @@ var Module = {};
                                 checked: books.value[text],
                                 on: {
                                     change: function () {
-                                        books.value[text] = $(this).prop('checked')? href : null;
+                                        if (this.checked) {
+                                            books.value[text] = href;
+                                        } else {
+                                            delete books.value[text];
+                                        }
                                     }
                                 }
                             }),
@@ -600,7 +604,7 @@ var Module = {};
                     this.books[text] = href;
                 },
                 close(text) {
-                    this.books[text] = null;
+                    delete this.books[text];
                 }
             }
         }).mount('.menu_bookmark_remocon');
@@ -613,7 +617,7 @@ var Module = {};
             $('<menu>', {
                 type: 'context',
                 id: "ContextMenu1",
-                html: $.merge(
+                html: [
                     $('<menuitem>', {
                         label: '스팀 라이브러리',
                         click: () => window.open(`steam://open/minigameslist`,'_self')
@@ -621,7 +625,7 @@ var Module = {};
                     $('<menuitem>', {
                         label: '스팀 콘솔',
                         click: () => window.open(`steam://open/console`,'_self')
-                    }))
+                    })]
             })
         ).attr('contextmenu', "ContextMenu1");
 
@@ -703,7 +707,7 @@ var Module = {};
     Module._parseArticle = function(article) {
         let fields = [...article.children];
 
-        switch(this.mid) {
+        switch(location.mid) {
             case "community_timeline":
                 var [board, cate, title,        game, ...rest] = fields;
             break;
@@ -721,19 +725,19 @@ var Module = {};
         }
         var [author, time, readed_count, voted_count, steam_list_check] = rest;
 
-        let id = RegExp(`(?:${this.mid}\/|document_srl=)(\\d+)`).exec(title.children[0].href)[1]*1;
+        let id = RegExp(`(?:${location.mid}\/|document_srl=)(\\d+)`).exec(title.children[0].href)[1]*1;
 
         {
-          const store_srcs = $('#etcm-cTab--store li').toArray().reduce((acc, cur)=> ({...acc,
+          const storeSrcs = $('#etcm-cTab--store li').toArray().reduce((acc, cur)=> ({...acc,
                         [cur.title]: cur.querySelector('img').src }),{});
             let name = store?.querySelector('img')?.title?.toLowerCase()||"-",
-                src = store_srcs[name];
-            store = store? {name, src} : store;
+                src = storeSrcs[name];
+            store = store? {name, src} : null;
 
             timer = timer
                 ? timer.querySelector('span')?.style.display!=="none"
                     ? timer.querySelector('span > span')?.innerText||" " : " " 
-                : timer;
+                : null;
         }
 
         return {
@@ -774,15 +778,14 @@ var Module = {};
 
     /* load content */
     Module._loadContent = async function($articles) {
-      const etcm = this,
-            mid = /mid=(\w+)/.exec(location.search)?.[1] || location.pathname.replace(/\/\d+/,"").slice(1);
+      const etcm = this;
 
-        let articles = $articles.toArray().map(etcm._parseArticle.bind({...etcm, mid})),
+        let articles = $articles.toArray().map(etcm._parseArticle),
             doc_list = articles.map(article => article.id);
 
 
         /* SteamListcheckLoad */
-        if (mid === "game_news"){
+        if (location.mid === "game_news"){
             check_list = await new Promise((resolve, reject)=> {
 
                 unsafeWindow.exec_json("steam.dispSteamListcheckLoadAajx",
@@ -810,13 +813,12 @@ var Module = {};
     };
 
 
-    Module.addFilter = async function() {
-      const etcm = this,
-            mid = /mid=(\w+)/.exec(location.search)?.[1] || location.pathname.replace(/\/\d+/,"").slice(1);
+    Module.designTab = async function() {
+      const etcm = this;
 
-        let selected_tabs = etcm.selected_tabs,
+        let selectedTabs = etcm.selectedTabs,
 
-            store_tabs = mid === "game_news"
+            storeTabs = location.mid === "game_news"
               ? [...$('.inner_content').children('div').first().find('a').toArray()
                     .map(a => ({
                         title: /search_keyword=(\w+)/.exec(a.href)[1],
@@ -840,21 +842,21 @@ var Module = {};
                 ]
                 .map(({title, src}) => ({title, src, href: "/game_news\?search_target=extra_vars2&search_keyword="+title}))
               : [],
-            cate_tabs = $('.cTab li').toArray()
-                .slice(1, mid === "game_news"? 4 : undefined)
+            cateTabs = $('.cTab li').toArray()
+                .slice(1, location.mid === "game_news"? 4 : undefined) //1: 전체, 4: 할인&무료&번들 진행중
                 .map(li => ({
-                    href: mid+"/"+/category=(\d+)/.exec(li.children[0].href)[1],
+                    href: location.mid+"/"+/category=(\d+)/.exec(li.children[0].href)[1],
                     title: li.innerText
                 })),
 
-            full_tabs = [...cate_tabs, ...store_tabs].map(t=> t.title);
+            fullTabs = [...cateTabs, ...storeTabs].map(t=> t.title);
 
-        selected_tabs[full_tabs] = true;
+        selectedTabs[fullTabs] = true;
 
         // insert dom
         let html = await $.get( meta.html.tab );
 
-        if (mid === "game_news") {
+        if (location.mid === "game_news") {
             $('.inner_content').children('div').first().remove();
             $('.inner_content').prepend( $(html).find('#etcm-cTab--store') );
         }
@@ -865,15 +867,15 @@ var Module = {};
         var tabList = {
                 props: {
                     title: String,
-                    selected_tabs: Object
+                    selectedTabs: Object
                 },
                 computed: {
                     checked: {
                         get() {
-                            return this.selected_tabs[this.title];
+                            return this.selectedTabs[this.title];
                         },
                         set(checked) {
-                            this.selected_tabs[this.title] = checked;
+                            this.selectedTabs[this.title] = checked;
                         }
                     }
                 },
@@ -881,12 +883,12 @@ var Module = {};
             },
             tabExclusiveGboard = {
                 computed: {
-                    checked_expired_tab: {
+                    checkedExpired: {
                         get() {
                             return !location.search.includes("timer_filter");
                         },
-                        set(value) {
-                            location.href = "/game_news" + (value? "" : "?_sort_index=timer_filter");
+                        set(checked) {
+                            location.href = "/game_news" + (checked? "" : "?_sort_index=timer_filter");
                         }
                     }
                 },
@@ -897,8 +899,8 @@ var Module = {};
         Vue.createApp({
             data() {
                 return {
-                    tabs: store_tabs,
-                    selected_tabs,
+                    tabs: storeTabs,
+                    selectedTabs,
                 }
             },
             components: { tabList }
@@ -908,18 +910,18 @@ var Module = {};
         Vue.createApp({
             data() {
                 return {
-                    tabs: cate_tabs,
-                    selected_tabs,
-                    mid,
+                    mid: location.mid,
+                    tabs: cateTabs,
+                    selectedTabs,
                 }
             },
             computed: {
-                checked_all_tabs: {
+                checkedAllTabs: {
                     get() {
-                        return !full_tabs.some(tab => !this.selected_tabs[tab]);
+                        return fullTabs.every(tab => this.selectedTabs[tab]);
                     },
                     set(value) {
-                        full_tabs.forEach(tab => this.selected_tabs[tab] = value);
+                        fullTabs.forEach(tab => this.selectedTabs[tab] = value);
                     }
                 }
             },
@@ -929,10 +931,9 @@ var Module = {};
 
 
     Module.designArticle = async function() {
-        const etcm = this,
-              mid = /mid=(\w+)/.exec(location.search)?.[1] || location.pathname.replace(/\/\d+/,"").slice(1);
+        const etcm = this;
 
-        switch(mid) {
+        switch(location.mid) {
             case "game_news":
                 var fields = ['cate', 'title', 'check', 'timer', 'app', 'author_h'];
             break;
@@ -947,13 +948,13 @@ var Module = {};
             default:
                 var fields = ['cate', 'title',                          'author_h'];
         }
-        fields = fields.map(c =>
-            [c, { cate: "분류", title: "제목", check: "체크", timer: "종료 시각", app: "게임", author_h: "글쓴이" }[c]]);
+        fields = fields.map(key =>
+            [key, { cate: "분류", title: "제목", check: "체크", timer: "종료 시각", app: "게임", author_h: "글쓴이" }[key]]);
 
         let articles = etcm.vueRefArticles = Vue.ref([]),
-            blacklist_member = ref_StorageObject("blacklist_member"),
-            blacklist_article = ref_StorageObject("blacklist_article"),
-            selected_tabs = etcm.selected_tabs;
+            blindMembers = refStorageObject("blindMembers"),
+            blindArticles = refStorageObject("blindArticles"),
+            selectedTabs = etcm.selectedTabs;
 
 
         // insert dom
@@ -969,91 +970,78 @@ var Module = {};
                     id: Number,
                     store: Object, cate: Object, title: Object, timer: String, game: Object, author: Object,
                     reply: Object, author: Object, time: Object, readed_count: String, voted_count: String, type: Array,
-                    selected_tabs: Object,
+                    selectedTabs: Object,
                 },
                 data() {
                     return {
-                        blacklist_member, blacklist_article,
-                        voted_hover: false,
-                        checked_type: this.type,
+                        blindArticles, blindMembers,
+                        isHoverVote: false,
+                        checkedType: this.type,
                     }
                 },
                 watch: {
-                    checked_type(val, old) {
+                    checkedType(val, old) {
                         let checked = val.length > old.length,
                             [v1, v2] = checked? [val, old] : [old, val],
                             type = v1.filter(v => !v2.includes(v))[0];
 
-                        this.postCheck(type, checked.toString());
+                        this.submitCheck(type, checked.toString());
                     }
                 },
                 computed: {
-                    list_class() {
+                    articleClasses() {
                         return {
-                            shadow: this.is_blacklist_article || this.is_blacklist_member,
-                            check_p: this.checked_type?.includes('p'),
-                            check_w: this.checked_type?.includes('w'),
+                            shadow: this.isBlindArticle || this.isBlindMember,
+                            check_p: this.checkedType?.includes('p'),
+                            check_w: this.checkedType?.includes('w'),
                         };
                     },
-                    is_blacklist_article: {
-                        get() {
-                            return this.blacklist_article[this.author.id]? true : false;
-                        },
-                        set(checked) {
-                            if (checked) {
-                                this.blacklist_article[this.author.id] = "black";
-                            }
-                            else {
-                                delete this.blacklist_article[this.author.id];
-                            }
-                        }
+                    isBlindArticle() {
+                        return this.blindArticles[this.id]? true : false;
                     },
-                    is_blacklist_member: {
-                        get() {
-                            return this.blacklist_member[this.author.id]? true : false;
-                        },
-                        set(checked) {
-                            if (checked) {
-                                this.blacklist_member[this.author.id] = "black";
-                            }
-                            else {
-                                delete this.blacklist_member[this.author.id];
-                            }
-                        }
+                    isBlindMember() {
+                        return this.blindMembers[this.author.id]? true : false;
                     },
                     isShow() {
-                        return !this.selected_tabs ||
+                        return !this.selectedTabs ||
                         (
                             (
-                                this.selected_tabs[this.cate?.name]
+                                this.selectedTabs[this.cate?.name]
                                 &&
-                                this.selected_tabs[this.store?.name]
+                                this.selectedTabs[this.store?.name]
                             )
                             &&
                             (
-                                this.selected_tabs["eye"]
+                                this.selectedTabs["eye"]
                                 ||
                                 (
-                                    !this.is_blacklist_article && !this.is_blacklist_member
+                                    !this.isBlindArticle && !this.isBlindMember
                                 )
                             )
                         );
                     },
-                    postCheck(type, checked) {
+                },
+                methods: {
+                    toggle(subject, id, value) {
+                        if (!subject[id]) {
+                            subject[id] = value;
+                        } else {
+                            delete subject[id];
+                        }
+                    },
+                    submitVote() {
+                        unsafeWindow.exec_json('document.procDocumentVoteUp', cloneInto({
+                            target_srl: this.id,
+                            cur_mid: location.mid,
+                        }, unsafeWindow));
+                    },
+                    submitCheck(type, checked) {
                         unsafeWindow.exec_json("steam.dispSteamListCheckAjax", cloneInto({
                             doc_srl : this.id,
                             type,
                             checked,
                         }, unsafeWindow));
                     },
-                },
-                methods: {
-                    voted_click() {
-                        unsafeWindow.exec_json('document.procDocumentVoteUp', cloneInto({
-                            target_srl: this.id,
-                            cur_mid: mid,
-                        }, unsafeWindow));
-                    }
                 },
                 template: $(html).find('#etcm-article-list').get(0)
             };
@@ -1062,9 +1050,9 @@ var Module = {};
         Vue.createApp({
             data() {
                 return {
-                    mid,
+                    mid: location.mid,
                     fields, articles,
-                    selected_tabs,
+                    selectedTabs,
                 }
             },
             components: { articleList },
@@ -1094,12 +1082,12 @@ var Module = {};
                         version: GM.info.script.version,
 
                         imex: false,
-                        text_area: undefined,
+                        textArea: undefined,
 
-                        normal_operations: [
+                        normalOperations: [
                             { command: "addHumbleChoiceTimer", title: "Humble Choice 타이머", },
                             { command: "enhanceInfiniteScroll", title: "무한 스크롤", },
-                            { command: "addFilter", title: "필터 기능", },
+                            { command: "designTab", title: "필터 기능", },
                             { command: "addWishbook", title: "개인목록에 찜목록", },
                             { command: "addPurchasebook", title: "개인목록에 구입목록", },
                             { command: "addScrapbook", title: "개인목록에 스크랩", },
@@ -1108,29 +1096,30 @@ var Module = {};
                             { command: "addContextMenu", title: "게임 링크 컨텍스트 메뉴", },
                             { command: "enhanceSizableBoard", title: "게시판 크기 조절", },
                         ],
-                        ui_operations: [
+                        uiOperations: [
                             { command: "designArticle", title: "게시판 글목록 디자인", },
                         ],
-                        timer_period: etcm.settings.humble_choice_show_period,
+                        timerPeriod: etcm.settings.humble_choice_show_period,
 
-                        loading_selected: etcm.settings.loading_case,
-                        loading_items: ['puzzle', 'wave', 'squre', 'three', 'magnify', 'text' ],
+                        selectedLoadingItem: etcm.settings.loading_case,
+                        loadingItems: ['puzzle', 'wave', 'squre', 'three', 'magnify', 'text' ],
 
-                        command_plan: etcm.commands
+                        customCommands: etcm.commands
                     }
                 },
                 watch: {
-                    loading_selected(value) {
+                    selectedLoadingItem(value) {
                         etcm.settings.loading_case = value;
                     },
-                    timer_period(value) {
+                    timerPeriod(value) {
                         etcm.settings.humble_choice_show_period = value;
                     },
                     imex(value) {
-                        this.text_area = value
+                        this.textArea = value
                             ? JSON.stringify(
                                 [...Object.keys(etcm.default_settings),
-                                "commands", "g_board_tab", "game_news_tab", "blacklist", "blacklist_mber", "bookmark", "scrapbook"]
+                                "commands", "g_board_tab", "game_news_tab", "gift_tab",
+                                "blindArticles", "blindMembers", "bookmark", "scrapbook", "wishbook"]
                                     .reduce((acc, val) => ({ ...acc, [val]: loadFromLocalStorage(val) }), {}), null, 2)
                             : null;
                     }
@@ -1138,7 +1127,7 @@ var Module = {};
                 methods: {
                     save() {
                         try {
-                            Object.entries(JSON.parse(this.text_area))
+                            Object.entries(JSON.parse(this.textArea))
                                 .forEach(([key, value])=> saveToLocalStorage(key)(value));
                         }
                         catch(e) {
@@ -1146,7 +1135,7 @@ var Module = {};
                         }
                     },
                     reset() {
-                        this.command_plan = etcm.commands = ref_StorageObject("commands", { initial: etcm.default_commands });
+                        this.customCommands = etcm.commands = refStorageObject("commands", { initial: etcm.default_commands });
                     }
                 },
                 components: {
@@ -1154,15 +1143,15 @@ var Module = {};
                         props: {
                             command: String,
                             title: String, detail: { type: String, default: ""},
-                            command_plan: Object,
+                            customCommands: Object,
                         },
                         computed: {
                             checked: {
                                 get() {
-                                    return this.command_plan[this.command]
+                                    return this.customCommands[this.command]
                                 },
                                 set(checked) {
-                                    this.command_plan[this.command] = checked;
+                                    this.customCommands[this.command] = checked;
                                 }
                             },
                         },
@@ -1190,14 +1179,12 @@ var Module = {};
     $.fn.isExist = function(arg) {
         if (!arg) {
             return this.length !== 0? this : false;
-        }
-        else {
+        } else {
             if (this.length !== 0) {
                 var result = new Object(typeof arg === "function"? arg(this) : arg);
                 result.else = () => result;
                 return result;
-            }
-            else {
+            } else {
                 this.else = arg => new Object(typeof arg === "function"? arg(this) : arg);
                 return this;
             }

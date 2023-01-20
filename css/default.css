@@ -387,7 +387,7 @@ blockquote ~ p > a::before {
 }
 
 
-/* article blacklist */
+/* article blind list */
 #etcm-article-board .shadow {
     text-shadow: none;
 

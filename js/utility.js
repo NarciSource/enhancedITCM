@@ -35,10 +35,10 @@ var saveToLocalStorage = saveTo(localStorage),
     deleteFromGMStorage = deleteFrom(GM); 
 
 
-function ref_StorageObject(key, options) { // reflect
+function refStorageObject(key, options = {}) { // reflect
   const save = saveToLocalStorage(key);
     let storaged = JSON.parse(loadFromLocalStorage(key)||null),
-        { initial, getHandler } = options || {};
+        { initial, getHandler } = options;
 
     if (initial || (storaged?.constructor !== Object)) {
         save(storaged = initial || {});
@@ -46,7 +46,8 @@ function ref_StorageObject(key, options) { // reflect
 
     return new Proxy(storaged, {
         get(target, prop, value) {
-            return getHandler?.(target, prop, value) || target[prop];
+            //value and underbar exceptions are to prevent collisions in vue's reflect proxy.
+            return (prop !== "value" && prop[0] !== "_") && getHandler? getHandler(target, prop, value) : target[prop];
         },
         set(target, prop, value, receiver) {
             prop = prop.split(',');
@@ -68,7 +69,7 @@ function ref_StorageObject(key, options) { // reflect
     });
 }
 
-function ref_StorageNested(obj, force) {
+function refStorageNested(obj, force) {
     Object.entries(obj).forEach(([key, val])=> {
         if (force || !loadFromLocalStorage(key)) saveToLocalStorage(key)(val);
         else obj[key] = loadFromLocalStorage(key);

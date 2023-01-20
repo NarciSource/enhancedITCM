@@ -1,6 +1,6 @@
 <vue>
     <ul id="etcm-cTab--store" class="etcm-cTab etcm-cTab--store">
-        <tab-list v-for="{title, href, src} in tabs" v-bind="{title, selected_tabs }">
+        <tab-list v-for="{title, href, src} in tabs" v-bind="{title, selectedTabs }">
             <a :href="href">
                 <img :src="src">
             </a>
@@ -9,19 +9,19 @@
 
 
     <ul id="etcm-cTab--cate" class="etcm-cTab etcm-cTab--cate cTab clear">
-        <li :class="{shadow: !checked_all_tabs}">
+        <li :class="{shadow: !checkedAllTabs}">
             <a :href="'/' + mid">전체</a>
-            <input type="checkbox" v-model="checked_all_tabs">
+            <input type="checkbox" v-model="checkedAllTabs">
         </li>
 
-        <tab-list v-for="{title, href, src} in tabs" v-bind="{title, selected_tabs }">
+        <tab-list v-for="{title, href, src} in tabs" v-bind="{title, selectedTabs }">
             <a :href="href">{{ title }}</a>
         </tab-list>
 
         <tab-exclusive-gboard v-if="mid == 'game_news'"></tab-exclusive-gboard>
 
-        <tab-list v-bind="{title: 'eye', selected_tabs }">
-            <a class="fa fa-eye-slash" title="See also blacklist"/>
+        <tab-list v-bind="{title: 'eye', selectedTabs }">
+            <a class="fa fa-eye-slash" title="See also blind list"/>
         </tab-list>
     </ul>
 
@@ -35,9 +35,9 @@
 
 
     <template id="etcm-tab-exclusive-gboard">
-        <li :class="{shadow: !checked_expired_tab}">
+        <li :class="{shadow: !checkedExpired}">
             <a href="/game_news?_sort_index=timer_filter" style="color:#FF008B;">종료</a>
-            <input type="checkbox" v-model="checked_expired_tab">
+            <input type="checkbox" v-model="checkedExpired">
         </li>
         <li style="float:right;">
             <a href="/game_news?_sort_index=check_wlist">

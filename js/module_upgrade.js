@@ -49,8 +49,7 @@ var Upgrade;
                     click: openLoginWindow
                 })
             );
-        }
-        else {
+        } else {
             $alert = $('<i>', {
                 class: 'fa fa-question-circle etcm-blink',
                 title: message[2],
@@ -92,13 +91,13 @@ var Upgrade;
 
         let accountID = profile?.steamID64? BigInt(profile?.steamID64+"") - magic : 0,
 
-            mini_profile = await GM.ajax({
+            miniProfile = await GM.ajax({
                 responseType: "json",
                 url: `https://steamcommunity.com/miniprofile/${accountID}/json`,
                 headers: { 'cache-control':'no-cache, no-store, max-age=0, must-revalidate' }
             });
 
-        if (mini_profile) {
+        if (miniProfile) {
 
             $('.login_PlayoutA')
                 .append(
@@ -120,7 +119,7 @@ var Upgrade;
 
             Vue.createApp({
                 data() {
-                    return { profile, mini_profile }
+                    return { ...profile, ...miniProfile }
                 }
             }).mount('#etcm-mini-profile');
 
@@ -148,17 +147,17 @@ var Upgrade;
 
     Module.upgradeGameTagbox = function(dynamicstore) {
         /* add games to gametag using cb-table */
-        let cbTable_games = $('.cb-table').children('tbody').children('tr')
+        let cbTableGames = $('.cb-table').children('tbody').children('tr')
             .map((_, tr) => $(tr).children('td').first()[0]).children('a')
             .toArray()
             .map(a => [.../steampowered\.com\/(\w+)\/(\d+)/.exec(a.href).slice(1), a.text]);
 
-        let gameTag_games = $('.steam_read_selected').find('.item_content').find('.name')
+        let gameTagGames = $('.steam_read_selected').find('.item_content').find('.name')
             .toArray()
             .map(a => /steampowered\.com\/(\w+)\/(\d+)/.exec(a.href).slice(1));
         
 
-        cbTable_games.diff(gameTag_games, (a,b)=> a[0] == b[0] && a[1] == b[1])
+        cbTableGames.diff(gameTagGames, (a,b)=> a[0] == b[0] && a[1] == b[1])
             .map(each => ({ div: each[0], id: each[1], name: each[2] }))
             .filter(({ div, id, name }) => div === "app")
             .map(({ div, id, name }) =>
@@ -257,8 +256,7 @@ var Upgrade;
                         || (div === "package" && dynamicstore.rgOwnedPackages.includes(id))) {
                         $(app).addClass('mi_app').removeClass('no_mi_app')                          
                             .siblings('.mi_owned').after($(app));
-                    }
-                    else {
+                    } else {
                         $(app).addClass('no_mi_app').removeClass('mi_app')                          
                             .siblings('.mi_not_owned').after($(app));
                     }
@@ -304,11 +302,11 @@ var Upgrade;
 
 
         $th = $cbTable.find('th');
-        ratings_idx = $th.index($th.filter((_, th) => th.innerText == "Ratings"));
+        ratingsIdx = $th.index($th.filter((_, th) => th.innerText == "Ratings"));
 
         $cbTable.tablesorter({
             textSorter : {
-                [ratings_idx] : (a, b) => (regx.exec(a)?.[1] || 0) - (regx.exec(b)?.[1] || 0)
+                [ratingsIdx] : (a, b) => (regx.exec(a)?.[1] || 0) - (regx.exec(b)?.[1] || 0)
             }
         });
 
