@@ -788,9 +788,10 @@ var Module = {};
         if (location.mid === "game_news"){
             check_list = await new Promise((resolve, reject)=> {
 
-                unsafeWindow.exec_json("steam.dispSteamListcheckLoadAajx",
-                    cloneInto({ doc_list }, unsafeWindow),
-                    exportFunction(ret_obj => {
+                unsafeWindow.exec_json(...unsafeConverter(
+                    "steam.dispSteamListcheckLoadAajx",
+                    { doc_list },
+                    function(ret_obj) {
                         ret_obj = ret_obj.check_list.reduce((prev, { document_srl, type }) => {
 
                             prev[document_srl] = prev[document_srl] || [];
@@ -800,8 +801,8 @@ var Module = {};
                         }, {})
 
                         resolve(ret_obj);                        
-                    }, unsafeWindow)
-                );
+                    }
+                ));
             });
 
             articles.forEach(article => article.type = check_list?.[article.id] || []);
@@ -1030,17 +1031,19 @@ var Module = {};
                         }
                     },
                     submitVote() {
-                        unsafeWindow.exec_json('document.procDocumentVoteUp', cloneInto({
+                        unsafeWindow.exec_json(...unsafeConverter(
+                            "document.procDocumentVoteUp", {
                             target_srl: this.id,
                             cur_mid: location.mid,
-                        }, unsafeWindow));
+                        }));
                     },
                     submitCheck(type, checked) {
-                        unsafeWindow.exec_json("steam.dispSteamListCheckAjax", cloneInto({
+                        unsafeWindow.exec_json(...unsafeConverter(
+                            "steam.dispSteamListCheckAjax", {
                             doc_srl : this.id,
                             type,
                             checked,
-                        }, unsafeWindow));
+                        }));
                     },
                 },
                 template: $(html).find('#etcm-article-list').get(0)

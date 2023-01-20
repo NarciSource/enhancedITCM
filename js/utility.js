@@ -88,3 +88,14 @@ function refStorageNested(obj, force) {
         }
     });
 }
+
+
+function unsafeConverter() {
+    return [...arguments].map(argument => {
+        switch(argument.constructor) {
+            case Object:    return cloneInto(argument, unsafeWindow);
+            case Function:  return exportFunction(argument, unsafeWindow);
+            default:        return argument;
+        }
+    });
+}
