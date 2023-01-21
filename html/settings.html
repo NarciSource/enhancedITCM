@@ -1,25 +1,28 @@
 <vue>
-    <div id="etcm-settings">
+    <div id="etcm-settings" v-if="powerOn">
         <div class="etcm-settings__header">
             <div class="etcm-settings__header__line" />
-            <h1>Enhanced ITCM 설정</h1>
-            <button class="etcm-settings__header__save" @click="save">저장</button>
-            <div class="etcm-settings__header__version">ver. {{ version }}</div>
+            <h1>Enhanced ITCM 설정
+                <div class="etcm-settings__header__version">ver. {{ version }}</div>
+            </h1>            
             <i class="etcm-settings__header__imex fa fa-exchange" @click="imex = !imex"> 외부입력/출력</i>
             <i class="etcm-settings__header__reset fa fa-refresh" @click="reset"> 초기화</i>
         </div>
     
         <div v-if="imex" class="etcm-settings__imex">
-            <h3>외부입력 / 출력</h3>
+            <h3>외부입력 / 출력
+                <button class="etcm-settings__header__save" @click="save(textArea)">설정 저장</button>
+                <button class="etcm-settings__header__save" @click="copy(textArea)">클립보드로 복사</button>
+            </h3>
             <textarea v-model="textArea"></textarea>
         </div>
     
-        <div v-else="imex" class="etcm-settings__body">
+        <div v-else class="etcm-settings__body">
             <div>
                 <h3>기능 모음</h3>
                 <ul class="etcm-settings__operation normal">
-                    <operation-item v-for="operation in normalOperations" v-bind="{...operation, customCommands}">
-                        <select v-if="operation.command == 'addHumbleChoiceTimer'" class="option__show-period" v-model="timerPeriod">
+                    <operation-item v-for="(title, command) in normalOperations" v-bind="{title, command, customCommands}">
+                        <select v-if="command == 'addHumbleChoiceTimer'" class="option__show-period" v-model="settings.humble_choice_show_period">
                             <option value="1">24시간 전</option>
                             <option value="7">7일 전</option>
                             <option value="15">15일 전</option>
@@ -32,9 +35,9 @@
             <div>
                 <h3>무한 스크롤 로딩바</h3>
                 <ul class="etcm-settings__showcase">
-                    <li v-for="item in loadingItems" :class="{on: item == selectedLoadingItem}">
+                    <li v-for="item in loadingItems" :class="{on: item == settings.loading_case}">
                         <label :title="item" :class="'etcm-loading--'+item">
-                            <input type="radio" v-model="selectedLoadingItem" :value="item">
+                            <input type="radio" v-model="settings.loading_case" :value="item">
                         </label>
                     </li>
                 </ul>
@@ -43,7 +46,7 @@
             <div>
                 <h3>UI 모음</h3>
                 <ul class="etcm-settings__operation ui">
-                    <operation-item v-for="operation in uiOperations" v-bind="{...operation, customCommands}" />
+                    <operation-item v-for="(title, command) in uiOperations" v-bind="{title, command, customCommands}" />
                 </ul>
             </div>
         </div>

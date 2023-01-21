@@ -79,19 +79,6 @@ var Module = {};
 
 
     Module._alert = function (event) {
-        function copyClipboard(value) {
-            if (navigator.clipboard) {
-                navigator.clipboard.writeText(value);
-            } else {
-                const $text = document.createElement('textarea');
-                document.body.appendChild($text);
-                $text.value = value;
-                $text.select();
-                document.execCommand('Copy');
-                document.body.removeChild($text);
-            }
-        }
-
         $('<div>', {
             css: {
                 float: 'right', cursor: 'pointer',
@@ -1070,9 +1057,11 @@ var Module = {};
 
     /* Setting */
     Module.openSettings = async function() {
-      const etcm = this;
-
         document.addStyle([ meta.css.settings ]);
+
+      const etcm = this;
+        let powerOn = etcm._settingsPowerOn = etcm._settingsPowerOn || Vue.ref(false);
+
 
         $('#body').append(
             $('#etcm-settings').isExist() || $(html = await $.get( meta.html.settings )).find('#etcm-settings')
@@ -1082,56 +1071,40 @@ var Module = {};
             Vue.createApp({
                 data() {
                     return {
+                        powerOn,
                         version: GM.info.script.version,
 
                         imex: false,
-                        textArea: undefined,
+                        textArea: JSON.stringify(["commands", "g_board_tab", "game_news_tab", "gift_tab"
+                                                 ,"blindArticles", "blindMembers", "bookmark", "scrapbook", "wishbook"]
+                                        .reduce((acc, val) => ({ ...acc, [val]: loadFromLocalStorage(val) }), { settings: this.settings }), null, 2),
 
-                        normalOperations: [
-                            { command: "addHumbleChoiceTimer", title: "Humble Choice 타이머", },
-                            { command: "enhanceInfiniteScroll", title: "무한 스크롤", },
-                            { command: "designTab", title: "필터 기능", },
-                            { command: "addWishbook", title: "개인목록에 찜목록", },
-                            { command: "addPurchasebook", title: "개인목록에 구입목록", },
-                            { command: "addScrapbook", title: "개인목록에 스크랩", },
-                            { command: "upgradeGameTagbox", title: "게임 정보 박스 업그레이드", },
-                            { command: "upgradCBTable", title: "CBTable 업그레이드", },
-                            { command: "addContextMenu", title: "게임 링크 컨텍스트 메뉴", },
-                            { command: "enhanceSizableBoard", title: "게시판 크기 조절", },
-                        ],
-                        uiOperations: [
-                            { command: "designArticle", title: "게시판 글목록 디자인", },
-                        ],
-                        timerPeriod: etcm.settings.humble_choice_show_period,
-
-                        selectedLoadingItem: etcm.settings.loading_case,
+                        normalOperations: {
+                            addHumbleChoiceTimer : "Humble Choice 타이머",
+                            enhanceInfiniteScroll : "무한 스크롤",
+                            designTab : "필터 기능",
+                            addWishbook : "개인목록에 찜목록",
+                            addPurchasebook : "개인목록에 구입목록",
+                            addScrapbook : "개인목록에 스크랩",
+                            upgradeGameTagbox : "게임 정보 박스 업그레이드",
+                            upgradCBTable : "CBTable 업그레이드",
+                            addContextMenu : "게임 링크 컨텍스트 메뉴",
+                            enhanceSizableBoard : "게시판 크기 조절",
+                        },
+                        uiOperations: { designArticle: "게시판 글목록 디자인", },
                         loadingItems: ['puzzle', 'wave', 'squre', 'three', 'magnify', 'text' ],
 
-                        customCommands: etcm.commands
-                    }
-                },
-                watch: {
-                    selectedLoadingItem(value) {
-                        etcm.settings.loading_case = value;
-                    },
-                    timerPeriod(value) {
-                        etcm.settings.humble_choice_show_period = value;
-                    },
-                    imex(value) {
-                        this.textArea = value
-                            ? JSON.stringify(
-                                [...Object.keys(etcm.default_settings),
-                                "commands", "g_board_tab", "game_news_tab", "gift_tab",
-                                "blindArticles", "blindMembers", "bookmark", "scrapbook", "wishbook"]
-                                    .reduce((acc, val) => ({ ...acc, [val]: loadFromLocalStorage(val) }), {}), null, 2)
-                            : null;
+                        settings: etcm.settings,
+                        customCommands: etcm.commands,
                     }
                 },
                 methods: {
-                    save() {
+                    save(textArea) {
                         try {
-                            Object.entries(JSON.parse(this.textArea))
-                                .forEach(([key, value])=> saveToLocalStorage(key)(value));
+                            Object.entries(JSON.parse(textArea)).forEach(([key, value]) => saveToLocalStorage(key)(value));
+
+                            this.settings = refStorageObject("settings");
+                            this.customCommands = refStorageObject("commands");
                         }
                         catch(e) {
                             alert(e);
@@ -1139,6 +1112,9 @@ var Module = {};
                     },
                     reset() {
                         this.customCommands = etcm.commands = refStorageObject("commands", { initial: etcm.default_commands });
+                    },
+                    copy(value) {
+                        copyClipboard(value);
                     }
                 },
                 components: {
@@ -1163,9 +1139,8 @@ var Module = {};
                 }
             }).mount('#etcm-settings');
 
-
         $('#body > .in_body').toggle();
-        $('#etcm-settings').toggle();
+        powerOn.value = !powerOn.value;
     };
 
 
@@ -1217,4 +1192,16 @@ var Module = {};
     })(moment);
 
 
+    function copyClipboard(value) {
+        if (navigator.clipboard) {
+            navigator.clipboard.writeText(value);
+        } else {
+            const $text = document.createElement('textarea');
+            document.body.appendChild($text);
+            $text.value = value;
+            $text.select();
+            document.execCommand('Copy');
+            document.body.removeChild($text);
+        }
+    }
 })( jQuery, window, document);

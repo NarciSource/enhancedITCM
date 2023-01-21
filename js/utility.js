@@ -69,26 +69,6 @@ function refStorageObject(key, options = {}) { // reflect
     });
 }
 
-function refStorageNested(obj, force) {
-    Object.entries(obj).forEach(([key, val])=> {
-        if (force || !loadFromLocalStorage(key)) saveToLocalStorage(key)(val);
-        else obj[key] = loadFromLocalStorage(key);
-    });
-    
-    return new Proxy(obj, {
-        get(target, key, receiver) {
-            if (!Reflect.has(target, key, receiver)) {
-                return loadFromLocalStorage(key);
-            }
-            return Reflect.get(target, key, receiver);
-        },
-        set(target, key, val, receiver) {
-            saveToLocalStorage(key)(val);
-            return Reflect.set(target, key, val, receiver);
-        }
-    });
-}
-
 
 function unsafeConverter() {
     return [...arguments].map(argument => {

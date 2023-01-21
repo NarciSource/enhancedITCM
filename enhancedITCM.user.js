@@ -121,13 +121,12 @@ function ETCM() {
     };
 
 
+    let majorVersion = v => v.split('.').slice(0, 3).join('.'),
+        set_force = majorVersion(loadFromLocalStorage("etcm-version")) < majorVersion(GM.info.script.version); //update
+    saveToLocalStorage("etcm-version")(GM.info.script.version);
 
-    if (loadFromLocalStorage("etcm-version") < GM.info.script.version) { //update
-        saveToLocalStorage("etcm-version")(GM.info.script.version);
-        var set_force = true;
-    }
 
-    this.settings =     refStorageNested(this.default_settings, set_force);
+    this.settings =     refStorageObject("settings", { initial: set_force? this.default_settings : null });
     this.commands =     refStorageObject("commands", { initial: set_force? this.default_commands : null });
     this.selectedTabs = refStorageObject(location.mid+ "_tab", { getHandler: (target, prop, value) => 
                                     target[prop] === undefined? true : target[prop]} );
