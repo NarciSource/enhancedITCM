@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         enhancedITCM
 // @namespace    etcm
-// @version      0.1.16.13
+// @version      0.1.16.15
 // @description  EnhancedITCM is a user script that enhances the https://itcm.co.kr/
 // @author       narci
 // @match        *://itcm.co.kr/*
@@ -30,12 +30,12 @@
 // @resource     miniprofile.html https://narcisource.github.io/enhancedITCM/html/miniprofile.html
 // @resource     tab.html https://narcisource.github.io/enhancedITCM/html/tab.html
 // @resource     article.html https://narcisource.github.io/enhancedITCM/html/article.html
-// @resource     default.css "https://narcisource.github.io/enhancedITCM/css/default.css
-// @resource     dark.css "https://narcisource.github.io/enhancedITCM/css/dark.css
-// @resource     side.css "https://narcisource.github.io/enhancedITCM/css/side.css
-// @resource     bookmark.css "https://narcisource.github.io/enhancedITCM/css/bookmark.css
-// @resource     tablesorter.css "https://narcisource.github.io/enhancedITCM/css/tablesorter.css
-// @resource     settings.css "https://narcisource.github.io/enhancedITCM/css/settings.css
+// @resource     default.css https://narcisource.github.io/enhancedITCM/css/default.css
+// @resource     dark.css https://narcisource.github.io/enhancedITCM/css/dark.css
+// @resource     side.css https://narcisource.github.io/enhancedITCM/css/side.css
+// @resource     bookmark.css https://narcisource.github.io/enhancedITCM/css/bookmark.css
+// @resource     tablesorter.css https://narcisource.github.io/enhancedITCM/css/tablesorter.css
+// @resource     settings.css https://narcisource.github.io/enhancedITCM/css/settings.css
 // @resource     etcm-logo https://raw.githubusercontent.com/NarciSource/enhancedITCM/master/img/logo.png
 // @resource     etcm-dark-logo https://raw.githubusercontent.com/NarciSource/enhancedITCM/master/img/logo-dark.png
 // @updateURL    https://raw.githubusercontent.com/NarciSource/enhancedITCM/master/enhancedITCM.meta.js

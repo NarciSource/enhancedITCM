@@ -715,23 +715,33 @@ var Module = {};
         let id = RegExp(`(?:${location.mid}\/|document_srl=)(\\d+)`).exec(title.children[0].href)[1]*1;
 
         {
+            let titleTag = title;
+            title = {
+                name: titleTag.children[0].title,
+                href: "/"+id
+            };
+            reply = {
+                num: titleTag.children[1].innerText,
+                href: "#"+id+"_comment"
+            }
+        }
+        { // store
           const storeSrcs = $('#etcm-cTab--store li').toArray().reduce((acc, cur)=> ({...acc,
-                        [cur.title.toLowerCase()]: cur.querySelector('img').src }), {});
+                        [cur.title.toLowerCase()]: cur.querySelector('img').src }), {}),
+                customRegx = /^\[(.+)\]\s?/;
 
-            let name = store?.querySelector('img')?.title?.toLowerCase() || "-",
-                src = storeSrcs[name],
-                customName = /^\[(\w+)\]\s?/.exec(title.children[0].title)?.[1]?.toLowerCase(),
-                customSrc = storeSrcs[customName];
+            let name = store?.querySelector('img')?.title?.toLowerCase(),
+                src = storeSrcs[name];
 
-            if (customSrc) {
+            if (!name) { // Extract custom store name from title
+                let customName = customRegx.exec(title.name)?.[1]?.toLowerCase()||"-",
+                    customSrc = storeSrcs[customName];
+
                 [name, src] = [customName, customSrc];
+
+                title.name = title.name.replace(customRegx,"");
             }
             store = store? {name, src} : null;
-
-            timer = timer
-                ? timer.querySelector('span')?.style.display!=="none"
-                    ? timer.querySelector('span > span')?.innerText||" " : " " 
-                : null;
         }
 
         return {
@@ -739,17 +749,13 @@ var Module = {};
             store,
             cate: {
                 name: cate.innerText,
-                href: ""
             },
-            title: {
-                name: title.children[0].title,
-                href: "/"+id
-            },
-            reply: {
-                num: title.children[1].innerText,
-                href: "#"+id+"_comment"
-            },
-            timer,
+            title,
+            reply,
+            timer: timer
+                    ? timer.querySelector('span')?.style.display!=="none"
+                        ? timer.querySelector('span > span')?.innerText||" " : " " 
+                    : null,
             game: {
                 id: /app=(-?\d+)/.exec(game.querySelector('a')?.href)?.[1],
                 title: game.querySelector('.header_image')?.title,

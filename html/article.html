@@ -20,7 +20,7 @@
         <tr v-show="isShow" :class="articleClasses">
             <td class="sect">
                 <div v-if="store" class="store">
-                    <img :title="store.name" :src="store.src">
+                    <img :title="store.name" :src="store.src" :alt="store.name">
                 </div>
                 <p class="cate">{{ cate.name }}</p>
             </td>
