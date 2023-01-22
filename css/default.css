@@ -273,6 +273,8 @@ blockquote ~ p > a::before {
 }
 
 .etcm-cTab--store li img {
+    filter: drop-shadow(2px 2px 2px #000);
+
     width: 29px;
     height: 29px;
 }
@@ -355,6 +357,8 @@ blockquote ~ p > a::before {
     text-align: left;
 }
 #etcm-article-board .store img {
+    filter: drop-shadow(2px 2px 2px #000);
+
     width: 1.6em !important;
 }
 #etcm-article-board .app_image img.header_image {

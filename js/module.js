@@ -716,9 +716,16 @@ var Module = {};
 
         {
           const storeSrcs = $('#etcm-cTab--store li').toArray().reduce((acc, cur)=> ({...acc,
-                        [cur.title]: cur.querySelector('img').src }),{});
-            let name = store?.querySelector('img')?.title?.toLowerCase()||"-",
-                src = storeSrcs[name];
+                        [cur.title.toLowerCase()]: cur.querySelector('img').src }), {});
+
+            let name = store?.querySelector('img')?.title?.toLowerCase() || "-",
+                src = storeSrcs[name],
+                customName = /^\[(\w+)\]\s?/.exec(title.children[0].title)?.[1]?.toLowerCase(),
+                customSrc = storeSrcs[customName];
+
+            if (customSrc) {
+                [name, src] = [customName, customSrc];
+            }
             store = store? {name, src} : null;
 
             timer = timer
@@ -807,39 +814,22 @@ var Module = {};
         let selectedTabs = etcm.selectedTabs,
 
             storeTabs = location.mid === "game_news"
-              ? [...$('.inner_content').children('div').first().find('a').toArray()
-                    .map(a => ({
-                        title: /search_keyword=(\w+)/.exec(a.href)[1],
-                        src: a.children[0].src
-                    }))
-                    .map(({title, src}) => ({
-                        title,
-                        src: ({
-                            steam: "https://cdn.cloudflare.steamstatic.com/store/about/icon-steamos.svg",
-                            origin: "https://media.contentapi.ea.com/content/dam/eacom/ko-kr/common/october-ea-ring.png"
-                        })[title] || src
-                    })),
-                 ...Object.entries({
-                        epic: "https://cdn2.unrealengine.com/eg-shield-logo-white-f8185c103d8d.svg",
-                        chronogg: "https://www.chrono.gg/assets/images/branding/chrono-icon--dark.9b6946b4.png",
-                        wingamestore: "https://www.wingamestore.com/images/s2/logo-icon.png" ,
-                        nuuvem: "https://assets.nuuvem.com/assets/fe/images/nuuvem_logo-ab61ec645af3a6db7df0140d4792f31a.svg",
-                        microsoftStore: "https://c.s-microsoft.com/en-us/CMSImages/Microsoft_Corporate_Logo_43_42.jpg?version=77D1E093-019E-5C72-083F-4DF9BF1362F5",
-                        "기타": null })
-                    .map(([title, src]) => ({title, src})),
-                ]
-                .map(({title, src}) => ({title, src, href: "/game_news\?search_target=extra_vars2&search_keyword="+title}))
-              : [],
+                ? Object.entries({
+                        ...$('.inner_content').children('div').first().find('a').toArray()
+                            .reduce((acc, a) => ({ ...acc, [/search_keyword=(\w+)/.exec(a.href)[1]] : a.children[0].src }), {}),
+                        ...meta.icon,
+                        "-": null
+                    })
+                    .map(([title, src]) => ({title, src, href: "/game_news\?search_target=extra_vars2&search_keyword="+title}))
+                : [],
             cateTabs = $('.cTab li').toArray()
                 .slice(1, location.mid === "game_news"? 4 : undefined) //1: 전체, 4: 할인&무료&번들 진행중
                 .map(li => ({
-                    href: location.mid+"/"+/category=(\d+)/.exec(li.children[0].href)[1],
-                    title: li.innerText
+                    title: li.innerText,
+                    href: li.children[0].href,
                 })),
 
             fullTabs = [...cateTabs, ...storeTabs].map(t=> t.title);
-
-        selectedTabs[fullTabs] = true;
 
         // insert dom
         let html = await GM.getResourceText('tab.html');
@@ -1114,7 +1104,6 @@ var Module = {};
                         this.customCommands = etcm.commands = refStorageObject("commands", { initial: etcm.default_commands });
                     },
                     copy(value) {
-                        console.log("?")
                         copyClipboard(value);
                     }
                 },
