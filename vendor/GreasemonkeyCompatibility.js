@@ -42,33 +42,43 @@
         }
     })();
 
-    GM.addStyle = (data, option) => {
-        let head = document.getElementsByTagName('head')[0];
-        if (head) {
-            if (option === "resource") {
-                async function fn(url) {
-                    let link = document.createElement('link');
-                    link.setAttribute('rel', 'stylesheet');
-                    link.setAttribute('type', 'text/css');
-                    link.setAttribute('href', await GM.getResourceUrl(url, 'text/css'));
-                    head.appendChild(link);
-                }
+    GM.addStyle = async function (data, { isLink, isResource }, observer= undefined) {
+        if (head = document.head) {
 
-                if (data instanceof Array) {
-                    data.forEach(each => fn(each));
-                }
-                else {
-                    fn(data);
-                }
-            }
-            else {
+            if (Array.isArray(data)) {
+                data.forEach(d => GM.addStyle(d, { isLink, isResource }));
+            } else if (isLink) {
+                let url = isResource? await GM.getResourceUrl(data, 'text/css') : data;
+
+                let link = document.createElement('link');
+
+                link.setAttribute('rel', 'stylesheet');
+                link.setAttribute('type', 'text/css');
+                link.setAttribute('href', url);
+
+                head.appendChild(link);
+            } else {
                 let style = document.createElement('style');
+
                 style.setAttribute('type', 'text/css');
                 style.textContent = data;
+
                 head.appendChild(style);
             }
+
+            observer?.disconnect();
+        } else if (observer == undefined) {
+    
+            observer = new MutationObserver(()=> GM.addStyle(data, { isLink, isResource }, observer));
+            observer.observe(document.documentElement, { childList: true });
         }
-        return head;
+    }
+
+    GM.getResourceText = async function (resource) {
+        let url = await GM.getResourceUrl(resource),
+            blob = await fetch(url).then(r => r.blob()),
+            text = await new Response(blob).text();
+        return text;
     }
 
     GM.ajax = function (url, options) {

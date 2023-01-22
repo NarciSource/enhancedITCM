@@ -56,7 +56,7 @@ var Module = {};
     Module._preview = function () {
       const etcm = this;
 
-        document.addStyle( [ meta.css.default, meta.css.dark ] );
+        GM.addStyle([ "default.css", "dark.css" ], { isLink: true, isResource: true });
 
         $('html').toggleClass('etcm--dark', $.parseJSON(this.settings.dark_mode));
 
@@ -444,14 +444,14 @@ var Module = {};
 
     /* side menu */
     Module._addSideBook = async function() {
-        document.addStyle([ meta.css.side ]);
+        GM.addStyle("side.css", { isLink: true, isResource: true });
 
       const etcm = this;
         let tabs = etcm.vueRefTabs = Vue.ref({});
 
 
         $('.sub_wrap_widget').children().eq(0).after(
-            $('#etcm-side').isExist() || $(html = await $.get( meta.html.side )).find('#etcm-side')
+            $('#etcm-side').isExist() || $(html = await GM.getResourceText('side.html')).find('#etcm-side')
         );
 
         etcm.vSideBook = etcm.vSideBook || 
@@ -575,7 +575,7 @@ var Module = {};
                 );
             });
 
-        html = await $.get( meta.html.bookmark );
+        let html = await GM.getResourceText('bookmark.html')
 
         $('.menu_bookmark_remocon').remove();
         $('.right_banner').append($(html));
@@ -842,7 +842,7 @@ var Module = {};
         selectedTabs[fullTabs] = true;
 
         // insert dom
-        let html = await $.get( meta.html.tab );
+        let html = await GM.getResourceText('tab.html');
 
         if (location.mid === "game_news") {
             $('.inner_content').children('div').first().remove();
@@ -946,7 +946,7 @@ var Module = {};
 
 
         // insert dom
-        let html = await $.get( meta.html.article ),
+        let html = await GM.getResourceText('article.html'),
             $target = $('table.bd_lst.bd_tb_lst.bd_tb');
 
         $target.before( $(html).find('#etcm-article-board') );
@@ -1057,14 +1057,14 @@ var Module = {};
 
     /* Setting */
     Module.openSettings = async function() {
-        document.addStyle([ meta.css.settings ]);
+        GM.addStyle("settings.css", { isLink: true, isResource: true });
 
       const etcm = this;
         let powerOn = etcm._settingsPowerOn = etcm._settingsPowerOn || Vue.ref(false);
 
 
         $('#body').append(
-            $('#etcm-settings').isExist() || $(html = await $.get( meta.html.settings )).find('#etcm-settings')
+            $('#etcm-settings').isExist() || $(html = await GM.getResourceText('settings.html')).find('#etcm-settings')
         );
 
         etcm.vSetting = etcm.vSetting ||
@@ -1114,6 +1114,7 @@ var Module = {};
                         this.customCommands = etcm.commands = refStorageObject("commands", { initial: etcm.default_commands });
                     },
                     copy(value) {
+                        console.log("?")
                         copyClipboard(value);
                     }
                 },

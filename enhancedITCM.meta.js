@@ -1,9 +1,9 @@
 // ==UserScript==
 // @name         enhancedITCM
 // @namespace    etcm
-// @version      0.1.15.11
+// @version      0.1.16.13
 // @description  EnhancedITCM is a user script that enhances the https://itcm.co.kr/
-// @author       narci <jwch11@gmail.com>
+// @author       narci
 // @match        *://itcm.co.kr/*
 // @icon         https://raw.githubusercontent.com/NarciSource/enhancedITCM/master/img/icon.png
 // @require      http://code.jquery.com/jquery-3.3.1.min.js
@@ -24,6 +24,18 @@
 // @require      https://raw.githubusercontent.com/NarciSource/enhancedITCM/master/js/utility.js
 // @require      https://raw.githubusercontent.com/NarciSource/enhancedITCM/master/js/module.js
 // @require      https://raw.githubusercontent.com/NarciSource/enhancedITCM/master/js/module_upgrade.js
+// @resource     side.html https://narcisource.github.io/enhancedITCM/html/side.html
+// @resource     bookmark.html https://narcisource.github.io/enhancedITCM/html/bookmark.html
+// @resource     settings.html https://narcisource.github.io/enhancedITCM/html/settings.html
+// @resource     miniprofile.html https://narcisource.github.io/enhancedITCM/html/miniprofile.html
+// @resource     tab.html https://narcisource.github.io/enhancedITCM/html/tab.html
+// @resource     article.html https://narcisource.github.io/enhancedITCM/html/article.html
+// @resource     default.css "https://narcisource.github.io/enhancedITCM/css/default.css
+// @resource     dark.css "https://narcisource.github.io/enhancedITCM/css/dark.css
+// @resource     side.css "https://narcisource.github.io/enhancedITCM/css/side.css
+// @resource     bookmark.css "https://narcisource.github.io/enhancedITCM/css/bookmark.css
+// @resource     tablesorter.css "https://narcisource.github.io/enhancedITCM/css/tablesorter.css
+// @resource     settings.css "https://narcisource.github.io/enhancedITCM/css/settings.css
 // @resource     etcm-logo https://raw.githubusercontent.com/NarciSource/enhancedITCM/master/img/logo.png
 // @resource     etcm-dark-logo https://raw.githubusercontent.com/NarciSource/enhancedITCM/master/img/logo-dark.png
 // @updateURL    https://raw.githubusercontent.com/NarciSource/enhancedITCM/master/enhancedITCM.meta.js

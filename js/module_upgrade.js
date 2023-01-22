@@ -83,8 +83,7 @@ var Upgrade;
     }
 
     Module.upgradeProfile = async function(dynamicstore, profile) {
-
-        document.addStyle( [ meta.css.miniprofile ] );
+        GM.addStyle([ meta.css.miniprofile ], { isLink: true, isResource: false } );
 
 
       const magic = 76561197960265728n;
@@ -103,7 +102,7 @@ var Upgrade;
                 .append(
                     $('<fieldset>', {
                         id: 'etcm-mini-profile',
-                        html: await $.get( meta.html.miniprofile ),
+                        html: await GM.getResourceText('miniprofile.html'),
                     }))
                 .append(
                     $('<i>', {
@@ -295,7 +294,7 @@ var Upgrade;
     };
 
     Module.upgradeCBTable = function(dynamicstore) {
-        document.addStyle([ meta.css.tablesorter ]); 
+        GM.addStyle("tablesorter.css", { isLink: true, isResource: true });
 
       const regx = /^[\w\s]+\((\d+)\%\)/;
         let $cbTable = $('.cb-table');
