@@ -800,7 +800,7 @@ var Module = {};
                             return prev;
                         }, {})
 
-                        resolve(ret_obj);                        
+                        resolve(ret_obj);
                     }
                 ));
             });
@@ -961,6 +961,8 @@ var Module = {};
                         blindArticles, blindMembers,
                         isHoverVote: false,
                         checkedType: this.type,
+                        votedSuccess: false,
+                        votedCount: this.voted_count*1
                     }
                 },
                 watch: {
@@ -1018,6 +1020,9 @@ var Module = {};
                             "document.procDocumentVoteUp", {
                             target_srl: this.id,
                             cur_mid: location.mid,
+                        }, function(data) {
+                            this.votedCount = data.voted_count;
+                            this.votedSuccess = true;
                         }));
                     },
                     submitCheck(type, checked) {

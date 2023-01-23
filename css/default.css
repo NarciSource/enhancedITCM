@@ -422,12 +422,44 @@ blockquote ~ p > a::before {
 }
 
 /* article vote column */
-#etcm-article-board tr .voted_count {
-    cursor: pointer;
+#etcm-article-board .voted_count {
+    position: relative;
 }
-#etcm-article-board tr .voted_count:hover {
+#etcm-article-board .voted_count.on,
+#etcm-article-board .voted_count:hover {
     color: hotpink;
 }
+#etcm-article-board .voted_count .heart {
+    position: absolute;
+    top: 6px;
+    left: 31px;
+
+    width: 100px;
+    height: 100px;
+
+    cursor: pointer;
+    transform-origin: 0 0;
+    transform: scale(0.4) translate(-50%, -50%);
+
+    background: url(https://cssanimation.rocks/images/posts/steps/heart.png) no-repeat;
+    background-position: 0 0;
+}
+#etcm-article-board .voted_count:not(.on) .heart {
+    animation: heart-bling 3s infinite;
+}
+#etcm-article-board .voted_count .heart {
+    transition: background 1s steps(28);
+
+    background-position: -2800px 0;
+}
+@keyframes heart-bling
+{
+    0% { transform: scale( 0.5 ) translate(-50%, -50%); }
+    33% { transform: scale( 0.4 ) translate(-50%, -50%); }
+    66% { transform: scale( 0.5 ) translate(-50%, -50%); }
+    100% { transform: scale( 0.4 ) translate(-50%, -50%); }
+}
+
 /* article check column*/
 #etcm-article-board tr .type {
     width: auto;
@@ -444,8 +476,8 @@ blockquote ~ p > a::before {
     display: none;
 }
 #etcm-article-board tr .type .fa:hover,
-#etcm-article-board.check_p tr .fa-credit-card,
-#etcm-article-board.check_w tr .fa-shopping-cart {
+#etcm-article-board tr.check_p .fa-credit-card,
+#etcm-article-board tr.check_w .fa-shopping-cart {
     opacity: 1 !important;
     color: cadetblue;
 }
