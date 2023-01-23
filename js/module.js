@@ -821,7 +821,7 @@ var Module = {};
 
             storeTabs = location.mid === "game_news"
                 ? Object.entries({
-                        ...$('.inner_content > .xe-widget-wrapper').prev('div a').toArray()
+                        ...$('.inner_content > .xe-widget-wrapper').prev('div').find('a').toArray()
                             .reduce((acc, a) => ({ ...acc, [/search_keyword=(\w+)/.exec(a.href)[1]] : a.children[0].src }), {}),
                         ...meta.icon,
                         "-": null
