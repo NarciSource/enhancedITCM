@@ -118,8 +118,15 @@ var Upgrade;
 
             Vue.createApp({
                 data() {
-                    return { ...profile, ...miniProfile }
-                }
+                    return { ...profile, ...miniProfile,
+                             video_source: loadFromLocalStorage("video_source") }
+                },
+                methods: {
+                    changeBackground() {
+                        this.video_source = prompt("대체 배경");
+                        saveToLocalStorage("video_source")(this.video_source);
+                    }
+                },
             }).mount('#etcm-mini-profile');
 
 
