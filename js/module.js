@@ -206,6 +206,26 @@ var Module = {};
     }
 
 
+    Module.autoAttendance = function() {
+        if ((today = new Date().getDate()) !== loadFromLocalStorage("attendance_date")*1) {
+            unsafeWindow.exec_json(...unsafeConverter(
+                'attendance.procAttendanceInsertAttendance', {
+                    greetings : loadFromLocalStorage("attendance_greeting") || "끼요옷 출석",
+                    about_position : 'yes'
+                }, function(ret_obj){
+                    if(ret_obj.error == 0) {
+                        saveToLocalStorage("attendance_date")(today);
+                        if(confirm("EnhancedITCM.\n출석이 완료되었습니다.\n출석부로 이동하시겠습니까?")) {
+                            location.href = '/attendance';
+                        }
+                    } else {
+                        alert(ret_obj.message);
+                    }
+                }
+            ));
+        }
+    }
+
 
     Module.addHumbleChoiceTimer = function() {
         function addTimer({text, title, class_name, date, href, board_title, board_href}) {
@@ -1092,7 +1112,7 @@ var Module = {};
                             addContextMenu : "게임 링크 컨텍스트 메뉴",
                             enhanceSizableBoard : "게시판 크기 조절",
                         },
-                        uiOperations: { designArticle: "게시판 글목록 디자인", },
+                        uiOperations: { designArticle: "게시판 글목록 디자인", autoAttendance: "자동 출석" },
                         loadingItems: ['puzzle', 'wave', 'squre', 'three', 'magnify', 'text' ],
 
                         settings: etcm.settings,

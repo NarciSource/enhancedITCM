@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         enhancedITCM
 // @namespace    etcm
-// @version      0.1.16.20
+// @version      0.1.16.21
 // @description  EnhancedITCM is a user script that enhances the https://itcm.co.kr/
 // @author       narci
 // @match        *://itcm.co.kr/*
@@ -166,8 +166,8 @@ Module.Upgrade = Upgrade;
 
 
 
-if (window.etcmIsRunning) return;
-else window.etcmIsRunning = true;
+if (unsafeWindow.etcmIsRunning) return;
+else unsafeWindow.etcmIsRunning = true;
 
 let etcm = new ETCM();
 
