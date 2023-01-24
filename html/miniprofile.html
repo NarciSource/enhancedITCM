@@ -1,8 +1,7 @@
 <div id="etcm-mini-profile" @contextmenu="changeBackground">
     <div class="miniprofile_nameplatecontainer">
-        <video class="miniprofile_nameplate" :key="video_source" playsinline autoplay muted loop>
-            <source :src="video_source || profile_background['video/webm']" type="video/webm">
-            <source :src="profile_background['video/mp4']" type="video/mp4">
+        <video class="miniprofile_nameplate" :key="profileBackground" :poster="profileBackground" playsinline autoplay muted loop>
+            <source :src="profileBackground">
         </video>
     </div>
 

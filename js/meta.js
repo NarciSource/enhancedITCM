@@ -33,7 +33,7 @@ const meta = {
         chronogg: "https://www.chrono.gg/assets/images/branding/chrono-icon--dark.9b6946b4.png",
         wingamestore: "https://www.wingamestore.com/images/s2/logo-icon.png" ,
         nuuvem: "https://assets.nuuvem.com/assets/fe/images/nuuvem_logo-ab61ec645af3a6db7df0140d4792f31a.svg",
-        "포게임": "http://4game.co.kr/favicon.ico",
+        "포게임": "https://4game.co.kr/favicon.ico",
         "코드피아": "https://code-pia.com/web/upload/favicon_20190322204814.ico",
     },
 }

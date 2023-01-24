@@ -97,6 +97,7 @@ var Upgrade;
             });
 
         if (miniProfile) {
+            let settings = this.target.settings;
 
             $('.login_PlayoutA')
                 .append(
@@ -110,7 +111,7 @@ var Upgrade;
                         click: e => {
                             $(e.target).animate({ rotate: '360deg' }, 1000, ()=> $(e.target).css('rotate','0deg'));
                             $('.login_PlayoutA').flip('toggle');
-                            this.target.settings.show_miniprofile = !JSON.parse(this.target.settings.show_miniprofile||null);
+                            settings.show_miniprofile = !JSON.parse(settings.show_miniprofile||null);
                         },
                     })
                 );
@@ -118,13 +119,22 @@ var Upgrade;
 
             Vue.createApp({
                 data() {
-                    return { ...profile, ...miniProfile,
-                             video_source: loadFromLocalStorage("video_source") }
+                    return { ...profile, ...miniProfile, settings }
+                },
+                computed: {
+                    profileBackground: {
+                        get() {
+                            return this.settings.profileBackground || this.profile_background?.['video/webm'] || this.profile_background?.['video/mp4'];
+                        },
+                        set(value) {
+                            this.settings.profileBackground = value;
+                        }
+                    }
                 },
                 methods: {
-                    changeBackground() {
-                        this.video_source = prompt("대체 배경");
-                        saveToLocalStorage("video_source")(this.video_source);
+                    changeBackground(e) {
+                        this.profileBackground = prompt("대체 배경 - 동영상 또는 이미지 주소를 입력하세요.\n취소 버튼 - 프로필 기본 배경", this.profileBackground);
+                        e.preventDefault();
                     }
                 },
             }).mount('#etcm-mini-profile');
@@ -133,7 +143,7 @@ var Upgrade;
             $('.login_PlayoutA').find('fieldset')
                 .first().addClass('front')
                 .next().addClass('back');
-            $('.login_PlayoutA').flip({ trigger: 'manual' }).flip(JSON.parse(this.target.settings.show_miniprofile||null));
+            $('.login_PlayoutA').flip({ trigger: 'manual' }).flip(JSON.parse(settings.show_miniprofile||null));
         }
     };
 

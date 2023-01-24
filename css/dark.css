@@ -255,7 +255,8 @@
 }
 
 /* profile */
-.etcm--dark .login_PlayoutA.logon fieldset:first-of-type {
+.etcm--dark .login_PlayoutA.logon fieldset:first-of-type,
+.etcm--dark .login_PlayoutA.logon .miniprofile_nameplatecontainer {
     border: none;
     background: linear-gradient( bottom left, #0B151E, #1B4761);
     background: -o-linear-gradient( bottom left, #0B151E, #1B4761);
