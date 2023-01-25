@@ -212,15 +212,15 @@ var Module = {};
                 'attendance.procAttendanceInsertAttendance', {
                     greetings : loadFromLocalStorage("attendance_greeting") || "끼요옷 출석",
                     about_position : 'yes'
-                }, function(ret_obj){
+                }, function(ret_obj) {
                     if(ret_obj.error == 0) {
                         saveToLocalStorage("attendance_date")(today);
                         if(confirm("EnhancedITCM.\n출석이 완료되었습니다.\n출석부로 이동하시겠습니까?")) {
                             location.href = '/attendance';
                         }
-                    } else {
-                        alert(ret_obj.message);
                     }
+                }, function(ret_obj_fail) {
+                    saveToLocalStorage("attendance_date")(today);
                 }
             ));
         }
@@ -790,8 +790,8 @@ var Module = {};
                 normal: time.innerText,
                 detail: time.title
             },
-            readed_count: readed_count.innerText,
-            voted_count: voted_count.innerText,
+            readed_count: readed_count.innerText*1,
+            voted_count: voted_count.innerText*1,
         };
     }
 
@@ -973,13 +973,14 @@ var Module = {};
                 props: {
                     id: Number,
                     store: Object, cate: Object, title: Object, timer: String, game: Object, author: Object,
-                    reply: Object, author: Object, time: Object, readed_count: String, voted_count: String, type: Array,
+                    reply: Object, author: Object, time: Object, readed_count: Number, voted_count: Number, type: Array,
                     selectedTabs: Object,
                 },
                 data() {
                     return {
                         blindArticles, blindMembers,
                         isHoverVote: false,
+                        isHotReaded: this.readed_count >= 1000,
                         checkedType: this.type,
                         votedSuccess: false,
                         votedCount: this.voted_count*1
@@ -997,6 +998,7 @@ var Module = {};
                 computed: {
                     articleClasses() {
                         return {
+                            select: this.id === RegExp(`(?:${location.mid}\/|document_srl=)(\\d+)`).exec(location.href)?.[1]*1,
                             shadow: this.isBlindArticle || this.isBlindMember,
                             check_p: this.checkedType?.includes('p'),
                             check_w: this.checkedType?.includes('w'),
@@ -1036,13 +1038,14 @@ var Module = {};
                         }
                     },
                     submitVote() {
+                      const that = this;
                         unsafeWindow.exec_json(...unsafeConverter(
                             "document.procDocumentVoteUp", {
                             target_srl: this.id,
                             cur_mid: location.mid,
                         }, function(data) {
-                            this.votedCount = data.voted_count;
-                            this.votedSuccess = true;
+                            that.votedCount = data.voted_count;
+                            that.votedSuccess = true;
                         }));
                     },
                     submitCheck(type, checked) {

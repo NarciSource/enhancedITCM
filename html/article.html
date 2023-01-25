@@ -34,7 +34,7 @@
                     </label>
                 </div>
                 <a :href="title.href+reply.href" class="replyNum" title="댓글">{{ reply.num }}</a>
-                <span class="m_no readed_count">{{ readed_count }}</span>
+                <span class="m_no readed_count" :class="{hot: isHotReaded}">{{ readed_count }}</span>
                 <span class="m_no voted_count" :class="{on: votedSuccess}" @mouseover="isHoverVote = true" @mouseout="isHoverVote = false" @click="submitVote">
                     <i :class="{heart: isHoverVote}"/>
                     {{ isHoverVote? "" : votedCount }}

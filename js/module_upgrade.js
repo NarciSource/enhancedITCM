@@ -111,7 +111,7 @@ var Upgrade;
                         click: e => {
                             $(e.target).animate({ rotate: '360deg' }, 1000, ()=> $(e.target).css('rotate','0deg'));
                             $('.login_PlayoutA').flip('toggle');
-                            settings.show_miniprofile = !JSON.parse(settings.show_miniprofile||null);
+                            settings.show_miniprofile = !settings.show_miniprofile;
                         },
                     })
                 );
@@ -143,7 +143,7 @@ var Upgrade;
             $('.login_PlayoutA').find('fieldset')
                 .first().addClass('front')
                 .next().addClass('back');
-            $('.login_PlayoutA').flip({ trigger: 'manual' }).flip(JSON.parse(settings.show_miniprofile||null));
+            $('.login_PlayoutA').flip({ trigger: 'manual' }).flip(settings.show_miniprofile);
         }
     };
 
