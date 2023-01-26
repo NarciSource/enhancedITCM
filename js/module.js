@@ -712,7 +712,8 @@ var Module = {};
 
 
     Module._parseArticle = function(article) {
-        let fields = [...article.children];
+        let fields = [...article.children],
+            isNotice = article.classList.contains('notice');
 
         switch(location.mid) {
             case "community_timeline":
@@ -738,12 +739,13 @@ var Module = {};
             let titleTag = title;
             title = {
                 name: titleTag.children[0].title,
-                href: "/"+id
+                href: "/"+id,
+                extra: [...titleTag.querySelectorAll('.extraimages img')].map(img => img.title),
             };
             reply = {
                 num: titleTag.children[1].innerText,
                 href: "#"+id+"_comment"
-            }
+            };
         }
         { // store
           const storeSrcs = $('#etcm-cTab--store li').toArray().reduce((acc, cur)=> ({...acc,
@@ -766,6 +768,7 @@ var Module = {};
 
         return {
             id,
+            isNotice,
             store,
             cate: {
                 name: cate.innerText,
@@ -971,7 +974,7 @@ var Module = {};
         // component
         var articleList = {
                 props: {
-                    id: Number,
+                    id: Number, isNotice: Boolean,
                     store: Object, cate: Object, title: Object, timer: String, game: Object, author: Object,
                     reply: Object, author: Object, time: Object, readed_count: Number, voted_count: Number, type: Array,
                     selectedTabs: Object,
@@ -998,6 +1001,7 @@ var Module = {};
                 computed: {
                     articleClasses() {
                         return {
+                            notice: this.isNotice,
                             select: this.id === RegExp(`(?:${location.mid}\/|document_srl=)(\\d+)`).exec(location.href)?.[1]*1,
                             shadow: this.isBlindArticle || this.isBlindMember,
                             check_p: this.checkedType?.includes('p'),

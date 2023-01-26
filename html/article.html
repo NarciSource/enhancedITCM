@@ -22,12 +22,12 @@
                 <div v-if="store" class="store">
                     <img :title="store.name" :src="store.src" :alt="store.name">
                 </div>
-                <p class="cate">{{ cate.name }}</p>
+                <p class="cate">{{ cate.name || (isNotice? "공지" : "") }}</p>
             </td>
 
             <td class="post">
                 <span class="time" :title="time.detail">{{ time.normal }}</span>
-                <div class="title">
+                <div class="title" :class="title.extra">
                     <a :href="title.href" class="hx">{{ title.name }}</a>
                     <label class="fa fa-eye-slash" title="on my blind list">
                         <input type="checkbox" :value="isBlindArticle" @change="toggle(blindArticles, id, 'blind')">

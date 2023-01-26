@@ -353,6 +353,18 @@ blockquote ~ p > a::before {
     white-space: normal;
     word-break: break-word;
 }
+#etcm-article-board .title::after {
+    font-family: "xeicon";
+    font-size: small;
+
+    color: darkorange;
+}
+#etcm-article-board .title.new::after {
+    content: " \e71e";
+}
+#etcm-article-board .title.update::after {
+    content: " \e6ec";
+}
 #etcm-article-board .post {
     text-align: left;
 }
