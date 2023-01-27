@@ -1162,7 +1162,7 @@ var Module = {};
                                 }
                             },
                         },
-                        template: $(html).find('template').get(0)
+                        template: $(html).find('#operation-item').get(0)
                     }
                 }
             }).mount('#etcm-settings');
