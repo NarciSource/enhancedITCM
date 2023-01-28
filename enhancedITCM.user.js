@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         enhancedITCM
 // @namespace    etcm
-// @version      0.1.16.24
+// @version      0.1.16.25
 // @description  EnhancedITCM is a user script that enhances the https://itcm.co.kr/
 // @author       narci
 // @match        *://itcm.co.kr/*

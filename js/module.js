@@ -747,29 +747,11 @@ var Module = {};
                 href: "#"+id+"_comment"
             };
         }
-        { // store
-          const storeSrcs = $('#etcm-cTab--store li').toArray().reduce((acc, cur)=> ({...acc,
-                        [cur.title.toLowerCase()]: cur.querySelector('img').src }), {}),
-                customRegx = /^\[(.+)\]\s?/;
-
-            let name = store?.querySelector('img')?.title?.toLowerCase(),
-                src = storeSrcs[name];
-
-            if (!name) { // Extract custom store name from title
-                let customName = customRegx.exec(title.name)?.[1]?.toLowerCase()||"-",
-                    customSrc = storeSrcs[customName];
-
-                [name, src] = [customName, customSrc];
-
-                title.name = title.name.replace(customRegx,"");
-            }
-            store = store? {name, src} : null;
-        }
 
         return {
             id,
             isNotice,
-            store,
+            store: store? store?.querySelector('img')?.title?.toLowerCase() || "-" : null,
             cate: {
                 name: cate.innerText,
             },
@@ -842,14 +824,13 @@ var Module = {};
 
         let selectedTabs = etcm.selectedTabs,
 
+            baseStore = $('.inner_content > .xe-widget-wrapper').prev('div').find('a').toArray()
+                .reduce((acc, a) => ({ ...acc, [/search_keyword=(\w+)/.exec(a.href)[1].toLowerCase()]: a.children[0].src}), {}),
+
             storeTabs = location.mid === "game_news"
-                ? Object.entries({
-                        ...$('.inner_content > .xe-widget-wrapper').prev('div').find('a').toArray()
-                            .reduce((acc, a) => ({ ...acc, [/search_keyword=(\w+)/.exec(a.href)[1]] : a.children[0].src }), {}),
-                        ...meta.icon,
-                        "-": null
-                    })
-                    .map(([title, src]) => ({title, src, href: "/game_news\?search_target=extra_vars2&search_keyword="+title}))
+                ? [...Object.entries(meta.icon)
+                    .map(([title, src]) => ({ title, src, alt: baseStore[title] || title })), { title: "-", alt: "-" }]
+                    .map(({title, ...rest}) => ({ title, href: `/game_news?search_target=${baseStore[title]? "extra_vars2" : "title"}&search_keyword=${title}`, ...rest}))
                 : [],
             cateTabs = $('.cTab li').toArray()
                 .slice(1, location.mid === "game_news"? 4 : undefined) //1: 전체, 4: 할인&무료&번들 진행중
@@ -859,6 +840,11 @@ var Module = {};
                 })),
 
             fullTabs = [...cateTabs, ...storeTabs].map(t=> t.title);
+
+        etcm.vueRefStoreCatalog = etcm.vueRefStoreCatalog || Vue.ref({});
+        etcm.vueRefStoreCatalog.value = storeTabs.reduce((acc, {title, src, alt}) => ({ ...acc, [title]: { title, src, alt }}), {});
+
+
 
         // insert dom
         let html = await GM.getResourceText('tab.html');
@@ -961,6 +947,7 @@ var Module = {};
         let articles = etcm.vueRefArticles = Vue.ref([]),
             blindMembers = refStorageObject("blindMembers"),
             blindArticles = refStorageObject("blindArticles"),
+            storeCatalog = etcm.vueRefStoreCatalog = etcm.vueRefStoreCatalog || Vue.ref({});
             selectedTabs = etcm.selectedTabs;
 
 
@@ -975,8 +962,9 @@ var Module = {};
         var articleList = {
                 props: {
                     id: Number, isNotice: Boolean,
-                    store: Object, cate: Object, title: Object, timer: String, game: Object, author: Object,
+                    store: String, cate: Object, title: Object, timer: String, game: Object, author: Object,
                     reply: Object, author: Object, time: Object, readed_count: Number, voted_count: Number, type: Array,
+                    storeCatalog: Object,
                     selectedTabs: Object,
                 },
                 data() {
@@ -1020,7 +1008,7 @@ var Module = {};
                             (
                                 this.selectedTabs[this.cate?.name]
                                 &&
-                                this.selectedTabs[this.store?.name]
+                                this.selectedTabs[this.storeName]
                             )
                             &&
                             (
@@ -1031,6 +1019,18 @@ var Module = {};
                                 )
                             )
                         );
+                    },
+                    storeName() { // Extract custom store name from title
+                        if (this.store === "-") {
+                          const regx = /^\[(.+)\]\s?/;
+                            let customName = regx.exec(this.title.name)?.[1]?.toLowerCase()||"-";
+
+                            this.title.name = this.title.name.replace(regx,"");
+
+                            return customName;
+                        } else {
+                            return this.store;
+                        }
                     },
                 },
                 methods: {
@@ -1070,6 +1070,7 @@ var Module = {};
                 return {
                     mid: location.mid,
                     fields, articles,
+                    storeCatalog,
                     selectedTabs,
                 }
             },

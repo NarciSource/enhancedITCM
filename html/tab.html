@@ -2,7 +2,7 @@
     <ul id="etcm-cTab--store" class="etcm-cTab etcm-cTab--store">
         <tab-list v-for="{title, href, src} in tabs" v-bind="{title, selectedTabs }">
             <a :href="href">
-                <img :src="src">
+                <img :src="src" :alt="src&&title">
             </a>
         </tab-list>
     </ul>

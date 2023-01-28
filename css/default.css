@@ -273,10 +273,18 @@ blockquote ~ p > a::before {
 }
 
 .etcm-cTab--store li img {
+    display: flex;
+    overflow: hidden;
+
     filter: drop-shadow(2px 2px 2px #000);
+
+    text-align: center;
 
     width: 29px;
     height: 29px;
+
+    justify-content: center;
+    align-items: center;
 }
 .etcm-cTab--store li > input:hover {
     display: block;

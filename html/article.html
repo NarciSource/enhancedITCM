@@ -10,7 +10,7 @@
         </thead>
         <tbody>
             <template v-for="article in articles" :key="article.id">
-                <article-list v-bind="{...article, selectedTabs}"></article-list>
+                <article-list v-bind="{...article, storeCatalog, selectedTabs}"></article-list>
             </template>
         </tbody>
     </table>
@@ -20,7 +20,7 @@
         <tr v-show="isShow" :class="articleClasses">
             <td class="sect">
                 <div v-if="store" class="store">
-                    <img :title="store.name" :src="store.src" :alt="store.name">
+                    <img v-bind="storeCatalog[storeName]">
                 </div>
                 <p class="cate">{{ cate.name || (isNotice? "공지" : "") }}</p>
             </td>

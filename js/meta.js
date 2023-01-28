@@ -23,7 +23,7 @@ const meta = {
         gog: "https://theme.zdassets.com/theme_assets/987253/a0e6f9062a0581e2993338193058e44f5ce2c010.svg",
         epic: "https://cdn2.unrealengine.com/eg-shield-logo-white-f8185c103d8d.svg",
         humblebundle: "https://cdn.humblebundle.com/static/hashed/47e474eed38083df699b7dfd8d29d575e3398f1e.ico",
-        Fanatical: "https://cdn.fanatical.com/production/brand/fanatical-icon.svg",
+        fanatical: "https://cdn.fanatical.com/production/brand/fanatical-icon.svg",
         directg: "https://directg.net/favicon.ico",
         microsoftStore: "https://www.microsoft.com/favicon.ico?v2",
         blizzard: "https://d9me64que7cqs.cloudfront.net/images/favicon.7732eed1be971ac1d7396ffbe6caf75e.ico",
