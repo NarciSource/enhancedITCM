@@ -1,8 +1,8 @@
 <vue>
     <ul id="etcm-cTab--store" class="etcm-cTab etcm-cTab--store">
-        <tab-list v-for="{title, href, src} in tabs" v-bind="{title, selectedTabs }">
+        <tab-list v-for="{ href, src, alt, altSrc, url, ...rest } in tabs" v-bind="{ ...rest, selectedTabs }" @dblclick="openStore(url)">
             <a :href="href">
-                <img :src="src" :alt="src&&title">
+                <img :src="src" :alt="alt" @error="replaceBy($event, altSrc)">
             </a>
         </tab-list>
     </ul>
@@ -14,7 +14,7 @@
             <input type="checkbox" v-model="checkedAllTabs">
         </li>
 
-        <tab-list v-for="{title, href, src} in tabs" v-bind="{title, selectedTabs }">
+        <tab-list v-for="{ title, href, ...rest } in tabs" v-bind="{ ...rest, selectedTabs }">
             <a :href="href">{{ title }}</a>
         </tab-list>
 

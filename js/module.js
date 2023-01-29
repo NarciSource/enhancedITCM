@@ -828,23 +828,30 @@ var Module = {};
                 .reduce((acc, a) => ({ ...acc, [/search_keyword=(\w+)/.exec(a.href)[1].toLowerCase()]: a.children[0].src}), {}),
 
             storeTabs = location.mid === "game_news"
-                ? [...Object.entries(meta.icon)
-                    .map(([title, src]) => ({ title, src, alt: baseStore[title] || title })), { title: "-", alt: "-" }]
-                    .map(({title, ...rest}) => ({ title, href: `/game_news?search_target=${baseStore[title]? "extra_vars2" : "title"}&search_keyword=${title}`, ...rest}))
+                ? [...meta.icon, { title: "-", alt: null }]
+                    .map(({ title, keyword, ...rest }) => ({ title, keyword: keyword || title.toLowerCase(), ...rest }))
+                    .map(({ title, keyword, ...rest }) => ({ title, keyword, alt: title, altSrc: baseStore[keyword], ...rest }))
+                    .map(({ keyword, ...rest }) => ({ keyword, href: `/game_news?search_target=${baseStore[keyword]? "extra_vars2" : "title"}&search_keyword=${keyword}`, ...rest}))
                 : [],
+
             cateTabs = $('.cTab li').toArray()
                 .slice(1, location.mid === "game_news"? 4 : undefined) //1: 전체, 4: 할인&무료&번들 진행중
-                .map(li => ({
-                    title: li.innerText,
-                    href: li.children[0].href,
-                })),
+                .map(li => ({ title: li.innerText, href: li.children[0].href, }))
+                .map(({ title, keyword, ...rest }) => ({ title, keyword: keyword || title.toLowerCase(), ...rest })),
 
-            fullTabs = [...cateTabs, ...storeTabs].map(t=> t.title);
+            fullTabs = [...cateTabs, ...storeTabs].map(t=> t.keyword),
 
+            storeCatalog = storeTabs
+                .filter(({ subKeywords }) => subKeywords)
+                .map(({ keyword, subKeywords, ...rest }) => subKeywords.map(subKeyword => ({ ...rest, keyword, subKeyword })))
+                .flat()
+                .concat(storeTabs)
+                .reduce((acc, { keyword, subKeyword, ...rest }) => ({ ...acc, [subKeyword || keyword]: { keyword, ...rest }}), {});
+
+
+        // reference to using article
         etcm.vueRefStoreCatalog = etcm.vueRefStoreCatalog || Vue.ref({});
-        etcm.vueRefStoreCatalog.value = storeTabs.reduce((acc, {title, src, alt}) => ({ ...acc, [title]: { title, src, alt }}), {});
-
-
+        etcm.vueRefStoreCatalog.value = storeCatalog;
 
         // insert dom
         let html = await GM.getResourceText('tab.html');
@@ -860,15 +867,16 @@ var Module = {};
         var tabList = {
                 props: {
                     title: String,
+                    keyword: String,
                     selectedTabs: Object
                 },
                 computed: {
                     checked: {
                         get() {
-                            return this.selectedTabs[this.title];
+                            return this.selectedTabs[this.keyword];
                         },
                         set(checked) {
-                            this.selectedTabs[this.title] = checked;
+                            this.selectedTabs[this.keyword] = checked;
                         }
                     }
                 },
@@ -895,6 +903,14 @@ var Module = {};
                     tabs: storeTabs,
                     selectedTabs,
                 }
+            },
+            methods: {
+                openStore: window.open,
+                replaceBy(e, altSrc) {
+                    if (altSrc) {
+                        e.target.src = altSrc;
+                    }
+                } 
             },
             components: { tabList }
         }).mount("#etcm-cTab--store");
@@ -987,6 +1003,21 @@ var Module = {};
                     }
                 },
                 computed: {
+                    shop() {
+                        if (this.store === "-") { // Extract custom store name from title
+                          const regx = /^\[(.+)\]\s?/;
+                            var customTitle = regx.exec(this.title.name)?.[1],
+                                customKeyword = customTitle?.toLowerCase();
+
+                            this.title.name = this.title.name.replace(regx,"");
+                        }
+
+                        let keyword = customKeyword || this.store,
+                            shop = this.storeCatalog[keyword],
+                            alt = shop?.title || customTitle;
+
+                        return { keyword, ...shop, alt };
+                    },
                     articleClasses() {
                         return {
                             notice: this.isNotice,
@@ -1006,9 +1037,9 @@ var Module = {};
                         return !this.selectedTabs ||
                         (
                             (
-                                this.selectedTabs[this.cate?.name]
+                                this.selectedTabs[this.cate?.keyword]
                                 &&
-                                this.selectedTabs[this.storeName]
+                                this.selectedTabs[this.shop?.keyword]
                             )
                             &&
                             (
@@ -1020,20 +1051,13 @@ var Module = {};
                             )
                         );
                     },
-                    storeName() { // Extract custom store name from title
-                        if (this.store === "-") {
-                          const regx = /^\[(.+)\]\s?/;
-                            let customName = regx.exec(this.title.name)?.[1]?.toLowerCase()||"-";
-
-                            this.title.name = this.title.name.replace(regx,"");
-
-                            return customName;
-                        } else {
-                            return this.store;
-                        }
-                    },
                 },
                 methods: {
+                    replaceBy(e, altSrc) {
+                        if (altSrc) {
+                            e.target.src = altSrc;
+                        }
+                    },
                     toggle(subject, id, value) {
                         if (!subject[id]) {
                             subject[id] = value;

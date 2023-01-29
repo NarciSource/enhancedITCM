@@ -20,7 +20,7 @@
         <tr v-show="isShow" :class="articleClasses">
             <td class="sect">
                 <div v-if="store" class="store">
-                    <img v-bind="storeCatalog[storeName]">
+                    <img v-bind="shop" @error="replaceBy($event, shop?.altSrc)">
                 </div>
                 <p class="cate">{{ cate.name || (isNotice? "공지" : "") }}</p>
             </td>
