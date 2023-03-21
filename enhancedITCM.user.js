@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         enhancedITCM
 // @namespace    etcm
-// @version      0.1.16.25
+// @version      0.1.16.27
 // @description  EnhancedITCM is a user script that enhances the https://itcm.co.kr/
 // @author       narci
 // @match        *://itcm.co.kr/*
@@ -103,7 +103,6 @@ function ETCM() {
         designTab: true,
         designArticle: true,
 
-        addSteamServerStatusMonitor: false,
         addHumbleChoiceTimer: true,
         addShortcutSide: true,
         _addSideBook: true, addScrapbook: true, addWishbook: false, addPurchasebook: false,
@@ -134,7 +133,7 @@ function ETCM() {
 
 
     let majorVersion = v => v.split('.').slice(0, 3).join('.'),
-        set_force = majorVersion(loadFromLocalStorage("etcm-version")) < majorVersion(GM.info.script.version); //update
+        set_force = majorVersion(loadFromLocalStorage("etcm-version")||"") < majorVersion(GM.info.script.version); //update
     saveToLocalStorage("etcm-version")(GM.info.script.version);
 
 
@@ -175,7 +174,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     /* inject stylesheet */
     GM.addStyle([ "default.css", "dark.css", "bookmark.css", ], { isLink: true, isResource: true });
-    GM.addStyle([ meta.css.toggleSwitch, meta.css.TimeCircles, 
+    GM.addStyle([ meta.css.toggleSwitch, meta.css.TimeCircles,
                   meta.css.flipclock, meta.css.contextMenu ],   { isLink: true, isResource: false });
 
     /* start point */
